@@ -1,0 +1,19 @@
+<?php
+// Override config.inc.php parameters
+
+$lang = "en";
+$keyphrase = "{{ lookup('password', '/dev/null') }}";
+
+$ldap_url = "{{ ldap_url }}";
+$ldap_base = "{{ ldap_base }}";
+$ldap_binddn = "";
+$ldap_bindpw = "";
+$who_change_password = "user";
+$use_questions = false;
+$use_tokens = false;
+$use_sms = false;
+$change_sshkey = true;
+
+$racf_mode = true;
+
+?>

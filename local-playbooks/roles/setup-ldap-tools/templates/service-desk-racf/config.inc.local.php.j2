@@ -1,0 +1,22 @@
+<?php
+// Override config.inc.php parameters
+
+$lang = "en";
+
+$ldap_url = "{{ ldap_url }}";
+$ldap_base = "{{ ldap_base }}";
+$ldap_user_base = "ou=people," . $ldap_base;
+$ldap_group_base = "ou=group," . $ldap_base;
+$ldap_user_regex = "/,ou=people,/i";
+$ldap_binddn = "racfid={{ admin_uid }},profiletype=user,{{ sdbm_base }}";
+$ldap_bindpw = "{{ admin_pwd }}";
+$racf_mode = true;
+$sdbm_base = "{{ sdbm_base }}";
+$sdbm_ldap_url = "{{ ldap_url }}";
+$resetpassword_reset_default = false;
+
+$resource_title = "resource";
+$resource_items = array("owner", "uacc", "access");
+$show_undef = true;
+
+?>

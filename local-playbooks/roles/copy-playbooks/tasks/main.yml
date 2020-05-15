@@ -1,0 +1,5 @@
+- name: Copy original playbooks to infra host
+  copy:
+    src: /opt/ansible/multiarch-ci-playbooks
+    dest: /opt/
+    mode: preserve

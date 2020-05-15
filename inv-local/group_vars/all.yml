@@ -1,0 +1,20 @@
+---
+# variables for all hosts
+guest_name: "ZR8TEST"
+guest_pwd: "ZVM4DEMO"
+guest_dasd_grp_linux: "GRPLINLG"
+guest_install_hostname: "zr8test"
+guest_install_ipaddr: "10.2.75.96"
+guest_install_gateway: "10.2.75.1"
+guest_install_nameserver: "10.2.75.199"
+guest_install_znet: "qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=vswbase2,portno=0"
+guest_install_dasd: "0.0.0200"
+guest_install_nicid: "enc600"
+#
+# smapi parameters
+smapi_host: "10.2.75.171/44444"
+smapi_user: "IBMVM1"
+smapi_password: "LNX4EVER"
+#
+# OCP cluster params
+ocp_cluster_lan_name: "OCPLAN"

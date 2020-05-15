@@ -1,0 +1,5 @@
+---
+- name: Create a local Certificate Authority
+  hosts: s390x-bastion-workstation
+  roles:
+  - "{{ playbook_dir }}/roles/create-local-ca"

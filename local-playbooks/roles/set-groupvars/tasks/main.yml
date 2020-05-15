@@ -1,0 +1,105 @@
+- name: Patch the cluster_base_domain in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_base_domain
+    value:
+      "{{ cluster_base_domain }}"
+
+- name: Patch the cluster_name in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_name
+    value:
+      "{{ cluster_name }}"
+
+- name: Patch the dns_nameserver in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: dns_nameserver
+    value:
+      "{{ dns_nameserver }}"
+
+- name: Patch the subnet_gateway in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: subnet_gateway
+    value:
+      "{{ subnet_gateway }}"
+
+- name: Patch the subnet_netmask in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: subnet_netmask
+    value:
+      "{{ subnet_netmask }}"
+
+- name: Patch the subnet_cidr in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: subnet_cidr
+    value:
+      "{{ subnet_cidr }}"
+
+- name: Patch the bastion_private_ip_address in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: bastion_private_ip_address
+    value:
+      "{{ bastion_private_ip_address }}"
+
+- name: Patch the zvm_rd_znet in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: zvm_rd_znet
+    value:
+      "{{ zvm_rd_znet }}"
+
+- name: Patch the zvm_rd_dasd in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: zvm_rd_dasd
+    value:
+      "{{ zvm_rd_dasd }}"
+
+- name: Patch the value of the IP address of bootstrap-0 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.bootstrap.bootstrap-0.ip
+    value:
+      "{{ ip_bootstrap_0 }}"
+
+- name: Patch the value of the IP address of master-0 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.masters.master-0.ip
+    value:
+      "{{ ip_master_0 }}"
+
+- name: Patch the value of the IP address of master-1 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.masters.master-1.ip
+    value:
+      "{{ ip_master_1 }}"
+
+- name: Patch the value of the IP address of master-2 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.masters.master-2.ip
+    value:
+      "{{ ip_master_2 }}"
+
+- name: Patch the value of the IP address of worker-0 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.workers.worker-0.ip
+    value:
+      "{{ ip_worker_0 }}"
+
+- name: Patch the value of the IP address of worker-1 in group_vars on the destination
+  yedit:
+    src: /opt/multiarch-ci-playbooks/group_vars/all-oqs.yml
+    key: cluster_nodes.workers.worker-1.ip
+    value:
+      "{{ ip_worker_1 }}"
+

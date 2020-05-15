@@ -1,0 +1,23 @@
+---
+- name: generate CA private key
+  openssl_privatekey:
+    path: /etc/pki/tls/private/oqsCA.pem
+
+- name: generate CA CSR
+  openssl_csr:
+    path: /etc/pki/tls/misc/oqsCA.csr
+    privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    common_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
+    organization_name: "{{ cert_organization }}"
+    organizational_unit_name: "IBM LinuxONE PoC"
+    country_name: "{{ cert_country }}"
+    basic_constraints:
+      - 'CA:TRUE'
+
+- name: generate CA Certificate
+  openssl_certificate:
+    path: /etc/pki/tls/certs/oqsCA.cert
+    privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    csr_path: /etc/pki/tls/misc/oqsCA.csr
+    provider: selfsigned
+

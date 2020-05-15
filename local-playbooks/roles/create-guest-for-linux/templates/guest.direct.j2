@@ -1,0 +1,10 @@
+USER {{ guest_name }} {{ guest_pwd }} 2048M 4096M G
+ INCLUDE IBMDFLT
+ CPU 00        
+ CPU 01       
+ IPL CMS     
+ MACHINE ESA 4
+ CONSOLE 0009 3215 T OPMGRM1
+ NICDEF 0600 TYPE QDIO LAN SYSTEM VSWBASE2 DEVICES 3
+{% if ocp_cluster_lan_name %} NICDEF 0620 TYPE QDIO LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3 {% endif %} 
+ AMDISK 0200 3390 AUTOG 10016 {{ guest_dasd_grp_linux }} MR PWS READ WRITE 

@@ -1,0 +1,59 @@
+#version=RHEL8
+# System authorisation information
+auth --enableshadow --passalgo=sha512
+repo --name="AppStream" --baseurl=http://10.2.75.199/install/rhel/8.0/AppStream
+# Addon repos
+#repo --name="Server-HighAvailability" --baseurl=file:///run/install/repo/addons/HighAvailability
+#repo --name="Server-ResilientStorage" --baseurl=file:///run/install/repo/addons/ResilientStorage
+# Use network installation
+install
+url --url="http://10.2.75.199/install/rhel/8.0"
+# Use text mode install
+text
+# Keyboard layouts
+keyboard --vckeymap=us --xlayouts='us'
+# System language
+lang en_AU.UTF-8
+
+# Network information
+network  --bootproto=static --device={{ guest_install_nicid }} --gateway={{ guest_install_gateway }} --ip={{ guest_install_ipaddr }} --nameserver={{ guest_install_nameserver }} --netmask=255.255.255.0 --noipv6 --activate
+network  --hostname={{ guest_install_hostname }}.z.stg.ibm
+# Root password
+rootpw --plaintext lnx4vm
+# Do not run the Setup Agent on first boot
+firstboot --disable
+# Do not configure the X Window System
+skipx
+# System bootloader configuration
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=dasda
+# Partition clearing information
+ignoredisk --only-use=dasda
+zerombr
+clearpart --none --initlabel
+autopart --type=lvm
+reboot
+
+# System services
+services --enabled="chronyd"
+# Intended system purpose
+syspurpose --role="Red Hat Enterprise Linux Server" --sla="Self-Support" --usage="Production"
+# System timezone
+timezone Australia/Brisbane
+
+%packages
+@^server-product-environment
+kexec-tools
+vim
+psmisc
+
+%end
+
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+
+%end
+
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
