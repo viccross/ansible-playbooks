@@ -4,7 +4,7 @@ My collection of Ansible playbooks for various tasks.
 Initially capturing the work I'm doing on Openshift installation, I will expand into other areas over time.
 
 ## Openshift
-Currently, the Openshift "multiarch-ci-playbooks" package provides the commonly-used set of playbooks for building an OCP cluster for testing or demonstration on Z/LinuxONE. However there is a reasonable amount of manual work outside these playbooks; for example defining z/VM guests for the CoreOS nodes in the cluster, and kicking-off the installation process.
+Currently, the Openshift "[multiarch-ci-playbooks](https://github.com/multi-arch/multiarch-ci-playbooks)" package provides the commonly-used set of playbooks for building an OCP cluster for testing or demonstration on z/VM on IBM Z/LinuxONE. However there is a reasonable amount of manual work outside these playbooks; for example defining z/VM guests for the CoreOS nodes in the cluster, and kicking-off the installation process.
 
 Some of the playbooks here represent an approach to "wrap" the existing Ansible playbooks and supplement them to provide additional functions.  It is also intended that these wrapping functions prepare a system for the role of OCP Bastion host for later deployment, possibly on a different site. 
 
