@@ -1,22 +1,22 @@
 copy-playbooks
 ==============
 
-This role downloads the Openshift "multiarch-ci-playbooks" package to an OCP bastion host, and patches the group_vars/all.yml file for values that suit the candidate cluster.
+This role copies a downloaded Openshift "multiarch-ci-playbooks" package to an OCP bastion host.
 
 Requirements
 ------------
 
-Internet access, either direct or via a HTTP proxy, is required.  By default the role is configured for proxied HTTP.
+The Openshift "multiarch-ci-playbooks" package must be already downloaded, at the specified location, on the Ansible controller.
 
 Role Variables
 --------------
 
-The role inherits variables from the configurations of a Red Hat Openshift cluster.
+None.
 
 Dependencies
 ------------
 
-The Galaxy package "yedit" is required.
+None.
 
 Example Playbook
 ----------------
