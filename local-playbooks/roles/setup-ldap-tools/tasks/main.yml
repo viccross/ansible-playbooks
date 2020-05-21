@@ -35,7 +35,7 @@
     name: https://www.rpmfind.net/linux/fedora-secondary/releases/30/Everything/s390x/os/Packages/p/php-Smarty-3.1.33-1.fc30.noarch.rpm
     state: present
   environment:
-    https_proxy: http://10.2.75.44:3128
+    https_proxy: http://10.2.55.220:3128
 
 - name: define CA details for apache, SSLCertificateFile
   lineinfile:
@@ -61,7 +61,7 @@
     insertbefore: "</VirtualHost>"
     block: |
       Alias /password /var/www/html/self-service-password-racf-master
-      Alias /ldap-sd  /var/www/html/service-desk-racf-dev-racf-full/htdocs
+      Alias /ldap-sd  /var/www/html/service-desk-racf-master/htdocs
       <Directory "/var/www/html/self-service-password-racf-master">
         AllowOverride None
         Require all granted
@@ -70,7 +70,7 @@
         AllowOverride None
         Require all denied
       </Directory>
-      <Directory "/var/www/html/service-desk-racf-dev-racf-full/htdocs">
+      <Directory "/var/www/html/service-desk-racf-master/htdocs">
         AllowOverride None
       #  AuthType basic
       #  AuthName "LDAP Service Desk by LTB"
@@ -100,16 +100,16 @@
       creates: "/var/www/html/self-service-password-racf"
       remote_src: yes
     environment:
-      https_proxy: http://10.2.75.44:3128
+      https_proxy: http://10.2.55.220:3128
 
   - name: download and unzip service-desk
     unarchive:
-      src: "https://github.com/viccross/service-desk-racf/archive/dev-racf-full.zip"
+      src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
       dest: "/var/www/html/"
       creates: "/var/www/html/service-desk-racf"
       remote_src: yes
     environment:
-      https_proxy: http://10.2.75.44:3128
+      https_proxy: http://10.2.55.220:3128
 
   - name: Set permission on Smarty template cache
     file:
@@ -132,7 +132,7 @@
   - name: create config.inc.local.php for service-desk-racf
     template:
       src: service-desk-racf/config.inc.local.php.j2
-      dest: /var/www/html/service-desk-racf-dev-racf-full/conf/config.inc.local.php
+      dest: /var/www/html/service-desk-racf-master/conf/config.inc.local.php
 
 - name: permit SELinux access to LDAP from Apache
   seboolean:
