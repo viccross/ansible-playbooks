@@ -21,7 +21,7 @@ At current point in development, the sequence to build a new OCP Bastion host wo
 
 At this point the new OCP Bastion host is ready to be used to build the OCP cluster. If the OCP cluster is being built at a different location, the OCP Bastion host can be transported to the other site. When the OCP Bastion host is where it needs to be, the installation of the cluster can be finalised:
 
-* local playbook `create-ocp-cluster nodes` on the OCP Bastion host to set up the z/VM guests for the cluster, and to start the CoreOS installation in them
+* local playbook `create-ocp-cluster-nodes` on the OCP Bastion host to set up the z/VM guests for the cluster, and to start the CoreOS installation in them
 * "m-c-p" playbook `create-cluster` to finalise all the dependencies and run `openshift-install` to build the cluster
 
 Work is underway to pull these separate stages into as few steps as possible, either by having one or two scripts to call the Ansible work or by building new playbooks from the existing roles.
