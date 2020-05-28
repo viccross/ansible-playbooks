@@ -1,0 +1,51 @@
+---
+# variables for all hosts
+guest_name: "ZR8INFRA"
+guest_pwd: "ZVM4DEMO"
+guest_dasd_grp_linux: "MDBASLIN"
+guest_install_hostname: "zr8infra-oqs"
+guest_temp_ipaddr: "10.2.75.96"
+guest_install_ipaddr: "10.2.75.177"
+guest_install_gateway: "10.2.75.1"
+guest_install_nameserver: "10.2.75.199"
+guest_install_znet: "qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=vswbase2,portno=0"
+guest_install_dasd: "0.0.0200"
+guest_install_nicid: "enc600"
+local_proxy_env:
+  http_proxy: http://10.2.55.220:3128
+  https_proxy: http://10.2.55.220:3128
+#
+# smapi parameters
+smapi_host: "10.2.75.178"
+smapi_user: "IBMVM1"
+smapi_password: "ZVM4DEMO"
+#
+ldap_base: ou={{ cluster_name }},o={{ cert_organization }}
+ldap_url: ldap://172.31.177.10:389
+sdbm_base: o=OCPSSI
+admin_uid: SYSADMIN
+admin_pwd: ZVM4DEMO
+#
+# OCP cluster params
+ocp_cluster_lan_name: "OCPLAN"
+#
+# Details needed for the cluster to be built
+cluster_base_domain: "z.stg.ibm"
+cluster_name: "zpoc-test"
+cert_organization: IBM
+cert_country: AU
+dns_nameserver: 10.2.75.199
+guest_internal_nicid: "enc620"
+guest_internal_znet: "qeth,0.0.0620,0.0.0621,0.0.0622,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
+subnet_gateway: 172.31.177.0
+subnet_netmask: 255.255.255.0
+subnet_cidr: 172.31.177.0/24
+bastion_private_ip_address: 172.31.177.1
+zvm_rd_znet: "rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portno=0"
+zvm_rd_dasd: "rd.dasd=0.0.0200"
+ip_bootstrap_0: '172.31.177.2'
+ip_master_0: '172.31.177.3'
+ip_master_1: '172.31.177.4'
+ip_master_2: '172.31.177.5'
+ip_worker_0: '172.31.177.6'
+ip_worker_1: '172.31.177.7'

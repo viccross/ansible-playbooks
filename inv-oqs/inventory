@@ -1,0 +1,3 @@
+[s390x-bastion-workstation]
+zr8infra-oqs ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+

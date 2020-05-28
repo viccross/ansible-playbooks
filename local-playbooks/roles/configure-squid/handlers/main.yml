@@ -1,7 +1,7 @@
 ---
 # handlers file for configure-squid
 - name: turn off squid_connect_any
-  seboolean: 
+  seboolean:
     name: squid_connect_any
     state: no
     persistent: yes
@@ -18,6 +18,4 @@
     name: firewalld.service
     state: restarted
   listen: "restart firewalld"
-  
 
- 

@@ -1,37 +1,46 @@
 ---
 # tasks file for create-guest-for-linux
 - name: create a new directory entry for a Linux guest
-  shell: /usr/local/bin/smcli icd -T {{ guest_name|quote }} -H {{ smapi_host|quote }} -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} 
+  shell: /usr/local/bin/smcli icd -T {{ guest_name|quote }} -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
   args:
     stdin: "{{ directory_entry }}"
     executable: /bin/bash
 
-- name: create the installation parmfile
-  template: 
-    src: "{{ playbook_dir }}/roles/create-guest-for-linux/templates/guest.parmfile.j2"
-    dest: "/srv/install/rhelks/{{ guest_install_hostname }}.parmfile"
+- name: create the installation ZNETBOOT config
+  template:
+    src: "templates/guest.znetboot.j2"
+    dest: "/srv/install/rhelks/{{ guest_name }}.znetboot"
 
 - name: create the installation kickstart file
-  template: 
-    src: "{{ playbook_dir }}/roles/create-guest-for-linux/templates/guest.ks.j2"
+  template:
+    src: "templates/guest.ks.j2"
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
 
-- name: write the kernel to the reader
-  shell: vmur punch -r -u {{ guest_name|quote }} -N KERNEL.IMG /srv/install/rhelks/kernel80.img
-
 - name: write the parmfile to the reader
-  shell: vmur punch -r -t -u {{ guest_name|quote }} -N PARMFILE.TXT /srv/install/rhelks/{{ guest_install_hostname }}.parmfile
+  shell: curl -Q "SITE FIX 132" -T /srv/install/rhelks/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user|quote }}:{{ smapi_password|quote }}@{{ smapi_host|quote }}/MAINT.200/
+  args:
+    warn: false
 
-- name: write the installation initramfs to the reader
-  shell: vmur punch -r -u {{ guest_name|quote }} -N INITRD.IMG /srv/install/rhelks/initrd80.img
-
-- name: update the IPL device for a Linux guest
-  shell: /usr/local/bin/smcli iisd -T {{ guest_name|quote }} -n 00C -H {{ smapi_host|quote }} -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} 
+- name: IPL a Linux guest
+  shell: /usr/local/bin/smcli ia -T {{ guest_name|quote }} -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
   args:
     executable: /bin/bash
 
-- name: IPL a Linux guest
-  shell: /usr/local/bin/smcli ia -T {{ guest_name|quote }} -H {{ smapi_host|quote }} -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} 
+- name: Wait here for a while...
+  connection: local
+  wait_for:
+    timeout: 480
+
+- name: Wait for the build to complete
+  connection: local
+  wait_for:
+    port: 22
+    host: "{{ guest_install_ipaddr }}"
+    search_regex: OpenSSH
+    delay: 20
+
+- name: set the real IPL device for a Linux guest
+  shell: /usr/local/bin/smcli iisd -T {{ guest_name|quote }} -n 200 -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
   args:
     executable: /bin/bash
 

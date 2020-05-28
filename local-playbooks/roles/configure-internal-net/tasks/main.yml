@@ -1,0 +1,9 @@
+---
+- name: configure the internal Hipersockets interface
+  nmcli:
+    conn_name: enc620
+    ifname: enc620
+    type: ethernet
+    ip4: "{{ bastion_private_ip_address }}"
+    state: present
+  when: ocp_cluster_lan_name is defined

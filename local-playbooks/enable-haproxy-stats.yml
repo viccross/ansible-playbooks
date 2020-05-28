@@ -1,0 +1,5 @@
+---
+- name: Configure HA-Proxy to serve its statistics interface
+  hosts: s390x-bastion-workstation
+  roles:
+  - "{{ playbook_dir }}/roles/enable-haproxy-stats"

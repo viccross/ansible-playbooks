@@ -1,0 +1,26 @@
+---
+- name: add the HA-Proxy configuration for the statistics interface
+  blockinfile:
+    dest: /etc/haproxy/haproxy.cfg
+    block: |
+      frontend stats
+        bind *:8404
+        stats enable
+        stats uri /stats
+        stats refresh 10s
+        stats admin if LOCALHOST
+        stats auth admin:redhat
+  notify: "Restart haproxy.service"
+
+- name: allow traffic at 8404 for haproxy
+  tags: firewall
+  firewalld:
+    port: 8404/tcp
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+

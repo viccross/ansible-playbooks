@@ -1,0 +1,12 @@
+---
+# handlers file for enable-haproxy-stats
+- name: Restart firewalld.service
+  service:
+    name: firewalld.service
+    state: restarted
+
+- name: Restart haproxy.service
+  service:
+    name: haproxy.service
+    state: restarted
+

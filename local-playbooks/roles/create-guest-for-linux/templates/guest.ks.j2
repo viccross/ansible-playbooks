@@ -1,7 +1,8 @@
 #version=RHEL8
 # System authorisation information
 auth --enableshadow --passalgo=sha512
-repo --name="AppStream" --baseurl=http://10.2.75.199/install/rhel/8.0/AppStream
+repo --install --name="BaseOS" --baseurl=http://10.2.75.199/install/rhel/8.0/BaseOS
+repo --install --name="AppStream" --baseurl=http://10.2.75.199/install/rhel/8.0/AppStream
 # Addon repos
 #repo --name="Server-HighAvailability" --baseurl=file:///run/install/repo/addons/HighAvailability
 #repo --name="Server-ResilientStorage" --baseurl=file:///run/install/repo/addons/ResilientStorage
@@ -18,8 +19,11 @@ lang en_AU.UTF-8
 # Network information
 network  --bootproto=static --device={{ guest_install_nicid }} --gateway={{ guest_install_gateway }} --ip={{ guest_install_ipaddr }} --nameserver={{ guest_install_nameserver }} --netmask=255.255.255.0 --noipv6 --activate
 network  --hostname={{ guest_install_hostname }}.z.stg.ibm
+network  --bootproto=static --device={{ guest_internal_nicid }} --ip={{ bastion_private_ip_address }} --netmask={{ subnet_netmask }} --noipv6 --activate
 # Root password
 rootpw --plaintext lnx4vm
+# Add my key
+sshkey --username=root "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAt/ON7u1KtZJmnktrTRTs0jno9DqGOrvY8tbruETq7zwMqCwzfFuNtrOg+ohwPkijs1GcHoeFkWqgqseZ94x1AcEF0Eny6uR7odzyFiJ+w5GiR1eMfYBnJ4jFefuFKWNknETJrCFb/tz8OHY/01jQZlsdPafrILwN/YwAr6vQTjrV1hyxL17B+WysoG6XAbXDDig9haPVXJRdkbtsZ60fvMNL+NJfDcpGqOf4Jo/5HnkmMFXA/B71ThY22UFMr/ZM8znLZ1SI+gi+eOynAzTp6Z73z5VhMOgBWxIByUL1lNOYRMeKBwkfOYF6VOQooYMV6LEyKUBx1m0y4HsiHqd+GQ== viccross@unfazed.au.ibm.com"
 # Do not run the Setup Agent on first boot
 firstboot --disable
 # Do not configure the X Window System
