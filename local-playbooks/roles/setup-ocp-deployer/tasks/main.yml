@@ -1,0 +1,123 @@
+---
+- name: install EPEL repository
+  block:
+  - name: install EPEL RPM
+    yum:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+      state: present
+    environment: "{{ local_proxy_env }}"
+
+  - name: patch YUM/DNF for the proxy, if set
+    ini_file:
+      path: /etc/dnf/dnf.conf
+      section: main
+      option: proxy
+      value: "{{ local_proxy_env.https_proxy }}"
+      no_extra_spaces: yes
+    when: local_proxy_env is defined
+
+- name: install Ansible
+  yum:
+    name:
+      - ansible
+    state: present
+
+- name: ensure the Ansible directories exist on the host
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "/opt/ansible/roles/create-cluster/tasks"
+    - "/opt/ansible/roles/create-cluster/templates"
+    - "/opt/ansible/inventory/group_vars"
+
+- name: download and set permissions for openshift-install
+  block:
+  - name: download and unzip openshift-install
+    unarchive:
+      src: "{{ openshift_install_binary_url }}"
+      dest: "/usr/local/bin/"
+      creates: "/usr/local/bin/openshift-install"
+      remote_src: yes
+    environment: "{{ local_proxy_env }}"
+
+  - name: set permissions for ocp installer
+    file:
+      path: "/usr/local/bin/openshift-install"
+      mode: 0755
+
+- name: create openshift workdir
+  file:
+    path: "{{ workdir }}"
+    state: "directory"
+
+- name: set up SSH for Ansible
+  block:
+  - name: create ssh keypair
+    shell: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
+    args:
+      creates: ~/.ssh/id_rsa
+
+  - name: slurp ssh pubkey
+    tags: config
+    slurp:
+      src: ~/.ssh/id_rsa.pub
+    register: bastion_pubkey
+
+  - name: drop public key into authorized_keys
+    lineinfile:
+      line: "{{ bastion_pubkey['content']|b64decode }}"
+      dest: ~/.ssh/authorized_keys
+      state: present
+
+- name: mkdir ~/.kube
+  file:
+    path: ~/.kube
+    state: directory
+
+- name: create the template for install-config
+  template:
+    src: install-config.yaml.j2
+    dest: /opt/ansible/roles/create-cluster/templates/install-config.yaml.j2
+
+- name: create the playbook
+  template:
+    src: /opt/ansible/local-playbooks/create-cluster.yml
+    dest: /opt/ansible/create-cluster.yml
+
+- name: copy files for the playbook
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - { src: "roles/create-cluster/defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/" }
+  - { src: "roles/create-cluster/tasks/main.yml", dest: "/opt/ansible/roles/create-cluster/tasks/" }
+
+- name: create the group_vars
+  template:
+    src: group-vars.yml.j2
+    dest: /opt/ansible/inventory/group_vars/all.yml
+
+- name: create the inventory host file
+  template:
+    src: inventory.j2
+    dest: /opt/ansible/inventory/inventory
+
+- name: display a message
+  debug:
+    msg:
+      - '        The new OCP Bastion is now completed!              '
+      - 'If the Bastion is in place in its z/VM system, log on and  '
+      - ' perform the OCP build.                                    '
+      - ' - - - - - - - - - - -   O R   - - - - - - - - - - - - - - '
+      - 'You can now capture the guest (and possibly its containing '
+      - ' z/VM system as well) and restore it at the destination    '
+      - ' environment for building an OCP cluster there.            '
+      - '                                                           '
+      - '      _|_|_|_|            _|                      _|       '
+      - '      _|        _|_|_|          _|_|    _|    _|  _|       '
+      - '      _|_|_|    _|    _|  _|  _|    _|  _|    _|  _|       '
+      - '      _|        _|    _|  _|  _|    _|  _|    _|           '
+      - '      _|_|_|_|  _|    _|  _|    _|_|      _|_|_|  _|       '
+      - '                          _|                  _|           '
+      - '                        _|                _|_|             '

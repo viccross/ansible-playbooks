@@ -1,0 +1,5 @@
+---
+- name: Finalise setup of the OCP Bastion
+  hosts: s390x_bastion_workstation
+  roles:
+  - "roles/setup-ocp-deployer"

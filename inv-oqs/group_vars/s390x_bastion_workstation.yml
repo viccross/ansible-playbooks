@@ -4,11 +4,11 @@ cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
 
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
-rhcos_version: "4.2.18-s390x"
-rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.2/latest/"
+rhcos_version: "4.3.18-s390x"
+rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.3/latest/"
 
 # The download URL of the openshift-install binary
-openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/latest/openshift-install-linux-4.2.28.tar.gz"
+openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/latest/openshift-install-linux-4.3.22.tar.gz"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of

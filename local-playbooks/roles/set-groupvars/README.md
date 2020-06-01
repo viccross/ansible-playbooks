@@ -21,7 +21,7 @@ The Galaxy package "yedit" is required.
 Example Playbook
 ----------------
 
-    - hosts: s390x-bastion-workstation
+    - hosts: s390x_bastion_workstation
       roles:
          - { role: username.rolename, x: 42 }
 

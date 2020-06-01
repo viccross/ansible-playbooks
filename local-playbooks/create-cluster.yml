@@ -1,0 +1,4 @@
+- name: create ocp4 cluster
+  hosts: s390x_bastion_workstation
+  roles:
+  - "roles/create-cluster"
