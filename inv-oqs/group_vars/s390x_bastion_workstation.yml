@@ -35,36 +35,43 @@ dev_disk:
 # The IP addresses must be on the same subnet as
 # the {{ cluster_subnet_prefix }}
 # CHANGEME!
+ocp_guest_pfx: OCPZ
 cluster_nodes:
   bootstrap:
     bootstrap-0:
+      guest_name: "{{ ocp_guest_pfx }}BOOT"
       mac: '52:54:00:d0:f7:03'
       ip: '{{ ip_bootstrap_0 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: bootstrap.ign
   masters:
     master-0:
+      guest_name: "{{ ocp_guest_pfx }}MAS0"
       mac: '52:54:00:da:70:41'
       ip: '{{ ip_master_0 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
     master-1:
+      guest_name: "{{ ocp_guest_pfx }}MAS1"
       mac: '52:54:00:a2:93:d8'
       ip: '{{ ip_master_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
     master-2:
+      guest_name: "{{ ocp_guest_pfx }}MAS2"
       mac: '52:54:00:d9:5b:d8'
       ip: '{{ ip_master_2 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
   workers:
     worker-0:
+      guest_name: "{{ ocp_guest_pfx }}WRK0"
       mac: '52:54:00:70:8b:74'
       ip: '{{ ip_worker_0 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
     worker-1:
+      guest_name: "{{ ocp_guest_pfx }}WRK1"
       mac: '52:54:00:70:8b:75'
       ip: '{{ ip_worker_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
@@ -79,20 +86,24 @@ install_mode: zvm
 # dhcp_server_ip_address is not used by default in a z/VM install
 bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 
-# pxe_mode (grub, pxelinux)
+# pxe_mode (grub, pxelinux, znetboot)
 # use pxelinux mode for zvm to generate
 # parmfiles, then punch and IPL manually
-pxe_mode: pxelinux
+# use znetboot mode for zvm to generate
+# a config file for the ZNETBOOT tool,
+# which punches files automatically
+pxe_mode: znetboot
 
 ocp4_pull_secret: "{{ lookup('file', '~/.ocp4_pull_secret') | from_json }}"
 
 rhcos_disk_type:
-  zvm: metal-dasd
+  zvm: dasd
 
-rhcos_installer_initramfs: 'rhcos-{{ rhcos_version }}-installer-initramfs.img'
-rhcos_installer_kernel: 'rhcos-{{ rhcos_version }}-installer-kernel'
-rhcos_disk_image: 'rhcos-{{ rhcos_version }}-{{ rhcos_disk_type[install_mode] }}.raw.gz'
+rhcos_installer_initramfs: 'rhcos-{{ rhcos_version }}-installer-initramfs.s390x.img'
+rhcos_installer_kernel: 'rhcos-{{ rhcos_version }}-installer-kernel-s390x'
+rhcos_disk_image: 'rhcos-{{ rhcos_version }}-{{ rhcos_disk_type[install_mode] }}.s390x.raw.gz'
 
 rhcos_download_files:
   - '{{ rhcos_installer_initramfs }}'
   - '{{ rhcos_installer_kernel }}'
+  - '{{ rhcos_disk_image }}'

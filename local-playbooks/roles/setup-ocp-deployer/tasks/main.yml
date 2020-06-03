@@ -6,7 +6,6 @@
       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
       state: present
     environment: "{{ local_proxy_env }}"
-
   - name: patch YUM/DNF for the proxy, if set
     ini_file:
       path: /etc/dnf/dnf.conf
@@ -40,7 +39,6 @@
       creates: "/usr/local/bin/openshift-install"
       remote_src: yes
     environment: "{{ local_proxy_env }}"
-
   - name: set permissions for ocp installer
     file:
       path: "/usr/local/bin/openshift-install"
@@ -57,13 +55,11 @@
     shell: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
     args:
       creates: ~/.ssh/id_rsa
-
   - name: slurp ssh pubkey
     tags: config
     slurp:
       src: ~/.ssh/id_rsa.pub
     register: bastion_pubkey
-
   - name: drop public key into authorized_keys
     lineinfile:
       line: "{{ bastion_pubkey['content']|b64decode }}"
@@ -92,6 +88,29 @@
   loop:
   - { src: "roles/create-cluster/defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/" }
   - { src: "roles/create-cluster/tasks/main.yml", dest: "/opt/ansible/roles/create-cluster/tasks/" }
+
+- name: copy the smcli script
+  copy:
+    src: /usr/local/bin/smcli
+    dest: /usr/local/bin/smcli
+    mode: 0755
+
+- name: set up configuring-the-DASD script
+  block:
+  - name: copy the DASD script
+    template:
+      src: ocp-dasd.sh.j2
+      dest: /usr/local/bin/ocp-dasd.sh
+      mode: 0750
+  - name: copy the DASD script systemd service file
+    template:
+      src: ocp-dasd.service.j2
+      dest: /etc/systemd/system/ocp-dasd.service
+  - name: Enable the ocp-dasd service
+    systemd:
+      name: ocp-dasd
+      state: stopped
+      enabled: yes
 
 - name: create the group_vars
   template:

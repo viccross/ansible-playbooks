@@ -1,0 +1,8 @@
+ZNETBOOT_KERNEL=http://bastion.{{ cluster_domain_name }}:8080/bootfiles/{{ rhcos_installer_kernel }}
+ZNETBOOT_INITRD=http://bastion.{{ cluster_domain_name }}:8080/bootfiles/{{ rhcos_installer_initramfs }}
+ZNETBOOT_PROGRESS=2M
+
+rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster_nodes[coreos_role][item].disk }}
+coreos.inst.image_url=http://bastion.{{ cluster_domain_name }}:8080/bootfiles/{{ rhcos_disk_image }} 
+coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster_nodes[coreos_role][item].ign_profile }}
+{{ coreos_kargs_net[install_mode] }} {{ coreos_kargs_extra[install_mode] }}

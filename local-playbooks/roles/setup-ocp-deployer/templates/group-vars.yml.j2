@@ -84,7 +84,7 @@ bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 # parmfiles, then punch and IPL manually
 pxe_mode: pxelinux
 
-ocp4_pull_secret: {% raw %}"{{ lookup('file', '~/.ocp4_pull_secret') | from_json }}"{% endraw %} 
+ocp4_pull_secret: {% raw %}"{{ lookup('file', '~/.ocp4_pull_secret') | from_json }}"{% endraw %}
 
 rhcos_disk_type:
   zvm: metal-dasd

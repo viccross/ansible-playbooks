@@ -57,6 +57,10 @@
       console-openshift-console.apps.{{ cluster_domain_name }}
       oauth-openshift.apps.{{ cluster_domain_name }}
 
+- name: create and boot the bootstrap node
+  import_tasks: create-guest.yml
+  vars:
+    
 - name: wait for bootstrap node accessibility
   wait_for:
     port: 22

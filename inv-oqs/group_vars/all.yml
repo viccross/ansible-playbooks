@@ -21,13 +21,17 @@ smapi_user: "IBMVM1"
 smapi_password: "ZVM4DEMO"
 #
 ldap_base: ou={{ cluster_name }},o={{ cert_organization }}
-ldap_url: ldap://172.31.177.10:389
+ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=OCPSSI
 admin_uid: SYSADMIN
 admin_pwd: ZVM4DEMO
 #
 # OCP cluster params
 ocp_cluster_lan_name: "OCPLAN"
+ocp_dasd_prefix: SG2LE
+ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
+ocp_smapi_user: IBMVM1
+ocp_smapi_password: ZVM4DEMO
 #
 # Details needed for the cluster to be built
 cluster_base_domain: "z.stg.ibm"
@@ -41,6 +45,7 @@ subnet_gateway: 172.31.177.0
 subnet_netmask: 255.255.255.0
 subnet_cidr: 172.31.177.0/24
 bastion_private_ip_address: 172.31.177.1
+zvm_internal_ip_address: 172.31.177.10
 zvm_rd_znet: "rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portno=0"
 zvm_rd_dasd: "rd.dasd=0.0.0200"
 ip_bootstrap_0: '172.31.177.2'
