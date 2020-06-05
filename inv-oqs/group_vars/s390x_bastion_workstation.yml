@@ -8,7 +8,9 @@ rhcos_version: "4.3.18-s390x"
 rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.3/latest/"
 
 # The download URL of the openshift-install binary
-openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/latest/openshift-install-linux-4.3.22.tar.gz"
+openshift_version: "4.3.22"
+openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-install-linux-{{ openshift_version }}.tar.gz"
+openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-client-linux-{{ openshift_version }}.tar.gz"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of

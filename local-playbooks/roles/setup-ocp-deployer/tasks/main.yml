@@ -44,6 +44,16 @@
       path: "/usr/local/bin/openshift-install"
       mode: 0755
 
+- name: download and set permissions for openshift-client
+  block:
+  - name: download and unzip openshift-client
+    unarchive:
+      src: "{{ openshift_client_binary_url }}"
+      dest: "/usr/local/bin/"
+      creates: "/usr/local/bin/oc"
+      remote_src: yes
+    environment: "{{ local_proxy_env }}"
+
 - name: create openshift workdir
   file:
     path: "{{ workdir }}"
