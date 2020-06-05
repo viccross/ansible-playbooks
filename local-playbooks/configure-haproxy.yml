@@ -1,0 +1,5 @@
+---
+- name: configure minimal haproxy server
+  hosts: s390x_bastion_workstation
+  roles:
+  - configure-haproxy

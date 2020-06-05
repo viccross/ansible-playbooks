@@ -73,8 +73,11 @@
 
 - name: create the template for install-config
   template:
-    src: install-config.yaml.j2
-    dest: /opt/ansible/roles/create-cluster/templates/install-config.yaml.j2
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - { src: "install-config.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/install-config.yaml.j2" }
+  - { src: "create-guest.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-guest.yml" }
 
 - name: create the playbook
   template:
@@ -88,6 +91,7 @@
   loop:
   - { src: "roles/create-cluster/defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/" }
   - { src: "roles/create-cluster/tasks/main.yml", dest: "/opt/ansible/roles/create-cluster/tasks/" }
+  - { src: "roles/create-cluster/templates/guest.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/" }
 
 - name: copy the smcli script
   copy:

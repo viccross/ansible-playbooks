@@ -11,9 +11,11 @@ guest_install_nameserver: "10.2.75.199"
 guest_install_znet: "qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=vswbase2,portno=0"
 guest_install_dasd: "0.0.0200"
 guest_install_nicid: "enc600"
+upstream_proxy_ip: 10.2.55.220
+upstream_proxy_port: 3128
 local_proxy_env:
-  http_proxy: http://10.2.55.220:3128
-  https_proxy: http://10.2.55.220:3128
+  http_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
+  https_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
 #
 # smapi parameters
 smapi_host: "10.2.75.178"
@@ -28,7 +30,7 @@ admin_pwd: ZVM4DEMO
 #
 # OCP cluster params
 ocp_cluster_lan_name: "OCPLAN"
-ocp_dasd_prefix: SG2LE
+ocp_dasd_prefix: OCPDA
 ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
 ocp_smapi_user: IBMVM1
 ocp_smapi_password: ZVM4DEMO
@@ -41,7 +43,7 @@ cert_country: AU
 dns_nameserver: 10.2.75.199
 guest_internal_nicid: "enc620"
 guest_internal_znet: "qeth,0.0.0620,0.0.0621,0.0.0622,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
-subnet_gateway: 172.31.177.0
+subnet_gateway: 172.31.177.1
 subnet_netmask: 255.255.255.0
 subnet_cidr: 172.31.177.0/24
 bastion_private_ip_address: 172.31.177.1

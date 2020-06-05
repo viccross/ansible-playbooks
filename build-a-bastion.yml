@@ -30,7 +30,7 @@
 - name: configure minimal haproxy server
   hosts: s390x_bastion_workstation
   roles:
-  - "{{ playbook_dir }}/multiarch-ci-playbooks/playbooks/examples/roles/configure-haproxy"
+  - "{{ playbook_dir }}/local-playbooks/roles/configure-haproxy"
 
 - name: configure haproxy server to offer statistics interface
   hosts: s390x_bastion_workstation

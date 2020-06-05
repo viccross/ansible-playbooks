@@ -29,10 +29,10 @@
   - internal
   - public
 
-- name: turn off squid_connect_any
+- name: turn on squid_connect_any
   seboolean:
     name: squid_connect_any
-    state: no
+    state: yes
     persistent: yes
 
 - name: restart squid

@@ -1,6 +1,14 @@
 ---
 # tasks file for create-cluster
 
+- name: abort if the pull secret is not present
+  stat:
+    path: ~/.ocp4_pull_secret
+  register: ps
+- fail:
+    msg: "OCP pull secret is not found!"
+  when: ps.stat.exists == False
+    
 # install config is deleted when ignition
 # configs are created.  this task also
 # creates a copy to check for debugging
@@ -58,9 +66,27 @@
       oauth-openshift.apps.{{ cluster_domain_name }}
 
 - name: create and boot the bootstrap node
-  import_tasks: create-guest.yml
+  include_tasks: create-guest.yml
   vars:
-    
+    coreos_role: bootstrap
+    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+  with_items: "{{ cluster_nodes[coreos_role] }}"
+
+- name: create and boot the master nodes
+  include_tasks: create-guest.yml
+  vars:
+    coreos_role: masters
+    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+  with_items: "{{ cluster_nodes[coreos_role] }}"
+
+- name: create and boot the worker nodes
+  include_tasks: create-guest.yml
+  vars:
+    coreos_role: workers
+    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+  with_items: "{{ cluster_nodes[coreos_role] }}"
+  when: cluster_nodes.workers is defined
+
 - name: wait for bootstrap node accessibility
   wait_for:
     port: 22
