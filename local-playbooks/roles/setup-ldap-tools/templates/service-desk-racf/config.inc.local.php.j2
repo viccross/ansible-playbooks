@@ -1,6 +1,13 @@
 <?php
 // Override config.inc.php parameters
 
+{% if meta_header_file is defined %}
+$custom_css = "/w3ds/w3ds.css";
+$custom_js = "/w3ds/w3ds.js";
+$meta_header_file = "../../{{ meta_header_file }}";
+unset($background_image);
+{% endif %}
+
 $lang = "en";
 
 $ldap_url = "{{ ldap_url }}";

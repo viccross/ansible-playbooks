@@ -7,7 +7,7 @@
   openssl_csr:
     path: /etc/pki/tls/misc/httpd.csr
     privatekey_path: /etc/pki/tls/private/httpd.pem
-    common_name: "ldaptools.{{ cluster_name }}.{{ cluster_base_domain }}"
+    common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "Red Hat Openshift PoC"
     country_name: "{{ cert_country }}"
@@ -89,11 +89,7 @@
       </Directory>
       <Directory "/var/www/html/service-desk-racf-master/htdocs">
         AllowOverride None
-      #  AuthType basic
-      #  AuthName "LDAP Service Desk by LTB"
-      #  AuthBasicProvider ldap
-      #  AuthLDAPURL ldap://zsldap1.z.stg.ibm:389/ou=z,ou=systems,o=ibm?uid
-      #  Require ldap-group cn=SystemsAdmin,ou=group,ou=z,ou=systems,o=ibm
+        Require all granted
       </Directory>
 
 - name: allow traffic at 8080 for apache
@@ -137,6 +133,29 @@
       creates: "/var/www/html/service-desk-racf"
       remote_src: yes
     environment: "{{ local_proxy_env }}"
+
+  - name: make w3ds directory
+    file:
+      path: "/var/www/html/w3ds"
+      state: directory
+
+  - name: download and unzip w3DS
+    unarchive:
+      src: "/opt/resources/w3ds-6.2.4.zip"
+      dest: "/var/www/html/w3ds"
+      creates: "/var/www/html/w3ds/w3ds.js"
+
+  - name: download and unzip site structure 
+    unarchive:
+      src: "/opt/resources/oqs-header-v0.1.zip"
+      dest: "/var/www/html/"
+      creates: "/var/www/html/oqs-header-0.1/meta_header.html"
+
+  - name: move w3ds directory
+    shell:
+      cmd: "mv /var/www/html/oqs-header-0.1/* /var/www/html/ && rmdir /var/www/html/oqs-header-0.1"
+      creates: /var/www/html/meta_header.html
+      removes: /var/www/html/oqs-header-0.1
 
   - name: Set permission on Smarty template cache
     file:
