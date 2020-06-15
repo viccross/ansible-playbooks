@@ -56,6 +56,9 @@ frontend ocp4-router-https
    mode tcp
    option tcplog
    bind apps.{{ cluster_domain_name }}:443
+   tcp-request inspect-delay 5s
+   tcp-request content accept if { req_ssl_hello_type 1 }
+   use_backend apache-local-https if { req_ssl_sni -m beg {{ guest_install_hostname }}. }
    default_backend ocp4-router-https
 
 backend ocp4-kubernetes-api-server
@@ -98,4 +101,7 @@ backend ocp4-router-https
    {% endfor %}
 {% endif %}
 
+backend apache-local-https
+    mode tcp
+    server {{ guest_install_hostname }} {{ guest_install_hostname }}.{{ cluster_domain_name }}:8443 check
 
