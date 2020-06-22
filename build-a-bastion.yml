@@ -37,6 +37,11 @@
   roles:
   - "{{ playbook_dir }}/local-playbooks/roles/enable-haproxy-stats"
 
+- name: enable the Cockpit socket, using a local-CA certificate
+  hosts: s390x_bastion_workstation
+  roles:
+  - "{{ playbook_dir }}/local-playbooks/roles/configure-cockpit"
+
 # configures minimal httpd server to serve ignition configs
 - name: Configure apache to serve ignition configs
   hosts: s390x_bastion_workstation
