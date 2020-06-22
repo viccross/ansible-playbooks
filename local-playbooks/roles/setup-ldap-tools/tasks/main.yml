@@ -145,7 +145,7 @@
       dest: "/var/www/html/w3ds"
       creates: "/var/www/html/w3ds/w3ds.js"
 
-  - name: download and unzip site structure 
+  - name: download and unzip site structure
     unarchive:
       src: "/opt/resources/oqs-header-v0.1.zip"
       dest: "/var/www/html/"
@@ -190,10 +190,4 @@
   service:
     name: httpd.service
     state: restarted
-    enabled: yes
-
-- name: enable the Cockpit interface
-  service:
-    name: cockpit.socket
-    state: started
     enabled: yes
