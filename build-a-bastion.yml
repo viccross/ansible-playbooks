@@ -17,10 +17,10 @@
   roles:
   - "{{ playbook_dir }}/local-playbooks/roles/create-local-ca"
 
-- name: Configure apache to serve LDAP Tools
+- name: Configure apache to serve the Web interface (LDAP Tools, etc)
   hosts: s390x_bastion_workstation
   roles:
-  - "{{ playbook_dir }}/local-playbooks/roles/setup-ldap-tools"
+  - "{{ playbook_dir }}/local-playbooks/roles/setup-web-resources"
 
 - name: configure minimal dns server
   hosts: s390x_bastion_workstation

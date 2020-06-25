@@ -36,6 +36,12 @@
     state: present
   environment: "{{ local_proxy_env }}"
 
+- name: set ServerName and ServerAlias
+  lineinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    regexp: ^#?ServerName
+    line: ServerName {{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}
+
 - name: define CA details for apache, SSLCertificateFile
   lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
@@ -147,15 +153,58 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/oqs-header-v0.1.zip"
+      src: "/opt/resources/oqs-header-v0.21.zip"
       dest: "/var/www/html/"
-      creates: "/var/www/html/oqs-header-0.1/meta_header.html"
+      creates: "/var/www/html/oqs-header-0.21/meta_header.html"
 
-  - name: move w3ds directory
+  - name: move downloaded site directory
     shell:
-      cmd: "mv /var/www/html/oqs-header-0.1/* /var/www/html/ && rmdir /var/www/html/oqs-header-0.1"
-      creates: /var/www/html/meta_header.html
-      removes: /var/www/html/oqs-header-0.1
+      cmd: "mv /var/www/html/oqs-header-0.21/* /var/www/html/ && rmdir /var/www/html/oqs-header-0.21"
+      removes: /var/www/html/oqs-header-0.21
+
+  - name: Set permission on the HTML files to enable Includes
+    file:
+      path: "/var/www/html/{{ item }}"
+      owner: root
+      group: apache
+      mode: 0750
+    loop:
+      - ocp-cockpit.html
+      - ocp-console.html
+      - ocp-haproxy.html
+      - ocp-perfkit.html
+      - metrics.html
+
+  - name: install the basic stats script to local executable path
+    shell:
+      cmd: "mv /var/www/html/scripts/metrics.pl /usr/local/sbin/ && rmdir /var/www/html/scripts"
+      creates: /usr/local/sbin/metrics.pl
+      removes: /var/www/html/scripts
+
+  - name: Set permission on metrics.pl
+    file:
+      path: /usr/local/sbin/metrics.pl
+      owner: root
+      mode: 0750
+
+  - name: Enable running metrics script via cron
+    cron:
+      name: Run metrics.pl
+      user: root
+      job: "/usr/local/sbin/metrics.pl"
+      cron_file: metrics
+
+  - name: set PATH variable for metrics crontab
+    cronvar:
+      cron_file: metrics
+      name: PATH
+      value: /usr/sbin:/usr/bin
+
+  - name: set MAILTO variable for metrics crontab
+    cronvar:
+      cron_file: metrics
+      name: MAILTO
+      value: root
 
   - name: Set permission on Smarty template cache
     file:

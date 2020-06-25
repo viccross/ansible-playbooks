@@ -1,5 +1,0 @@
----
-- name: Configure apache to serve LDAP Tools
-  hosts: s390x_bastion_workstation
-  roles:
-  - "{{ playbook_dir }}/roles/setup-ldap-tools"
