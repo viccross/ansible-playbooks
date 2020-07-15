@@ -1,7 +1,7 @@
 ---
 # handlers file for configure-haproxy
 - name: turn on haproxy_connect_any
-  seboolean: 
+  seboolean:
     name: haproxy_connect_any
     state: yes
     persistent: yes
@@ -18,6 +18,4 @@
     name: firewalld.service
     state: restarted
   listen: "restart firewalld"
-  
 
- 

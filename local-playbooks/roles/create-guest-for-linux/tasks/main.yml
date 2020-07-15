@@ -17,7 +17,7 @@
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
 
 - name: write the parmfile to the reader
-  shell: curl -Q "SITE FIX 132" -T /srv/install/rhelks/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user|quote }}:{{ smapi_password|quote }}@{{ smapi_host|quote }}/MAINT.200/
+  shell: curl -Q "SITE FIX 132" -T /srv/install/rhelks/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user|quote }}:{{ smapi_password|quote }}@{{ smapi_host|quote }}/MAINT.200/  # noqa 204
   args:
     warn: false
 

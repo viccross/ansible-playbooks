@@ -2,7 +2,7 @@
 - name: install apache httpd
   yum:
     name: httpd
-    state: latest
+    state: present
 
 - name: bind httpd to port 8080
   lineinfile:
@@ -47,7 +47,7 @@
       name:
       - git
       - file
-      state: latest
+      state: present
     when: install_mode == 'zkvm'
 
   - name: clone s390x-tools

@@ -96,7 +96,8 @@ bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 # which punches files automatically
 pxe_mode: znetboot
 
-ocp4_pull_secret: "{{ lookup('file', '~/.ocp4_pull_secret') | from_json }}"
+ocp4_pull_secret_file: "{{ webroot }}/.secret/.ocp4_pull_secret"
+ocp4_pull_secret: "{{ lookup('file', ocp4_pull_secret_file ) | from_json }}"
 
 rhcos_disk_type:
   zvm: dasd

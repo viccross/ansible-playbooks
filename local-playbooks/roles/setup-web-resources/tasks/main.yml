@@ -83,17 +83,17 @@
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
-      Alias /password /var/www/html/self-service-password-racf-master
-      Alias /ldap-sd  /var/www/html/service-desk-racf-master/htdocs
-      <Directory "/var/www/html/self-service-password-racf-master">
+      Alias /password {{ webroot }}/self-service-password-racf-master
+      Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs
+      <Directory "{{ webroot }}/self-service-password-racf-master">
         AllowOverride None
         Require all granted
       </Directory>
-      <Directory "/var/www/html/self-service-password-racf-master/scripts">
+      <Directory "{{ webroot }}/self-service-password-racf-master/scripts">
         AllowOverride None
         Require all denied
       </Directory>
-      <Directory "/var/www/html/service-desk-racf-master/htdocs">
+      <Directory "{{ webroot }}/service-desk-racf-master/htdocs">
         AllowOverride None
         Require all granted
       </Directory>
@@ -127,44 +127,44 @@
   - name: download and unzip self-service-password
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
-      dest: "/var/www/html/"
-      creates: "/var/www/html/self-service-password-racf"
+      dest: "{{ webroot }}/"
+      creates: "{{ webroot }}/self-service-password-racf"
       remote_src: yes
     environment: "{{ local_proxy_env }}"
 
   - name: download and unzip service-desk
     unarchive:
       src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
-      dest: "/var/www/html/"
-      creates: "/var/www/html/service-desk-racf"
+      dest: "{{ webroot }}/"
+      creates: "{{ webroot }}/service-desk-racf"
       remote_src: yes
     environment: "{{ local_proxy_env }}"
 
   - name: make w3ds directory
     file:
-      path: "/var/www/html/w3ds"
+      path: "{{ webroot }}/w3ds"
       state: directory
 
   - name: download and unzip w3DS
     unarchive:
       src: "/opt/resources/w3ds-6.2.4.zip"
-      dest: "/var/www/html/w3ds"
-      creates: "/var/www/html/w3ds/w3ds.js"
+      dest: "{{ webroot }}/w3ds"
+      creates: "{{ webroot }}/w3ds/w3ds.js"
 
   - name: download and unzip site structure
     unarchive:
       src: "/opt/resources/oqs-header-v0.21.zip"
-      dest: "/var/www/html/"
-      creates: "/var/www/html/oqs-header-0.21/meta_header.html"
+      dest: "{{ webroot }}/"
+      creates: "{{ webroot }}/oqs-header-0.21/meta_header.html"
 
   - name: move downloaded site directory
     shell:
-      cmd: "mv /var/www/html/oqs-header-0.21/* /var/www/html/ && rmdir /var/www/html/oqs-header-0.21"
-      removes: /var/www/html/oqs-header-0.21
+      cmd: "mv {{ webroot }}/oqs-header-0.21/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-0.21"
+      removes: "{{ webroot }}/oqs-header-0.21"
 
   - name: Set permission on the HTML files to enable Includes
     file:
-      path: "/var/www/html/{{ item }}"
+      path: "{{ webroot }}/{{ item }}"
       owner: root
       group: apache
       mode: 0750
@@ -177,9 +177,9 @@
 
   - name: install the basic stats script to local executable path
     shell:
-      cmd: "mv /var/www/html/scripts/metrics.pl /usr/local/sbin/ && rmdir /var/www/html/scripts"
+      cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
       creates: /usr/local/sbin/metrics.pl
-      removes: /var/www/html/scripts
+      removes: "{{ webroot }}/scripts"
 
   - name: Set permission on metrics.pl
     file:
@@ -206,28 +206,38 @@
       name: MAILTO
       value: root
 
-  - name: Set permission on Smarty template cache
+  - name: Create directory for pull secret
     file:
-      path: /var/www/html/service-desk-racf-master/templates_c
+      path: "{{ webroot }}/.secret"
+      mode: 0700
+      owner: apache
+      state: directory
+
+  - name: Set permission on secret directory and Smarty template cache
+    file:
+      path: "{{ webroot }}/{{ item }}"
       owner: apache
       setype: httpd_sys_rw_content_t
       state: directory
+      loop:
+        - ".secret"
+        - "service-desk-racf-master/templates_c"
 
   - name: fix path to Smarty in config file
     lineinfile:
-      dest: /var/www/html/service-desk-racf-master/conf/config.inc.php
+      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.php"
       regexp: "SMARTY"
       line: define("SMARTY", "/usr/share/php/Smarty/Smarty.class.php");
 
   - name: create config.inc.local.php for self-service-password
     template:
       src: self-service-password/config.inc.local.php.j2
-      dest: /var/www/html/self-service-password-racf-master/conf/config.inc.local.php
+      dest: "{{ webroot }}/self-service-password-racf-master/conf/config.inc.local.php"
 
   - name: create config.inc.local.php for service-desk-racf
     template:
       src: service-desk-racf/config.inc.local.php.j2
-      dest: /var/www/html/service-desk-racf-master/conf/config.inc.local.php
+      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
 
 - name: permit SELinux access to LDAP from Apache
   seboolean:

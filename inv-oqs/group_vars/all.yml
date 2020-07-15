@@ -27,6 +27,7 @@ ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=OCPSSI
 admin_uid: SYSADMIN
 admin_pwd: ZVM4DEMO
+webroot: "/var/www/html"
 meta_header_file: "meta_header.html"
 #
 # OCP cluster params

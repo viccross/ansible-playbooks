@@ -10,7 +10,7 @@
       path: /etc/pki/tls/misc/haproxy.csr
       privatekey_path: /etc/pki/tls/private/haproxy.pem
       common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-      subject_alt_name: 
+      subject_alt_name:
         - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
         - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
       organization_name: "{{ cert_organization }}"
