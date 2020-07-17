@@ -153,14 +153,14 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/oqs-header-v0.21.zip"
+      src: "/opt/resources/oqs-header-master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/oqs-header-0.21/meta_header.html"
+      creates: "{{ webroot }}/oqs-header-master/meta_header.html"
 
   - name: move downloaded site directory
     shell:
-      cmd: "mv {{ webroot }}/oqs-header-0.21/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-0.21"
-      removes: "{{ webroot }}/oqs-header-0.21"
+      cmd: "mv {{ webroot }}/oqs-header-master/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-master"
+      removes: "{{ webroot }}/oqs-header-master"
 
   - name: Set permission on the HTML files to enable Includes
     file:
