@@ -1,0 +1,22 @@
+# Run the setup effort to build an OCP Bastion guest
+- name: Create guest for OCP Bastion
+  hosts: 127.0.0.1
+  connection: local
+  vars:
+  - directory_entry: "{{ lookup('template', '{{ playbook_dir }}/local-playbooks/roles/create-guest-for-linux/templates/guest.direct.j2') }}"
+  roles:
+  - "{{ playbook_dir }}/local-playbooks/roles/create-guest-for-linux"
+
+- name: Configure services on the OCP Bastion
+  hosts: s390x_bastion_workstation
+  roles:
+  - configure-squid
+  - create-local-ca
+  - create-zvm-certificates
+  - setup-web-resources
+  - configure-dns
+  - configure-haproxy
+  - enable-haproxy-stats
+  - configure-cockpit
+  - configure-apache-ignition
+  - setup-ocp-deployer

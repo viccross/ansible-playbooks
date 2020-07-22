@@ -50,7 +50,7 @@
       state: present
     when: install_mode == 'zkvm'
 
-  - name: clone s390x-tools
+  - name: clone s390x-tools  # noqa 305 303
     shell: git clone https://github.com/ibm-s390-tools/s390-tools.git
     args:
       chdir: /root
