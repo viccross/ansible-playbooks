@@ -6,11 +6,15 @@ guest_dasd_grp_linux: "MDBASLIN"
 guest_install_hostname: "zr8infra-oqs"
 guest_temp_ipaddr: "10.2.75.96"
 guest_install_ipaddr: "10.2.75.177"
+guest_install_netmask: "255.255.255.0"
 guest_install_gateway: "10.2.75.1"
 guest_install_nameserver: "10.2.75.199"
 guest_install_znet: "qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=vswbase2,portno=0"
 guest_install_dasd: "0.0.0200"
 guest_install_nicid: "enc600"
+guest_install_baseurl: "http://10.2.75.199/install/rhel/8.0"
+guest_install_repo_baseos: "BaseOS"
+guest_install_repo_appstream: "AppStream"
 upstream_proxy_ip: 10.2.55.220
 upstream_proxy_port: 3128
 local_proxy_env:

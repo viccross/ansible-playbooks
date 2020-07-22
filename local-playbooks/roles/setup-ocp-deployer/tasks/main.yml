@@ -96,12 +96,12 @@
 
 - name: copy files for the playbook
   copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: "/opt/ansible/local-playbooks/roles/create-cluster/{{ item.src }}"
+    dest: "/opt/ansible/roles/create-cluster/{{ item.dest }}"
   loop:
-  - { src: "roles/create-cluster/defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/" }
-  - { src: "roles/create-cluster/tasks/main.yml", dest: "/opt/ansible/roles/create-cluster/tasks/" }
-  - { src: "roles/create-cluster/templates/guest.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/" }
+  - { src: "defaults/main.yml", dest: "defaults/" }
+  - { src: "tasks/main.yml", dest: "tasks/" }
+  - { src: "templates/guest.direct.j2", dest: "templates/" }
 
 - name: copy the smcli script
   copy:
