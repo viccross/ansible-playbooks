@@ -61,8 +61,8 @@
 
 - name: set up SSH for Ansible
   block:
-  - name: create ssh keypair  # noqa 305
-    shell: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
+  - name: create ssh keypair
+    command: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
     args:
       creates: ~/.ssh/id_rsa
   - name: slurp ssh pubkey

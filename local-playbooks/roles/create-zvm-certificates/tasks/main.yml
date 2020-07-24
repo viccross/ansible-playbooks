@@ -28,6 +28,7 @@
     privatekey_path: /etc/pki/tls/private/zVM.pem
     certificate_path: /etc/pki/tls/certs/zVM.cert
     other_certificates: /etc/pki/tls/certs/oqsCA.cert
+    passphrase: zvm4demo
     state: present
 
 - name: generate z/VM LDAP private key

@@ -21,3 +21,10 @@
     csr_path: /etc/pki/tls/misc/oqsCA.csr
     provider: selfsigned
 
+- name: add CA certificate to the local trust store
+  file:
+    src: /etc/pki/tls/certs/oqsCA.cert
+    dest: /etc/pki/ca-trust/source/anchors/oqsCA.cert
+    state: link
+  notify:
+    - update ca trust

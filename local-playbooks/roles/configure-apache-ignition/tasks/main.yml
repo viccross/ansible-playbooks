@@ -50,11 +50,11 @@
       state: present
     when: install_mode == 'zkvm'
 
-  - name: clone s390x-tools  # noqa 305 303
-    shell: git clone https://github.com/ibm-s390-tools/s390-tools.git
-    args:
-      chdir: /root
-      creates: /root/s390-tools
+  - name: clone s390x-tools
+    git:
+      repo: 'https://github.com/ibm-s390-tools/s390-tools.git'
+      dest: /root/s390-tools
+      version: master
     when: install_mode == 'zkvm'
     environment: "{{ local_proxy_env | default(omit) }}"
 
