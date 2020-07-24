@@ -1,0 +1,8 @@
+#!/bin/sh
+# ocp-ansible.sh -- Kick off a build of OCP using Ansible
+sleep 10
+cd /opt/ansible
+export ANSIBLE_LOG_PATH=/var/www/html/logfile.txt
+curtime=$(date)
+echo "Ansible build run started at $curtime" > $ANSIBLE_LOG_PATH
+ansible-playbook -vv -i inventory create-cluster.yml

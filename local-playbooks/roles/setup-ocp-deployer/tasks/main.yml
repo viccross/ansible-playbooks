@@ -15,13 +15,14 @@
       no_extra_spaces: yes
     when: local_proxy_env is defined
 
-- name: install Ansible
+- name: install Ansible and incron
   yum:
     name:
       - ansible
+      - incron
     state: present
 
-- name: ensure the Ansible directories exist on the host
+- name: ensure the Ansible playbook directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -120,9 +121,26 @@
     template:
       src: ocp-dasd.service.j2
       dest: /etc/systemd/system/ocp-dasd.service
-  - name: Enable the ocp-dasd service
+  - name: Do not enable the ocp-dasd service yet
     systemd:
       name: ocp-dasd
+      state: stopped
+      enabled: no
+
+- name: set up the kick-off-the-build incron stuff
+  block:
+  - name: copy the kicker script
+    template:
+      src: ocp-ansible.sh.j2
+      dest: /usr/local/bin/ocp-ansible.sh
+      mode: 0750
+  - name: copy the incrontab file
+    template:
+      src: incrontab-ocp-build.j2
+      dest: /etc/incron.d/ocp-build
+  - name: Enable the incrond service
+    systemd:
+      name: incrond
       state: stopped
       enabled: yes
 
