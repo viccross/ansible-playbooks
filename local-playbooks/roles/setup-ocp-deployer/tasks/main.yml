@@ -5,7 +5,7 @@
     yum:
       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
       state: present
-    environment: "{{ local_proxy_env }}"
+    environment: "{{ local_proxy_env | default(omit) }}"
   - name: patch YUM/DNF for the proxy, if set
     ini_file:
       path: /etc/dnf/dnf.conf
@@ -39,7 +39,7 @@
       dest: "/usr/local/bin/"
       creates: "/usr/local/bin/openshift-install"
       remote_src: yes
-    environment: "{{ local_proxy_env }}"
+    environment: "{{ local_proxy_env | default(omit) }}"
   - name: set permissions for ocp installer
     file:
       path: "/usr/local/bin/openshift-install"
@@ -53,7 +53,7 @@
       dest: "/usr/local/bin/"
       creates: "/usr/local/bin/oc"
       remote_src: yes
-    environment: "{{ local_proxy_env }}"
+    environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: create openshift workdir
   file:

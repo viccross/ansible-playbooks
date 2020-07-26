@@ -11,6 +11,8 @@
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
     country_name: "{{ cert_country }}"
+    keyUsage: ["digitalSignature","keyAgreement"]
+    extendedKeyUsage: ["clientAuth","serverAuth"]
 
 - name: generate Certificate
   openssl_certificate:
@@ -18,13 +20,14 @@
     csr_path: /etc/pki/tls/misc/zVM.csr
     ownca_path: /etc/pki/tls/certs/oqsCA.cert
     ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    ownca_not_after: +365d
     provider: ownca
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
     action: export
     path: /etc/pki/tls/certs/zVM.p12
-    friendly_name: zVMTLS
+    friendly_name: ZVMTLS
     privatekey_path: /etc/pki/tls/private/zVM.pem
     certificate_path: /etc/pki/tls/certs/zVM.cert
     other_certificates: /etc/pki/tls/certs/oqsCA.cert

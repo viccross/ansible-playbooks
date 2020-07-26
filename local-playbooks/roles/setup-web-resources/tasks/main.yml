@@ -11,6 +11,8 @@
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "Red Hat Openshift PoC"
     country_name: "{{ cert_country }}"
+    keyUsage: ["digitalSignature","keyAgreement"]
+    extendedKeyUsage: ["clientAuth","serverAuth"]
 
 - name: generate Certificate
   openssl_certificate:
@@ -18,6 +20,7 @@
     csr_path: /etc/pki/tls/misc/httpd.csr
     ownca_path: /etc/pki/tls/certs/oqsCA.cert
     ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    ownca_not_after: +365d
     provider: ownca
 
 - name: install apache httpd and mod_ssl
@@ -34,7 +37,7 @@
   yum:
     name: https://www.rpmfind.net/linux/fedora-secondary/releases/30/Everything/s390x/os/Packages/p/php-Smarty-3.1.33-1.fc30.noarch.rpm
     state: present
-  environment: "{{ local_proxy_env }}"
+  environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: set ServerName and ServerAlias
   lineinfile:
@@ -59,6 +62,18 @@
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "^#?SSLCertificateChainFile"
     line: SSLCertificateChainFile /etc/pki/tls/certs/oqsCA.cert
+
+- name: enable Apache Server Side Includes (SSI)
+  lineinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    regexp: ^    Options Indexes FollowSymLinks
+    line:     Options Indexes FollowSymLinks Includes
+
+- name: enable XBitHack for SSI
+  lineinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    insertafter:     Options Indexes FollowSymLinks Includes
+    line:     XBitHack On
 
 - name: bind httpd to port 8080
   lineinfile:
@@ -130,7 +145,7 @@
       dest: "{{ webroot }}/"
       creates: "{{ webroot }}/self-service-password-racf"
       remote_src: yes
-    environment: "{{ local_proxy_env }}"
+    environment: "{{ local_proxy_env | default(omit) }}"
 
   - name: download and unzip service-desk
     unarchive:
@@ -138,7 +153,7 @@
       dest: "{{ webroot }}/"
       creates: "{{ webroot }}/service-desk-racf"
       remote_src: yes
-    environment: "{{ local_proxy_env }}"
+    environment: "{{ local_proxy_env | default(omit) }}"
 
   - name: make w3ds directory
     file:
@@ -159,7 +174,7 @@
 
   - name: move downloaded site directory
     shell:
-      cmd: "mv {{ webroot }}/oqs-header-master/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-master"
+      cmd: "rm -rf {{ webroot }}/{scripts,justgage} && mv {{ webroot }}/oqs-header-master/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-master"
       removes: "{{ webroot }}/oqs-header-master"
 
   - name: Set permission on the HTML files to enable Includes
@@ -174,6 +189,14 @@
       - ocp-haproxy.html
       - ocp-perfkit.html
       - metrics.html
+      - gethelp.html
+      - index.html
+
+  - name: symlink to the OQS CA certificate
+    file:
+      src: "/etc/pki/tls/certs/oqsCA.cert"
+      dest: "{{ webroot }}/oqsCA.cert"
+      state: link
 
   - name: install the basic stats script to local executable path
     shell:
@@ -219,9 +242,9 @@
       owner: apache
       setype: httpd_sys_rw_content_t
       state: directory
-      loop:
-        - ".secret"
-        - "service-desk-racf-master/templates_c"
+    loop:
+      - ".secret"
+      - "service-desk-racf-master/templates_c"
 
   - name: fix path to Smarty in config file
     lineinfile:
