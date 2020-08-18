@@ -9,6 +9,11 @@
     msg: "OCP pull secret is not found!"
   when: ps.stat.exists == False
     
+- name: create openshift workdir
+  file:
+    path: "{{ workdir }}"
+    state: "directory"
+
 # install config is deleted when ignition
 # configs are created.  this task also
 # creates a copy to check for debugging

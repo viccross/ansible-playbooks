@@ -3,9 +3,9 @@
   hosts: 127.0.0.1
   connection: local
   vars:
-  - directory_entry: "{{ lookup('template', '{{ playbook_dir }}/local-playbooks/roles/create-guest-for-linux/templates/guest.direct.j2') }}"
+  - directory_entry: "{{ lookup('template', 'guest.direct.j2') }}"
   roles:
-  - "{{ playbook_dir }}/local-playbooks/roles/create-guest-for-linux"
+  - create-guest-for-linux
 
 - name: Configure services on the OCP Bastion
   hosts: s390x_bastion_workstation

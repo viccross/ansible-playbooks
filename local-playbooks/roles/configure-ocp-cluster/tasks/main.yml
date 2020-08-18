@@ -1,0 +1,57 @@
+---
+- name: generate Apps private key
+  openssl_privatekey:
+    path: /etc/pki/tls/private/ocpApps.pem
+
+- name: generate Apps CSR
+  openssl_csr:
+    path: /etc/pki/tls/misc/ocpApps.csr
+    privatekey_path: /etc/pki/tls/private/ocpApps.pem
+    common_name: "*.apps.{{ cluster_name }}.{{ cluster_base_domain }}"
+    organization_name: "{{ cert_organization }}"
+    organizational_unit_name: "Red Hat Openshift on LinuxONE PoC"
+    country_name: "{{ cert_country }}"
+    keyUsage: ["digitalSignature","keyAgreement"]
+    extendedKeyUsage: ["clientAuth","serverAuth"]
+
+- name: generate Certificate
+  openssl_certificate:
+    path: /etc/pki/tls/certs/ocpApps.cert
+    csr_path: /etc/pki/tls/misc/ocpApps.csr
+    ownca_path: /etc/pki/tls/certs/oqsCA.cert
+    ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    ownca_not_after: +365d
+    provider: ownca
+
+- name: Generate PKCS12 file
+  openssl_pkcs12:
+    action: export
+    path: /etc/pki/tls/certs/ocpApps.p12
+    friendly_name: OCPAPPS
+    privatekey_path: /etc/pki/tls/private/ocpApps.pem
+    certificate_path: /etc/pki/tls/certs/ocpApps.cert
+    other_certificates: /etc/pki/tls/certs/oqsCA.cert
+    passphrase: zvm4demo
+    state: present
+
+- name: Create OCP ConfigMap for CA cert
+  command:
+    cmd: oc create configmap custom-ca --from-file=ca-bundle.crt=/etc/pki/tls/certs/oqsCA.cert -n openshift-config
+
+- name: Create OCP secret for the certificate and chain
+  command:
+    cmd: oc create secret tls oqsCert --cert=/etc/pki/tls/certs/ocpApps.cert --key=/etc/pki/tls/private/ocpApps.pem -n openshift-ingress
+
+- name: Update the Ingress Controller
+  command:
+    cmd: oc patch ingresscontroller.operator default --type=merge -p '{"spec":{"defaultCertificate": {"name": "oqsCert"}}}' -n openshift-ingress-operator
+
+- name: Create the Custom Resource for the LDAP identity provider
+  template:
+    src: ldapIdentityCr.yml.j2
+    dest: "{{ ocp4_workdir }}/ldapIdentityCr.yml"
+
+- name: Add the identity provider
+  command:
+    cmd: oc apply -f {{ ocp4_workdir }}/ldapIdentityCr.yml
+

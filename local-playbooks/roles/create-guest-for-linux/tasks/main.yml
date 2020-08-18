@@ -9,10 +9,7 @@
 - name: create the installation ZNETBOOT config
   template:
     src: "templates/guest.znetboot.j2"
-    dest: "/mnt/znetboot/{{ guest_name }}.ZNETBOOT"
-    owner: "support"
-    group: "root"
-    mode: "0666"
+    dest: "{{ znetboot_cfg_path }}/{{ guest_name }}.znetboot"
     unsafe_writes: true
 
 - name: create the installation kickstart file
@@ -20,10 +17,11 @@
     src: "templates/guest.ks.j2"
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
 
-# - name: write the parmfile to the reader
-#   shell: curl -Q "SITE FIX 132" -T /srv/install/rhelks/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user|quote }}:{{ smapi_password|quote }}@{{ smapi_host|quote }}/MAINT.200/  # noqa 204
-#   args:
-#     warn: false
+- name: write the parmfile to the reader
+  shell: curl -Q "SITE FIX 132" -T {{ znetboot_cfg_path }}/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user|quote }}:{{ smapi_password|quote }}@{{ smapi_host|quote }}/MAINT.200/  # noqa 204
+  args:
+    warn: false
+  when: use_cmsfs_for_znetboot_cfg is false
 
 - name: IPL a Linux guest
   shell: /usr/local/bin/smcli ia -T {{ guest_name|quote }} -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
