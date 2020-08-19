@@ -6,7 +6,7 @@ USER {{ guest_name }} {{ guest_pwd }} 2048M 4096M GK
  IPL CMS     
  MACHINE ESA 4
  CONSOLE 0009 3215 T OPMGRM1
- NICDEF 0600 TYPE QDIO LAN SYSTEM VSWBASE2 DEVICES 3
-{% if ocp_cluster_lan_name is defined %} NICDEF 0620 TYPE HIPERS LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3 {% endif %} 
- LINK MAINT 200 191 RR
+ NICDEF {{ guest_qdio_vsw_dev }} TYPE QDIO LAN SYSTEM {{ zvm_vswitch_name }} DEVICES 3
+{% if ocp_cluster_lan_name is defined %} NICDEF {{ guest_qdio_hsi_dev }} TYPE HIPERS LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3 {% endif %} 
+ LINK {{ znetboot_cfg_disk}} 191 RR
  AMDISK 0200 3390 AUTOG 10016 {{ guest_dasd_grp_linux }} MR PWS READ WRITE 
