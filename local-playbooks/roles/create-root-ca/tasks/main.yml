@@ -1,0 +1,31 @@
+---
+- name: generate CA private key
+  openssl_privatekey:
+    path: "{{ ca_key_path }}/oqsRootCA.pem"
+
+- name: generate CA CSR
+  openssl_csr:
+    path: "{{ ca_csr_path }}/oqsRootCA.csr"
+    privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
+    common_name: "IBM LinuxONE PoC Quick Start Root CA"
+    organization_name: "IBM"
+    organizational_unit_name: "IBM LinuxONE PoC"
+    country_name: "US"
+    basic_constraints:
+      - 'CA:TRUE'
+
+- name: generate CA Certificate
+  openssl_certificate:
+    path: "{{ ca_cert_path }}/oqsRootCA.cert"
+    privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
+    csr_path: "{{ ca_csr_path }}/oqsRootCA.csr"
+    provider: selfsigned
+
+#- name: add CA certificate to the local trust store
+#  file:
+#    src: /etc/pki/tls/certs/oqsRootCA.cert
+#    dest: /etc/pki/ca-trust/source/anchors/oqsRootCA.cert
+#    state: link
+#  notify:
+#    - update ca trust
+

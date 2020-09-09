@@ -1,5 +1,14 @@
 ---
 - name: Create a local Certificate Authority
+  hosts: localhost
+  roles:
+  - create-local-ca
+
+- name: Create a local Certificate Authority
   hosts: s390x_bastion_workstation
   roles:
-  - "{{ playbook_dir }}/roles/create-local-ca"
+  - copy-ca-to-bastion
+  vars:
+    root_ca_key_path: "{{ hostvars['localhost']['ca_key_path'] }}"
+    root_ca_csr_path: "{{ hostvars['localhost']['ca_csr_path'] }}"
+    root_ca_cert_path: "{{ hostvars['localhost']['ca_cert_path'] }}"

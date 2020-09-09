@@ -1,5 +1,5 @@
 ---
 - name: Create and export z/VM certificates using local Certificate Authority
-  hosts: s390x_bastion_workstation
+  hosts: localhost
   roles:
-  - "{{ playbook_dir }}/roles/create-zvm-certificates"
+  - "create-zvm-certificates"

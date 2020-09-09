@@ -1,0 +1,5 @@
+---
+- name: Create a local Certificate Authority
+  hosts: localhost
+  roles:
+  - "create-root-ca"

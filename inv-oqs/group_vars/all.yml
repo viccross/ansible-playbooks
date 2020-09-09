@@ -1,5 +1,7 @@
 ---
 # variables for all hosts
+#
+# Bastion build variables
 guest_name: "ZR8INFRA"
 guest_pwd: "ZVM4DEMO"
 guest_dasd_grp_linux: "MDBASLIN"
@@ -37,6 +39,12 @@ admin_pwd: ZVM4DEMO
 webroot: "/var/www/html"
 meta_header_file: "meta_header.html"
 #
+# CA paramaters
+ca_csr_path: /etc/pki/tls/misc
+ca_key_path: /etc/pki/tls/private
+ca_cert_path: /etc/pki/tls/certs
+ca_trust_path: /etc/pki/ca-trust/source/anchors
+#
 # OCP cluster params
 ocp_cluster_lan_name: "OCPLAN"
 ocp_dasd_prefix: OCPDA
@@ -50,6 +58,8 @@ cluster_name: "zpoc-test"
 cert_organization: IBM
 cert_country: AU
 dns_nameserver: 10.2.75.199
+bastion_vsw_dev: "600"
+bastion_hsi_dev: "620"
 guest_internal_nicid: "enc620"
 guest_internal_znet: "qeth,0.0.0620,0.0.0621,0.0.0622,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
 subnet_gateway: 172.31.177.1

@@ -1,68 +1,68 @@
 ---
 - name: generate z/VM private key
   openssl_privatekey:
-    path: /etc/pki/tls/private/zVM.pem
+    path: "{{ ca_key_path }}/zVM.pem"
 
 - name: generate z/VM CSR
   openssl_csr:
-    path: /etc/pki/tls/misc/zVM.csr
-    privatekey_path: /etc/pki/tls/private/zVM.pem
-    common_name: "zVM.{{ cluster_name }}.{{ cluster_base_domain }}"
-    organization_name: "{{ cert_organization }}"
+    path: "{{ ca_csr_path }}/zVM.csr"
+    privatekey_path: "{{ ca_key_path }}/zVM.pem"
+    common_name: "zVM.ibmpoc.internal"
+    organization_name: "IBM"
     organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
-    country_name: "{{ cert_country }}"
+    country_name: "AU"
     keyUsage: ["digitalSignature","keyAgreement"]
     extendedKeyUsage: ["clientAuth","serverAuth"]
 
 - name: generate Certificate
   openssl_certificate:
-    path: /etc/pki/tls/certs/zVM.cert
-    csr_path: /etc/pki/tls/misc/zVM.csr
-    ownca_path: /etc/pki/tls/certs/oqsCA.cert
-    ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    path: "{{ ca_cert_path }}/zVM.cert"
+    csr_path: "{{ ca_csr_path }}/zVM.csr"
+    ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
+    ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
     ownca_not_after: +365d
     provider: ownca
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
     action: export
-    path: /etc/pki/tls/certs/zVM.p12
+    path: "{{ ca_cert_path }}/zVM.p12"
     friendly_name: ZVMTLS
-    privatekey_path: /etc/pki/tls/private/zVM.pem
-    certificate_path: /etc/pki/tls/certs/zVM.cert
-    other_certificates: /etc/pki/tls/certs/oqsCA.cert
+    privatekey_path: "{{ ca_key_path }}/zVM.pem"
+    certificate_path: "{{ ca_cert_path }}/zVM.cert"
+    other_certificates: "{{ ca_cert_path }}/oqsRootCA.cert"
     passphrase: zvm4demo
     state: present
 
 - name: generate z/VM LDAP private key
   openssl_privatekey:
-    path: /etc/pki/tls/private/zVMLDAP.pem
+    path: "{{ ca_key_path }}/zVMLDAP.pem"
 
 - name: generate z/VM LDAP CSR
   openssl_csr:
-    path: /etc/pki/tls/misc/zVMLDAP.csr
-    privatekey_path: /etc/pki/tls/private/zVMLDAP.pem
-    common_name: "LDAPSRV.{{ cluster_name }}.{{ cluster_base_domain }}"
-    organization_name: "{{ cert_organization }}"
+    path: "{{ ca_csr_path }}/zVMLDAP.csr"
+    privatekey_path: "{{ ca_key_path }}/zVMLDAP.pem"
+    common_name: "LDAPSRV.ibmpoc.internal"
+    organization_name: "IBM"
     organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
-    country_name: "{{ cert_country }}"
+    country_name: "AU"
 
 - name: generate Certificate
   openssl_certificate:
-    path: /etc/pki/tls/certs/zVMLDAP.cert
-    csr_path: /etc/pki/tls/misc/zVMLDAP.csr
-    ownca_path: /etc/pki/tls/certs/oqsCA.cert
-    ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    path: "{{ ca_cert_path }}/zVMLDAP.cert"
+    csr_path: "{{ ca_csr_path }}/zVMLDAP.csr"
+    ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
+    ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
     provider: ownca
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
     action: export
-    path: /etc/pki/tls/certs/zVMLDAP.p12
+    path: "{{ ca_cert_path }}/zVMLDAP.p12"
     friendly_name: LDAPSRV
-    privatekey_path: /etc/pki/tls/private/zVMLDAP.pem
-    certificate_path: /etc/pki/tls/certs/zVMLDAP.cert
-    other_certificates: /etc/pki/tls/certs/oqsCA.cert
+    privatekey_path: "{{ ca_key_path }}/zVMLDAP.pem"
+    certificate_path: "{{ ca_cert_path }}/zVMLDAP.cert"
+    other_certificates: "{{ ca_cert_path }}/oqsRootCA.cert"
     passphrase: zvm4demo
     state: present
 

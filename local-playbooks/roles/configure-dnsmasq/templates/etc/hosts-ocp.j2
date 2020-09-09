@@ -1,0 +1,34 @@
+{% set bootstrap = cluster_nodes['bootstrap'] %}
+{% set masters = cluster_nodes['masters'] %}
+{% set workers = cluster_nodes['workers'] %}
+# hosts file for OCP
+
+{{ bastion_public_ip_address }} bastion.{{ cluster_domain_name }} bastion
+{{ bastion_public_ip_address }} api.{{ cluster_domain_name }} api
+{{ bastion_private_ip_address }} api-int.{{ cluster_domain_name }} api-int
+{{ bastion_public_ip_address }} apps.{{ cluster_domain_name }} apps
+
+{% for item in bootstrap.keys() %}
+{{ bootstrap[item].ip }} {{ item }}
+{% endfor %}
+
+{% for item in masters.keys() %}
+{{ masters[item].ip }} {{ item }}
+{% endfor %}
+
+{% if workers is defined %}
+{% for item in workers.keys() %}
+{{ workers[item].ip }} {{ item }}
+{% endfor %}
+{% endif %}
+
+{% for item in masters.keys() %}
+{{ masters[item].ip }} etcd-{{ (loop.index - 1) }}                
+{% endfor %}
+
+_etcd-server-ssl._tcp IN SRV 0 10 2380 etcd-0.{{ cluster_domain_name }}.
+{% for item in masters.keys() %}
+  {% if loop.index != 1 %}
+                  IN SRV 0 10 2380 etcd-{{(loop.index - 1) }}.{{ cluster_domain_name }}.
+  {% endif %}
+{% endfor %}

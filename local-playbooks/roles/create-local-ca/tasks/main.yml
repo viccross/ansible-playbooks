@@ -1,12 +1,14 @@
 ---
 - name: generate CA private key
   openssl_privatekey:
-    path: /etc/pki/tls/private/oqsCA.pem
+    path: "{{ ca_key_path }}/oqsCA.pem"
+    group: 10000
+    mode: 0640
 
 - name: generate CA CSR
   openssl_csr:
-    path: /etc/pki/tls/misc/oqsCA.csr
-    privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    path: "{{ ca_csr_path }}/oqsCA.csr"
+    privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
     common_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "IBM LinuxONE PoC"
@@ -16,15 +18,16 @@
 
 - name: generate CA Certificate
   openssl_certificate:
-    path: /etc/pki/tls/certs/oqsCA.cert
-    privatekey_path: /etc/pki/tls/private/oqsCA.pem
-    csr_path: /etc/pki/tls/misc/oqsCA.csr
-    provider: selfsigned
+    path: "{{ ca_cert_path }}/oqsCA.cert"
+    csr_path: "{{ ca_csr_path }}/oqsCA.csr"
+    ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
+    ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
+    provider: ownca
 
 - name: add CA certificate to the local trust store
   file:
-    src: /etc/pki/tls/certs/oqsCA.cert
-    dest: /etc/pki/ca-trust/source/anchors/oqsCA.cert
+    src: "{{ ca_cert_path }}/oqsCA.cert"
+    dest: "{{ ca_trust_path }}/oqsCA.cert"
     state: link
-  notify:
-    - update ca trust
+#  notify:
+#    - update ca trust

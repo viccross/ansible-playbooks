@@ -194,7 +194,7 @@
 
   - name: symlink to the OQS CA certificate
     file:
-      src: "/etc/pki/tls/certs/oqsCA.cert"
+      src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
       dest: "{{ webroot }}/oqsCA.cert"
       state: link
 

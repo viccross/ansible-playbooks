@@ -1,0 +1,19 @@
+---
+- name: copy the CA key to the Bastion host
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: "{{ root_ca_key_path }}/oqsCA.key", dest: "{{ ca_key_path }}/" }
+    - { src: "{{ root_ca_csr_path }}/oqsCA.csr", dest: "{{ ca_csr_path }}/" }
+    - { src: "{{ root_ca_cert_path }}/oqsCA.cert", dest: "{{ ca_cert_path }}/" }
+    - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/" }
+
+- name: add the root certs to the trust store
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  loop:
+    - { src: "{{ ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_trust_path }}/oqsRootCA.cert" }
+    - { src: "{{ ca_cert_path }}/oqsCA.cert", dest: "{{ ca_trust_path }}/oqsCA.cert" }
