@@ -29,7 +29,6 @@
     shell:
       cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
       chdir: /etc/pki/tls/
-      creates: /etc/cockpit/ws-certs.d/cockpit-combined.cert
 
   - name: set permissions on certificate
     file:
