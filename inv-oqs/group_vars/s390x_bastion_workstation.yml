@@ -4,13 +4,18 @@ cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
 
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
-rhcos_version: "4.5.4-s390x"
-rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.5/latest/"
+# rhcos_version will be either "latest" or the V.R.M of the specific version needed.
+# For example:
+# # rhcos_version: "4.5.4"
+# NOTE: this is dependent upon the current orgaisation of the download directories!
+rhcos_version: "latest"
+rhcos_dir: "{{ 'latest' if rhcos_version == 'latest' else rhcos_version.split('.')[:1] | join('.') }}"
+rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/{{ rhcos_dir }}/{{ rhcos_version }}/"
 
 # The download URL of the openshift-install binary
-openshift_version: "4.5.4"
-openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-install-linux-{{ openshift_version }}.tar.gz"
-openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-client-linux-{{ openshift_version }}.tar.gz"
+openshift_version: "stable" # this will be "stable" or "latest"
+openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/{{ openshift_version }}/openshift-install-linux.tar.gz"
+openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/{{ openshift_version }}/openshift-client-linux.tar.gz"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
@@ -102,9 +107,9 @@ ocp4_pull_secret: "{{ lookup('file', ocp4_pull_secret_file ) | from_json }}"
 rhcos_disk_type:
   zvm: dasd
 
-rhcos_installer_initramfs: 'rhcos-{{ rhcos_version }}-installer-initramfs.s390x.img'
-rhcos_installer_kernel: 'rhcos-{{ rhcos_version }}-installer-kernel-s390x'
-rhcos_disk_image: 'rhcos-{{ rhcos_version }}-{{ rhcos_disk_type[install_mode] }}.s390x.raw.gz'
+rhcos_installer_initramfs: 'rhcos-installer-initramfs.s390x.img'
+rhcos_installer_kernel: 'rhcos-installer-kernel-s390x'
+rhcos_disk_image: 'rhcos-{{ rhcos_disk_type[install_mode] }}.s390x.raw.gz'
 
 rhcos_download_files:
   - '{{ rhcos_installer_initramfs }}'
