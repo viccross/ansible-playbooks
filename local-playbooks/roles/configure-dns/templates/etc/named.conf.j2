@@ -6,6 +6,14 @@
 //
 // See /usr/share/doc/bind*/sample/ for example named configuration files.
 //
+
+// NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+// For FastVM:
+// Do not alter ths file on the source location WITHOUT ALSO updating
+// the Ansible scripting AND the /etc/named.conf.source file!
+// This file may be replaced at run-time at a client location!
+// NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+
 acl internal_nets { {{ subnet_cidr }}; };
 
 options {
