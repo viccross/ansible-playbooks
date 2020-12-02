@@ -54,6 +54,10 @@
   vars:
   - dns_nameserver: "XXX.XXX.XXX.XXX"
 
+- name: set up rndc for dynamic DNS
+  command:
+    cmd: rndc-confgen -a
+
 - name: add dns to firewall
   firewalld:
     permanent: true
