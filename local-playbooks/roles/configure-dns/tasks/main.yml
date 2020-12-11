@@ -11,7 +11,7 @@
     path: /var/named
     state: directory
 
-- name: create dns subnet definition
+- name: create DNS Forward zone
   template:
     src: var/named/cluster_domain_name.zone.j2
     dest: /var/named/{{ cluster_domain_name }}.zone
@@ -33,7 +33,7 @@
       search {{ cluster_domain_name }}
       nameserver {{ bastion_private_ip_address }}
 
-- name: create dns subnet zone
+- name: create DNS Reverse zone
   template:
     src: var/named/subnet.in-addr.arpa.zone.j2
     dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
