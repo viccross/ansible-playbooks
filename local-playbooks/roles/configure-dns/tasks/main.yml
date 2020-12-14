@@ -18,6 +18,13 @@
   notify:
   - restart dns
 
+- name: create DNS Forward zone (internal)
+  template:
+    src: var/named/ibmpoc_internal.zone.j2
+    dest: /var/named/ibmpoc_internal.zone
+  notify:
+  - restart dns
+
 - name: unmanage resolve.conf in NetworkManager
   lineinfile:
     line: dns=none

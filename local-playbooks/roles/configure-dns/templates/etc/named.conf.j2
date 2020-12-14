@@ -63,7 +63,7 @@ zone "{{ cluster_domain_name }}" {
 	file "{{ cluster_domain_name }}.zone";
 	allow-query { any; };
 	allow-transfer { none; };
-	allow-update { none; };
+	update-policy local;
 };
 
 zone "{{ subnet_in_addr_name }}.in-addr.arpa" {
@@ -71,11 +71,14 @@ zone "{{ subnet_in_addr_name }}.in-addr.arpa" {
 	file "{{ subnet_in_addr_name }}.in-addr.arpa.zone";
 	allow-query { any; };
 	allow-transfer { none; };
-	allow-update { none; };
+	update-policy local;
 };
 
-
-
-
-
+zone "ibmpoc.internal" {
+	type master;
+	file "ibmpoc_internal.zone";
+	allow-query { any; };
+	allow-transfer { none; };
+	update-policy local;
+};
 
