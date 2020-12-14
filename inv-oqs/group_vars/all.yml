@@ -28,14 +28,14 @@ local_proxy_env:
 #
 # smapi parameters
 smapi_host: "10.2.75.178"
-smapi_user: "IBMVM1"
-smapi_password: "ZVM4DEMO"
+smapi_user: "IBMAUTO"
+smapi_password: "8L$YN2FO"
 #
 ldap_base: ou={{ cluster_name }},o={{ cert_organization }}
 ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=OCPSSI
-admin_uid: SYSADMIN
-admin_pwd: ZVM4DEMO
+admin_uid: IBMAUTO
+admin_pwd: "8L$YN2FO"
 webroot: "/var/www/html"
 meta_header_file: "meta_header.html"
 #

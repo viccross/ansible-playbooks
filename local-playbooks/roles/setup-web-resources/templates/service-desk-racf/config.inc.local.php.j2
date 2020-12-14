@@ -1,5 +1,8 @@
 <?php
 // Override config.inc.php parameters
+define("SMARTY", "/usr/local/bin/smarty-3.1.36/libs/Smarty.class.php");
+$smarty_compile_dir = "../templates_c/";
+$smarty_cache_dir = "../cache/";
 
 {% if meta_header_file is defined %}
 $custom_css = "/w3ds/w3ds.css";

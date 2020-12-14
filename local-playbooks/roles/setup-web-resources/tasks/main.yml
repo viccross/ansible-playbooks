@@ -33,11 +33,11 @@
       - php-mbstring
     state: present
 
-- name: install php-Smarty
-  yum:
-    name: https://www.rpmfind.net/linux/fedora-secondary/releases/30/Everything/s390x/os/Packages/p/php-Smarty-3.1.33-1.fc30.noarch.rpm
-    state: present
-  environment: "{{ local_proxy_env | default(omit) }}"
+#- name: install php-Smarty
+#  yum:
+#    name: https://www.rpmfind.net/linux/fedora-secondary/releases/30/Everything/s390x/os/Packages/p/php-Smarty-3.1.33-1.fc30.noarch.rpm
+#    state: present
+#  environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: set ServerName and ServerAlias
   lineinfile:
@@ -139,6 +139,14 @@
 
 - name: download and unwind LDAP tools
   block:
+  - name: download and unzip Smarty PHP template engine
+    unarchive:
+      src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
+      dest: "/usr/local/bin/"
+      creates: "/usr/local/bin/smarty-3.1.36/"
+      remote_src: yes
+    environment: "{{ local_proxy_env | default(omit) }}"
+
   - name: download and unzip self-service-password
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
@@ -229,6 +237,39 @@
       name: MAILTO
       value: root
 
+  - name: install the interface reconfiguration script to local executable path
+    template:
+      src: ipconf.sh.j2
+      dest: /usr/local/sbin/ipconf.sh
+
+  - name: set permissions on interface reconfiguration script
+    file:
+      path: /usr/local/sbin/ipconf.sh
+      owner: root
+      mode: 0750
+
+  - name: create systemd service for interface reconfiguration
+    blockinfile:
+      dest: /etc/systemd/system/zvm-ipconf.service
+      insertbefore: BOF
+      create: yes
+      block: |
+        [Unit]
+        After=named-chroot.service
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/ocal/sbin/ipconf.sh
+        RemainAfterExit=true
+        StandardOutput=journal
+        [Install]
+        WantedBy=default.target
+
+  - name: enable the interface reconfiguration systemd service
+    systemd:
+      name: zvm-ipconf
+      state: stopped
+      enabled: yes
+
   - name: Create directory for pull secret
     file:
       path: "{{ webroot }}/.secret"
@@ -246,11 +287,11 @@
       - ".secret"
       - "service-desk-racf-master/templates_c"
 
-  - name: fix path to Smarty in config file
-    lineinfile:
-      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.php"
-      regexp: "SMARTY"
-      line: define("SMARTY", "/usr/share/php/Smarty/Smarty.class.php");
+#  - name: fix path to Smarty in config file
+#    lineinfile:
+#      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.php"
+#      regexp: "SMARTY"
+#      line: define("SMARTY", "/usr/share/php/Smarty/Smarty.class.php");
 
   - name: create config.inc.local.php for self-service-password
     template:
