@@ -28,19 +28,28 @@ function changeIP {
     fi
     echo DNS servers are: ${DNS}
   fi
+
   # all the details retrieved, let's use nmcli to do the work
-  nmcli con mod ${IFN} ipv4.method manual ipv4.address-data "${IPADDR}/${PFX}"
-  nmcli con mod ${IFN} ipv4.gateway "${GATEWAY}"
-  # DNS is harder, have to change the bind config...
-  # ...this isn't actually it yet, just the WIP
-  if [ -v DNS ]; then
-    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
-    nsupdate -l -v <<EOF
+  # first, obtain the UUID of the interface
+  source <(grep ^UUID /etc/sysconfig/network-scripts/ifcfg-${IFN})
+  if [ ! -v UUID ]; then
+    echo "UUID of interface not known, exiting!"
+    exit 1;
+  fi
+  # next, update the interface
+  nmcli con mod ${UUID} ipv4.method manual ipv4.addresses "${IPADDR}/${PFX}"
+  nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
+  nmcli con up ${UUID}
+  # next, do the dynamic DNS update to fix BIND
+  nsupdate -l -v <<EOF
 zone {{ cluster_domain_name }}
 update delete bastion.{{ cluster_domain_name }}. A
 update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
 send
 EOF
+  # upstream DNS is harder, have to change the bind config...
+  if [ -v DNS ]; then
+    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
     echo systemctl restart named-chroot
   fi
 }

@@ -8,8 +8,8 @@ $TTL 900
   )      
   IN NS bastion-int.{{ cluster_domain_name }}.
 
-{{ bastion_private_ip_address.split('.')[3] }} IN PTR zVM.ibmpoc.internal.
-{{ bastion_private_ip_address.split('.')[3] }} IN PTR LDAPSRV.ibmpoc.internal.
+{{ zvm_internal_ip_address.split('.')[3] }} IN PTR zVM.ibmpoc.internal.
+{{ zvm_internal_ip_address.split('.')[3] }} IN PTR LDAPSRV.ibmpoc.internal.
 {{ bastion_private_ip_address.split('.')[3] }} IN PTR bastion-int.{{ cluster_domain_name }}.
 
 {% for item in masters.keys() %}
