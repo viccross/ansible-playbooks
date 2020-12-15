@@ -49,8 +49,8 @@ ca_trust_path: /etc/pki/ca-trust/source/anchors
 ocp_cluster_lan_name: "OCPLAN"
 ocp_dasd_prefix: OCPDA
 ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
-ocp_smapi_user: IBMVM1
-ocp_smapi_password: ZVM4DEMO
+ocp_smapi_user: IBMAUTO
+ocp_smapi_password: "8L$YN2FO"
 #
 # Details needed for the cluster to be built
 cluster_base_domain: "z.stg.ibm"
