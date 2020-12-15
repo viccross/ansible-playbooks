@@ -1,0 +1,59 @@
+#!/bin/bash
+# ipconf.sh -- IP configuration in FastVM
+# Checks for a configuration file on the CMS disk and configures appropriately
+
+FP={{ znetboot_cfg_path }}
+IFN=enc{{ bastion_vsw_dev }}
+MYID=`vmcp q userid | awk '{print $1;}'`
+
+function changeIP {
+  FN=$1
+  echo "${FN} found, applying"
+  source <(grep ^IPADDR ${FN})
+  echo IP Address is ${IPADDR}
+  source <(grep ^NETMASK ${FN})
+  echo -n Net mask is ${NETMASK}
+  PFX=`ipcalc -p ${IPADDR} ${NETMASK} | sed -n 's/^PREFIX=\(.*\)/\1/p'`
+  echo , prefix is ${PFX}
+  source <(grep ^GATEWAY ${FN})
+  echo Gateway is ${GATEWAY}
+  source <(grep ^DNS ${FN})
+  if [ -v DNS1 ]; then
+    DNS="${DNS1}"
+    if [ -v DNS2 ]; then
+      DNS="${DNS}; ${DNS2}"
+    fi
+    if [ -v DNS3 ]; then
+      DNS="${DNS}; ${DNS3}"
+    fi
+    echo DNS servers are: ${DNS}
+  fi
+  # all the details retrieved, let's use nmcli to do the work
+  nmcli con mod ${IFN} ipv4.method manual ipv4.address-data "${IPADDR}/${PFX}"
+  nmcli con mod ${IFN} ipv4.gateway "${GATEWAY}"
+  # DNS is harder, have to change the bind config...
+  # ...this isn't actually it yet, just the WIP
+  if [ -v DNS ]; then
+    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
+    nsupdate -l -v <<EOF
+zone {{ cluster_domain_name }}
+update delete bastion.{{ cluster_domain_name }}. A
+update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
+send
+EOF
+    echo systemctl restart named-chroot
+  fi
+}
+
+# Main starts here
+echo "Checking IP configuration for $MYID..."
+
+FN="${FP}/${MYID}.IFCFG"
+if [ -f ${FN} ]; then
+  changeIP ${FN}
+elif [ -f ${FP}/ZVMIP.CONF ]; then
+  changeIP ${FP}/ZVMIP.CONF
+else
+  echo "No IP config file found."
+fi
+
