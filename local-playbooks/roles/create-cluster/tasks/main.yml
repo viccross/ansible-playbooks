@@ -128,6 +128,11 @@
   retries: 1
   delay: 0
 
+- name: start the approve-csrs task
+  systemd:
+    name: ocp-approve-csrs
+    state: started
+
 - name: wait for install complete
   tags: wait-install
   shell: openshift-install --dir=`pwd` wait-for install-complete
@@ -135,3 +140,8 @@
     chdir: "{{ workdir }}"
   retries: 1
   delay: 0
+
+- name: stop the approve-csrs task
+  systemd:
+    name: ocp-approve-csrs
+    state: stopped

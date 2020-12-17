@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# ocp-approve-csrs.sh
+# Just like the name says... Approves OCP certificate signing requests (CSRs)
+# while it is running
+
+while true; do
+  if [[ {% raw %}"$(oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'|wc -l)" -ge "1"{% endraw %}i ]]; then
+    oc get csr -o go-template={% raw %}'{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{% endraw %} | xargs oc adm certificate approve
+  fi
+  sleep 60
+done

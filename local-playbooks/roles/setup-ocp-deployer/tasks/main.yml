@@ -127,6 +127,23 @@
       state: stopped
       enabled: no
 
+- name: set up approve-the-CSRs script
+  block:
+  - name: copy the CSRs script
+    template:
+      src: ocp-approve-csrs.sh.j2
+      dest: /usr/local/bin/ocp-approve-csrs.sh
+      mode: 0750
+  - name: copy the CSRs script systemd service file
+    template:
+      src: ocp-approve-csrs.service.j2
+      dest: /etc/systemd/system/ocp-approve-csrs.service
+  - name: Do not enable the ocp-approve-csrs service
+    systemd:
+      name: ocp-approve-csrs
+      state: stopped
+      enabled: no
+
 - name: set up the kick-off-the-build incron stuff
   block:
   - name: copy the kicker script
