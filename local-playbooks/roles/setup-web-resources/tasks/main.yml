@@ -258,7 +258,7 @@
         After=named-chroot.service
         [Service]
         Type=oneshot
-        ExecStart=/usr/ocal/sbin/ipconf.sh
+        ExecStart=/usr/local/sbin/ipconf.sh
         RemainAfterExit=true
         StandardOutput=journal
         [Install]
