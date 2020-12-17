@@ -47,9 +47,6 @@
   - name: vary the DASD online
     command:
       cmd: chccwdev -e 191
-  - name: mount the filesystem
-    command:
-      cmd: mount {{ znetboot_cfg_path }}
 
 # install config is deleted when ignition
 # configs are created.  this task also
