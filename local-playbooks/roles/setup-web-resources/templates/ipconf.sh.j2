@@ -45,8 +45,21 @@ function changeIP {
 zone {{ cluster_domain_name }}
 update delete bastion.{{ cluster_domain_name }}. A
 update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete api.{{ cluster_domain_name }}. A
+update add api.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete apps.{{ cluster_domain_name }}. A
+update add apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete *.apps.{{ cluster_domain_name }}. A
+update add *.apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
 send
 EOF
+  # update the file in the web server directory
+  cat <<EOF > {{ webroot }}/etc.hosts
+${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
+${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
+EOF
+  # Changing the IP address means having to restart HA-Proxy
+  systemctl restart haproxy.service
   # upstream DNS is harder, have to change the bind config...
   if [ -v DNS ]; then
     sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
