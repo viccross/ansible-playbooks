@@ -64,3 +64,7 @@ cluster_nodes:
 bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 
 ocp4_pull_secret: {% raw %}"{{ lookup('file', '~/.ocp4_pull_secret') | from_json }}"{% endraw %}
+
+znetboot_cfg_path: "{{ znetboot_cfg_path }}"
+znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
+webroot: "{{ webroot }}"

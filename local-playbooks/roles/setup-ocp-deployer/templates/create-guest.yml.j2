@@ -6,10 +6,10 @@
     stdin: "{% raw %}{{ directory_entry }}{% endraw %}"
     executable: /bin/bash
 
-- name: write the parmfile to the reader
-  shell: curl -Q "SITE FIX 132" -T {{ webroot }}{% raw %}/bootfiles/{{ cluster_nodes[coreos_role][item].guest_name }}.znetboot{% endraw %} -B ftp://MAINT.BY.{{ ocp_smapi_user|quote }}:{{ ocp_smapi_password|quote }}@{{ zvm_internal_ip_address|quote }}/MAINT.200/  # noqa 204
-  args:
-    warn: false
+#- name: write the parmfile to the reader
+#  shell: curl -Q "SITE FIX 132" -T {{ webroot }}{% raw %}/bootfiles/{{ cluster_nodes[coreos_role][item].guest_name }}.znetboot{% endraw %} -B ftp://MAINT.BY.{{ ocp_smapi_user|quote }}:{{ ocp_smapi_password|quote }}@{{ zvm_internal_ip_address|quote }}/MAINT.200/  # noqa 204
+#  args:
+#    warn: false
 
 - name: IPL a Linux guest
   shell: /usr/local/bin/smcli ia -T {% raw %}{{ cluster_nodes[coreos_role][item].guest_name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
