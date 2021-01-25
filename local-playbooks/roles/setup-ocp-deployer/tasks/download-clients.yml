@@ -1,0 +1,32 @@
+- name: download release.txt
+  copy:
+    src: "{{ openshift_clients_url }}/{{ item }}/release.txt"
+    dest: "/usr/local/bin/{{ item }}/"
+    remote_src: yes
+  environment: "{{ local_proxy_env | default(omit) }}"
+
+- name: download and set permissions for openshift-install
+  block:
+  - name: download and unzip openshift-install
+    unarchive:
+      src: "{{ openshift_clients_url }}/{{ item }}/openshift-install-linux.tar.gz"
+      dest: "/usr/local/bin/{{ item }}/"
+      remote_src: yes
+    environment: "{{ local_proxy_env | default(omit) }}"
+  - name: set permissions for ocp installer
+    file:
+      path: "/usr/local/bin/ocp-{{ item }}/openshift-install"
+      mode: 0755
+
+- name: download and set permissions for openshift-client
+  block:
+  - name: download and unzip openshift-client
+    unarchive:
+      src: "{{ openshift_clients_url }}/{{ item }}/openshift-client-linux.tar.gz"
+      dest: "/usr/local/bin/{{ item }}/"
+      remote_src: yes
+    environment: "{{ local_proxy_env | default(omit) }}"
+  - name: set permissions for ocp client
+    file:
+      path: "/usr/local/bin/{{ item }}/oc"
+      mode: 0755

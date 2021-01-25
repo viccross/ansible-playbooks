@@ -1,7 +1,14 @@
 ---
-# handlers file for setup-ldap-tools
+# handlers file for setup-ocp-deployer
 - name: Restart firewalld.service
   service:
     name: firewalld.service
     state: restarted
   listen: "restart firewalld"
+
+- name: Enable incrond service
+  systemd:
+    name: incrond
+    state: stopped
+    enabled: yes
+  listen: "enable incrond"
