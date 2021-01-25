@@ -1,0 +1,112 @@
+---
+# Configure the internal domain name of the cluster here.
+cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
+
+# The URL of of the archive containing the
+# RHCOS kernel, initramfs, and disk images
+rhcos_version: "4.5.4-s390x"
+rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.5/latest/"
+
+# The download URL of the openshift-install binary
+openshift_version: "4.5.4"
+openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-install-linux-{{ openshift_version }}.tar.gz"
+openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-client-linux-{{ openshift_version }}.tar.gz"
+
+# The IP address of the local network
+# gateway, and the netmask/cidr of
+# the subnet
+subnet_in_addr_name: "{{ subnet_cidr.split('.')[:3] | reverse | join('.') }}"
+
+# This is the IP address of the bastion
+# when the bastion is configures as a dhcp
+# server.  Otherwise it is ignored.
+dhcp_server_ip_address: "{{ bastion_private_ip_address }}"
+
+coreos_kargs_net:
+  zvm: "ip={{ cluster_nodes[coreos_role][item].ip }}::{{ subnet_gateway }}:{{ subnet_netmask }}:::none nameserver={{ bastion_private_ip_address }}"
+
+coreos_kargs_extra:
+  zvm:  "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
+
+dev_disk:
+  zvm: dasda
+
+# This is the default node configuration.
+# Please ensure the MAC addresses are
+# correct for the hardware you are deploying to.
+# The IP addresses must be on the same subnet as
+# the {{ cluster_subnet_prefix }}
+# CHANGEME!
+ocp_guest_pfx: OCPZ
+cluster_nodes:
+  bootstrap:
+    bootstrap-0:
+      guest_name: "{{ ocp_guest_pfx }}BOOT"
+      mac: '52:54:00:d0:f7:03'
+      ip: '{{ ip_bootstrap_0 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: bootstrap.ign
+  masters:
+    master-0:
+      guest_name: "{{ ocp_guest_pfx }}MAS0"
+      mac: '52:54:00:da:70:41'
+      ip: '{{ ip_master_0 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: master.ign
+    master-1:
+      guest_name: "{{ ocp_guest_pfx }}MAS1"
+      mac: '52:54:00:a2:93:d8'
+      ip: '{{ ip_master_1 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: master.ign
+    master-2:
+      guest_name: "{{ ocp_guest_pfx }}MAS2"
+      mac: '52:54:00:d9:5b:d8'
+      ip: '{{ ip_master_2 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: master.ign
+  workers:
+    worker-0:
+      guest_name: "{{ ocp_guest_pfx }}WRK0"
+      mac: '52:54:00:70:8b:74'
+      ip: '{{ ip_worker_0 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: worker.ign
+    worker-1:
+      guest_name: "{{ ocp_guest_pfx }}WRK1"
+      mac: '52:54:00:70:8b:75'
+      ip: '{{ ip_worker_1 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: worker.ign
+
+# The following variables should generally not need to be edited
+
+install_mode: zvm
+
+# This will be the same as the bastion private ip when
+# bastion is a separate VM, otherwise it is the gateway ip.
+# dhcp_server_ip_address is not used by default in a z/VM install
+bastion_public_ip_address: "{{ guest_install_ipaddr }}"
+
+# pxe_mode (grub, pxelinux, znetboot)
+# use pxelinux mode for zvm to generate
+# parmfiles, then punch and IPL manually
+# use znetboot mode for zvm to generate
+# a config file for the ZNETBOOT tool,
+# which punches files automatically
+pxe_mode: znetboot
+
+ocp4_pull_secret_file: "{{ webroot }}/.secret/.ocp4_pull_secret"
+ocp4_pull_secret: "{{ lookup('file', ocp4_pull_secret_file ) | from_json }}"
+
+rhcos_disk_type:
+  zvm: dasd
+
+rhcos_installer_initramfs: 'rhcos-{{ rhcos_version }}-installer-initramfs.s390x.img'
+rhcos_installer_kernel: 'rhcos-{{ rhcos_version }}-installer-kernel-s390x'
+rhcos_disk_image: 'rhcos-{{ rhcos_version }}-{{ rhcos_disk_type[install_mode] }}.s390x.raw.gz'
+
+rhcos_download_files:
+  - '{{ rhcos_installer_initramfs }}'
+  - '{{ rhcos_installer_kernel }}'
+  - '{{ rhcos_disk_image }}'

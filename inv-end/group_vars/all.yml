@@ -1,0 +1,78 @@
+---
+# variables for all hosts
+#
+# Bastion build variables
+guest_name: "LXOCPB01"
+guest_pwd: "LBYONLY"
+guest_dasd_grp_linux: "LINUX"
+guest_install_hostname: "lxocpb01"
+guest_temp_ipaddr: "9.60.86.74"
+guest_install_ipaddr: "9.60.86.72"
+guest_install_netmask: "255.255.254.0"
+guest_install_gateway: "9.60.86.1"
+guest_install_nameserver: "9.60.70.82"
+guest_install_znet: "qeth,0.0.0ad0,0.0.0ad1,0.0.0ad2,layer2=1,portname=none,portno=0"
+guest_install_dasd: "0.0.0200"
+guest_install_nicid: "encad0"
+guest_install_ksurl: "http://10.2.75.199/install/rhelks"
+znetboot_cfg_path: /mnt/znetboot
+znetboot_cfg_disk: "LNXMAINT 200"
+use_cmsfs_for_znetboot_cfg: true
+guest_install_baseurl: "http://9.60.86.81/linux/s390x/boot/rel/8.1"
+guest_install_repo_baseos: "BaseOS"
+guest_install_repo_appstream: "AppStream"
+# upstream_proxy_ip: 10.2.55.220
+# upstream_proxy_port: 3128
+# local_proxy_env:
+#   http_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
+#   https_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
+#
+# smapi parameters
+smapi_host: "9.60.86.71"
+smapi_user: "IBMAUTO"
+smapi_password: "8L$YN2FO"
+#
+ldap_base: ou=ibmzvm,o={{ cert_organization }}
+ldap_url: ldap://{{ zvm_internal_ip_address }}:389
+sdbm_base: o=IBMZVM
+admin_uid: IBMAUTO
+admin_pwd: "8L$YN2FO"
+webroot: "/var/www/html"
+meta_header_file: "meta_header.html"
+#
+# CA paramaters
+ca_csr_path: /etc/pki/tls/misc
+ca_key_path: /etc/pki/tls/private
+ca_cert_path: /etc/pki/tls/certs
+ca_trust_path: /etc/pki/ca-trust/source/anchors
+#
+# OCP cluster params
+ocp_cluster_lan_name: "OCPLAN"
+ocp_dasd_prefix: ZVMU
+ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
+ocp_smapi_user: IBMAUTO
+ocp_smapi_password: "8L$YN2FO"
+#
+# Details needed for the cluster to be built
+cluster_base_domain: "wsc.ibm"
+cluster_name: "ocp-z-poc"
+cert_organization: IBM
+cert_country: AU
+dns_nameserver: 9.60.70.81
+bastion_vsw_dev: "ad0"
+bastion_hsi_dev: "ad8"
+guest_internal_nicid: "encad8"
+guest_internal_znet: "qeth,0.0.0ad8,0.0.0ad9,0.0.0ada,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
+subnet_gateway: 172.24.26.1
+subnet_netmask: 255.255.255.0
+subnet_cidr: 172.24.26.0/24
+bastion_private_ip_address: 172.24.26.1
+zvm_internal_ip_address: 172.24.26.10
+zvm_rd_znet: "rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=0,portno=0"
+zvm_rd_dasd: "rd.dasd=0.0.0200"
+ip_bootstrap_0: '172.24.26.2'
+ip_master_0: '172.24.26.3'
+ip_master_1: '172.24.26.4'
+ip_master_2: '172.24.26.5'
+ip_worker_0: '172.24.26.6'
+ip_worker_1: '172.24.26.7'
