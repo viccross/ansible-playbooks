@@ -1,0 +1,5 @@
+---
+- name: Create and export z/VM certificates using local Certificate Authority
+  hosts: localhost
+  roles:
+  - "create-zvm-certificates"

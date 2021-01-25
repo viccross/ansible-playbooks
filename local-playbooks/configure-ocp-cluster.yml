@@ -1,0 +1,5 @@
+---
+- name: Create certificate for OCP .apps domain and configure
+  hosts: s390x_bastion_workstation
+  roles:
+  - configure-ocp-cluster

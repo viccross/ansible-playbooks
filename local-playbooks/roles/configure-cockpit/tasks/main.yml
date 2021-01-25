@@ -1,0 +1,58 @@
+---
+- name: Configure and enable Cockpit
+  block:
+  - name: generate cockpit private key
+    openssl_privatekey:
+      path: /etc/pki/tls/private/cockpit.pem
+
+  - name: generate cockpit CSR
+    openssl_csr:
+      path: /etc/pki/tls/misc/cockpit.csr
+      privatekey_path: /etc/pki/tls/private/cockpit.pem
+      common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+      subject_alt_name:
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
+      organization_name: "{{ cert_organization }}"
+      organizational_unit_name: "Red Hat Openshift PoC"
+      country_name: "{{ cert_country }}"
+
+  - name: generate Certificate
+    openssl_certificate:
+      path: /etc/pki/tls/certs/cockpit.cert
+      csr_path: /etc/pki/tls/misc/cockpit.csr
+      ownca_path: /etc/pki/tls/certs/oqsCA.cert
+      ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+      provider: ownca
+
+  - name: create combined PEM file for Cockpit
+    shell:
+      cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
+      chdir: /etc/pki/tls/
+
+  - name: set permissions on certificate
+    file:
+      path: /etc/cockpit/ws-certs.d/cockpit-combined.cert
+      owner: root
+      group: cockpit-ws
+      mode: 0640
+
+  - name: remove self-signed certs/CAs
+    block:
+      - name: find the files
+        find:
+          paths: /etc/cockpit/ws-certs.d
+          patterns: 0-*
+        register: files_to_delete
+
+      - name: delete the files
+        file:
+          path: "{{ item.path }}"
+          state: absent
+        with_items: "{{ files_to_delete.files }}"
+
+- name: enable the Cockpit interface
+  service:
+    name: cockpit.socket
+    state: started
+    enabled: yes

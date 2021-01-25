@@ -1,0 +1,83 @@
+#!/bin/bash
+# ipconf.sh -- IP configuration in FastVM
+# Checks for a configuration file on the CMS disk and configures appropriately
+
+FP={{ znetboot_cfg_path }}
+IFN=enc{{ bastion_vsw_dev }}
+MYID=`vmcp q userid | awk '{print $1;}'`
+
+function changeIP {
+  FN=$1
+  echo "${FN} found, applying"
+  source <(grep ^IPADDR ${FN})
+  echo IP Address is ${IPADDR}
+  source <(grep ^NETMASK ${FN})
+  echo -n Net mask is ${NETMASK}
+  PFX=`ipcalc -p ${IPADDR} ${NETMASK} | sed -n 's/^PREFIX=\(.*\)/\1/p'`
+  echo , prefix is ${PFX}
+  source <(grep ^GATEWAY ${FN})
+  echo Gateway is ${GATEWAY}
+  source <(grep ^DNS ${FN})
+  if [ -v DNS1 ]; then
+    DNS="${DNS1}"
+    if [ -v DNS2 ]; then
+      DNS="${DNS}; ${DNS2}"
+    fi
+    if [ -v DNS3 ]; then
+      DNS="${DNS}; ${DNS3}"
+    fi
+    echo DNS servers are: ${DNS}
+  fi
+
+  # all the details retrieved, let's use nmcli to do the work
+  # first, obtain the UUID of the interface
+  source <(grep ^UUID /etc/sysconfig/network-scripts/ifcfg-${IFN})
+  if [ ! -v UUID ]; then
+    echo "UUID of interface not known, exiting!"
+    exit 1;
+  fi
+  # next, update the interface
+  nmcli con mod ${UUID} ipv4.method manual ipv4.addresses "${IPADDR}/${PFX}"
+  nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
+  nmcli con up ${UUID}
+  # next, do the dynamic DNS update to fix BIND
+  nsupdate -l -v <<EOF
+zone {{ cluster_domain_name }}
+update delete bastion.{{ cluster_domain_name }}. A
+update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete api.{{ cluster_domain_name }}. A
+update add api.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete apps.{{ cluster_domain_name }}. A
+update add apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
+update delete *.apps.{{ cluster_domain_name }}. A
+update add *.apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
+send
+EOF
+  # update the file in the web server directory
+  cat <<EOF > {{ webroot }}/etc.hosts
+${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
+${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
+EOF
+  # Changing the IP address means having to restart HA-Proxy
+  systemctl restart haproxy.service
+  echo "HA-Proxy restarted"
+  # upstream DNS is harder, have to change the bind config...
+  if [ -v DNS ]; then
+    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
+    systemctl restart named-chroot
+    echo "BIND name server restarted"
+  fi
+}
+
+# Main starts here
+echo "Checking IP configuration for $MYID..."
+
+FN="${FP}/${MYID}.IFCFG"
+if [ -f ${FN} ]; then
+  changeIP ${FN}
+elif [ -f ${FP}/ZVMIP.CONF ]; then
+  changeIP ${FP}/ZVMIP.CONF
+else
+  echo "No IP config file found."
+fi
+

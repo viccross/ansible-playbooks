@@ -1,0 +1,53 @@
+---
+# tasks file for configure-dnsmasq
+
+- name: install dnsmasq for dns
+  dnf:
+    name: dnsmasq
+    state: present
+
+- name: unmanage resolve.conf in NetworkManager
+  lineinfile:
+    line: dns=none
+    dest: /etc/NetworkManager/NetworkManager.conf
+    insertafter: "\\[main\\].*"
+    regexp: "^dns=.*"
+
+- name: use local dns in resolv.conf
+  blockinfile:
+    dest: /etc/resolv.conf
+    insertbefore: BOF
+    block: |
+      search {{ cluster_domain_name }}
+      nameserver {{ bastion_private_ip_address }}
+
+- name: create hosts file
+  template:
+    src: etc/hosts-ocp.j2
+    dest: /etc/hosts-ocp
+
+- name: create dnsmasq configuration file
+  template:
+    src: etc/dnsmasq.d.ocp.j2
+    dest: /etc/dnsmasq.d/ocp.conf
+  notify:
+   - restart dns
+
+- name: add dns to firewall
+  firewalld:
+    permanent: true
+    service: dns
+    state: enabled
+    zone: "{{ item }}"
+  with_items:
+    - internal
+    - public
+  notify:
+  - restart firewalld
+
+- name: Restart dnsmasq.service
+  service:
+    name: dnsmasq.service
+    state: restarted
+    enabled: true
+

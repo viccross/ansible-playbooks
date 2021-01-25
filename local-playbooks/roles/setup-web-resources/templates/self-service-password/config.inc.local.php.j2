@@ -1,0 +1,26 @@
+<?php
+// Override config.inc.php parameters
+
+{% if meta_header_file is defined %}
+$custom_css = "/w3ds/w3ds.css";
+$custom_js = "/w3ds/w3ds.js";
+$meta_header_file = "../{{ meta_header_file }}";
+unset($background_image);
+{% endif %}
+
+$lang = "en";
+$keyphrase = "{{ lookup('password', '/dev/null') }}";
+
+$ldap_url = "{{ ldap_url }}";
+$ldap_base = "{{ ldap_base }}";
+$ldap_binddn = "";
+$ldap_bindpw = "";
+$who_change_password = "user";
+$use_questions = false;
+$use_tokens = false;
+$use_sms = false;
+$change_sshkey = true;
+
+$racf_mode = true;
+
+?>

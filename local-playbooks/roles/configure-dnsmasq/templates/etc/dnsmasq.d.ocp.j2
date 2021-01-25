@@ -1,0 +1,13 @@
+# dnsmasq config file for OCP cluster
+#
+local-ttl=10800
+localise-queries
+#
+# OCP-specific host and SRV entries
+address=/apps.{{ cluster_domain_name }}/{{ bastion_public_ip_address }}
+srv-host=_etcd-server-ssl._tcp.{{ cluster_domain_name }},etcd-0.{{ cluster_domain_name }},2380,0,10
+{% for item in masters.keys() %}
+  {% if loop.index != 1 %}
+srv-host=_etcd-server-ssl._tcp.{{ cluster_domain_name }},etcd-{{(loop.index - 1) }}.{{ cluster_domain_name }},2380,0,10
+  {% endif %}
+{% endfor %}
