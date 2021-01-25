@@ -1,0 +1,11 @@
+# localhost variables
+# 
+# Main reason this is needed is due to the dev env in AU being Gentoo-based,
+#   so some paths, cmds, etc need to be changed from the RHEL defaults in 
+#   all.yml.
+#   
+# CA paramaters
+ca_csr_path: /etc/ssl/CA/misc
+ca_key_path: /etc/ssl/CA/private
+ca_cert_path: /etc/ssl/CA/certs
+ca_trust_path: /etc/ssl/certs

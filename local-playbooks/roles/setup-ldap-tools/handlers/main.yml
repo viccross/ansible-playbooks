@@ -1,7 +1,0 @@
----
-# handlers file for setup-ldap-tools
-- name: Restart firewalld.service
-  service:
-    name: firewalld.service
-    state: restarted
-  listen: "restart firewalld"
