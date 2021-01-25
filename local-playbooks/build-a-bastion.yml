@@ -1,12 +1,10 @@
 # Run the setup effort to build an OCP Bastion guest
-#- name: Create guest for OCP Bastion
-#  hosts: 127.0.0.1
-#  connection: local
-#  vars:
-#  - directory_entry: "{{ lookup('template', 'guest.direct.j2') }}"
-#  roles:
-#  - create-guest-for-linux
-#
+- name: Create a CA for the Bastion
+  hosts: 127.0.0.1
+  connection: local
+  roles:
+  - create-local-ca
+
 - name: Configure services on the OCP Bastion
   hosts: s390x_bastion_workstation
   roles:

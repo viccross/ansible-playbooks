@@ -2,7 +2,7 @@
 - name: install apache httpd
   yum:
     name: httpd
-    state: latest
+    state: present
 
 - name: bind httpd to port 8080
   lineinfile:
@@ -47,14 +47,14 @@
       name:
       - git
       - file
-      state: latest
+      state: present
     when: install_mode == 'zkvm'
 
   - name: clone s390x-tools
-    shell: git clone https://github.com/ibm-s390-tools/s390-tools.git
-    args:
-      chdir: /root
-      creates: /root/s390-tools
+    git:
+      repo: 'https://github.com/ibm-s390-tools/s390-tools.git'
+      dest: /root/s390-tools
+      version: master
     when: install_mode == 'zkvm'
     environment: "{{ local_proxy_env | default(omit) }}"
 

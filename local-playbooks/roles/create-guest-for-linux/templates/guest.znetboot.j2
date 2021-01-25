@@ -1,12 +1,12 @@
-ZNETBOOT_KERNEL=http://10.2.75.199/install/rhel/8.0/images/kernel.img
-ZNETBOOT_INITRD=http://10.2.75.199/install/rhel/8.0/images/initrd.img
+ZNETBOOT_KERNEL={{ guest_install_baseurl }}/images/kernel.img
+ZNETBOOT_INITRD={{ guest_install_baseurl }}/images/initrd.img
 ZNETBOOT_PROGRESS=2M
 
 ro ramdisk_size=40000 cio_ignore=all,!condev
 rd.dasd={{ guest_install_dasd }}
 rd.znet={{ guest_install_znet }} 
 rd.znet={{ guest_internal_znet }} 
-ip={{ guest_temp_ipaddr}}::{{ guest_install_gateway }}:255.255.255.0:{{ guest_install_hostname }}:{{ guest_install_nicid }}:none
+ip={{ guest_temp_ipaddr }}::{{ guest_install_gateway }}:{{ guest_install_netmask }}:{{ guest_install_hostname }}:{{ guest_install_nicid }}:none
 nameserver={{ guest_install_nameserver }}
-inst.repo=http://10.2.75.199/install/rhel/8.0
-inst.ks=http://10.2.75.199/install/rhelks/{{guest_install_hostname }}.ks
+inst.repo={{ guest_install_baseurl }}/
+inst.ks={{ guest_install_ksurl }}/{{guest_install_hostname }}.ks

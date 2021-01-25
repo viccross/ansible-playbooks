@@ -1,15 +1,52 @@
 ---
+- name: create SSL for Stats page
+  block:
+  - name: generate haproxy private key
+    openssl_privatekey:
+      path: /etc/pki/tls/private/haproxy.pem
+
+  - name: generate httpd CSR
+    openssl_csr:
+      path: /etc/pki/tls/misc/haproxy.csr
+      privatekey_path: /etc/pki/tls/private/haproxy.pem
+      common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+      subject_alt_name:
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
+      organization_name: "{{ cert_organization }}"
+      organizational_unit_name: "Red Hat Openshift PoC"
+      country_name: "{{ cert_country }}"
+
+  - name: generate Certificate
+    openssl_certificate:
+      path: /etc/pki/tls/certs/haproxy.cert
+      csr_path: /etc/pki/tls/misc/haproxy.csr
+      ownca_path: /etc/pki/tls/certs/oqsCA.cert
+      ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+      provider: ownca
+
+  - name: create combined PEM file for HAProxy
+    shell:
+      cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
+      chdir: /etc/pki/tls/
+
+  - name: set permissions on certificate
+    file:
+      path: /etc/haproxy/haproxy-combined.pem
+      owner: root
+      group: haproxy
+      mode: 0640
+
 - name: add the HA-Proxy configuration for the statistics interface
   blockinfile:
     dest: /etc/haproxy/haproxy.cfg
     block: |
       frontend stats
-        bind *:8404
+        bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
         stats enable
         stats uri /stats
         stats refresh 10s
         stats admin if LOCALHOST
-        stats auth admin:redhat
   notify: "Restart haproxy.service"
 
 - name: allow traffic at 8404 for haproxy

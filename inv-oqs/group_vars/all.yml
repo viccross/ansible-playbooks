@@ -1,16 +1,25 @@
 ---
 # variables for all hosts
+#
+# Bastion build variables
 guest_name: "ZR8INFRA"
 guest_pwd: "ZVM4DEMO"
 guest_dasd_grp_linux: "MDBASLIN"
 guest_install_hostname: "zr8infra-oqs"
 guest_temp_ipaddr: "10.2.75.96"
 guest_install_ipaddr: "10.2.75.177"
+guest_install_netmask: "255.255.255.0"
 guest_install_gateway: "10.2.75.1"
 guest_install_nameserver: "10.2.75.199"
 guest_install_znet: "qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=vswbase2,portno=0"
 guest_install_dasd: "0.0.0200"
 guest_install_nicid: "enc600"
+guest_install_ksurl: "http://10.2.75.199/install/rhelks"
+znetboot_cfg_path: /srv/install/rhelks
+use_cmsfs_for_znetboot_cfg: false
+guest_install_baseurl: "http://10.2.75.199/install/rhel/8.0"
+guest_install_repo_baseos: "BaseOS"
+guest_install_repo_appstream: "AppStream"
 upstream_proxy_ip: 10.2.55.220
 upstream_proxy_port: 3128
 local_proxy_env:
@@ -19,21 +28,29 @@ local_proxy_env:
 #
 # smapi parameters
 smapi_host: "10.2.75.178"
-smapi_user: "IBMVM1"
-smapi_password: "ZVM4DEMO"
+smapi_user: "IBMAUTO"
+smapi_password: "8L$YN2FO"
 #
 ldap_base: ou={{ cluster_name }},o={{ cert_organization }}
 ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=OCPSSI
-admin_uid: SYSADMIN
-admin_pwd: ZVM4DEMO
+admin_uid: IBMAUTO
+admin_pwd: "8L$YN2FO"
+webroot: "/var/www/html"
+meta_header_file: "meta_header.html"
+#
+# CA paramaters
+ca_csr_path: /etc/pki/tls/misc
+ca_key_path: /etc/pki/tls/private
+ca_cert_path: /etc/pki/tls/certs
+ca_trust_path: /etc/pki/ca-trust/source/anchors
 #
 # OCP cluster params
 ocp_cluster_lan_name: "OCPLAN"
 ocp_dasd_prefix: OCPDA
 ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
-ocp_smapi_user: IBMVM1
-ocp_smapi_password: ZVM4DEMO
+ocp_smapi_user: IBMAUTO
+ocp_smapi_password: "8L$YN2FO"
 #
 # Details needed for the cluster to be built
 cluster_base_domain: "z.stg.ibm"
@@ -41,6 +58,8 @@ cluster_name: "zpoc-test"
 cert_organization: IBM
 cert_country: AU
 dns_nameserver: 10.2.75.199
+bastion_vsw_dev: "600"
+bastion_hsi_dev: "620"
 guest_internal_nicid: "enc620"
 guest_internal_znet: "qeth,0.0.0620,0.0.0621,0.0.0622,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
 subnet_gateway: 172.31.177.1
