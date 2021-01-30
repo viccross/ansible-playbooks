@@ -8,6 +8,9 @@ jobs:
     - name: Lint Ansible Playbooks
       uses: ansible/ansible-lint-action@master
       with:
+        override-deps: |
+          ansible==2.9
+          ansible-lint==4.1.0
         targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/create-cluster.yml
