@@ -5,7 +5,8 @@
   stat:
     path: ~/.ocp4_pull_secret
   register: ps
-- fail: abort if the pull secret is not present
+- name: abort if the pull secret is not present
+  fail:
     msg: "OCP pull secret is not found!"
   when: not ps.stat.exists
 
