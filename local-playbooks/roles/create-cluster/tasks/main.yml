@@ -1,13 +1,13 @@
 ---
 # tasks file for create-cluster
 
-- name: abort if the pull secret is not present
+- name: grab the pull secret
   stat:
     path: ~/.ocp4_pull_secret
   register: ps
-- fail:
+- fail: abort if the pull secret is not present
     msg: "OCP pull secret is not found!"
-  when: ps.stat.exists == False
+  when: not ps.stat.exists
 
 - name: create openshift workdir
   file:

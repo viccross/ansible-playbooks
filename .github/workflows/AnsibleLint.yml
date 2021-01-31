@@ -8,6 +8,7 @@ jobs:
     - name: Lint Ansible Playbooks
       uses: ansible/ansible-lint-action@master
       with:
+        args: "-x 106"
         targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/create-cluster.yml

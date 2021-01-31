@@ -13,6 +13,7 @@
       option: proxy
       value: "{{ local_proxy_env.https_proxy }}"
       no_extra_spaces: yes
+      mode: 0644
     when: local_proxy_env is defined
 
 - name: install Ansible and incron
