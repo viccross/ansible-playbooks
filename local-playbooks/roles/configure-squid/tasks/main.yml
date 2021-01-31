@@ -13,11 +13,15 @@
   file:
     path: /etc/squid
     state: directory
+    group: squid
+    mode: 0755
 
 - name: create /etc/squid/squid.conf
   template:
     src: etc/squid/squid.conf.j2
     dest: /etc/squid/squid.conf
+    group: squid
+    mode: 0640
 
 - name: allow traffic at port 3128
   firewalld:
@@ -46,4 +50,3 @@
     name: firewalld.service
     state: restarted
     enabled: true
-

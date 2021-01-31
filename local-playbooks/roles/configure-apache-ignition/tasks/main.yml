@@ -33,6 +33,7 @@
   file:
     path: "{{ bootfile_dest }}"
     state: directory
+    mode: 0755
 
 - name: download images
   get_url:
