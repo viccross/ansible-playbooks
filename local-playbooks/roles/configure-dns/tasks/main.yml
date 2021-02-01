@@ -10,6 +10,8 @@
   file:
     path: /var/named
     state: directory
+    mode: 01770
+    group: named
 
 - name: create DNS Forward zone
   template:
@@ -17,6 +19,7 @@
     dest: /var/named/{{ cluster_domain_name }}.zone
     owner: named
     group: named
+    mode: 0640
   notify:
   - restart dns
 
@@ -26,6 +29,7 @@
     dest: /var/named/ibmpoc_internal.zone
     owner: named
     group: named
+    mode: 0640
   notify:
   - restart dns
 
@@ -50,6 +54,7 @@
     dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
     owner: named
     group: named
+    mode: 0640
   notify:
   - restart dns
 
@@ -57,6 +62,8 @@
   template:
     src: etc/named.conf.j2
     dest: /etc/named.conf
+    group: named
+    mode: 0640
   notify:
   - restart dns
 
@@ -64,10 +71,12 @@
   template:
     src: etc/named.conf.j2
     dest: /etc/named.conf.source
+    group: named
+    mode: 0640
   vars:
   - dns_nameserver: "XXX.XXX.XXX.XXX"
 
-- name: set up rndc for dynamic DNS
+- name: set up rndc for dynamic DNS # noqa 301
   command:
     cmd: rndc-confgen -a
 
@@ -94,4 +103,3 @@
     name: firewalld.service
     state: restarted
     enabled: true
-
