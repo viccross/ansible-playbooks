@@ -2,7 +2,7 @@
 - name: generate CA private key
   openssl_privatekey:
     path: "{{ ca_key_path }}/oqsCA.pem"
-    group: 10000
+    group: support
     mode: 0640
 
 - name: generate CA CSR
