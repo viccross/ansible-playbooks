@@ -31,6 +31,7 @@
   loop:
     - "/opt/ansible/roles/create-cluster/tasks"
     - "/opt/ansible/roles/create-cluster/templates"
+    - "/opt/ansible/roles/create-cluster/defaults"
     - "/opt/ansible/inventory/group_vars"
 
 - name: download and set permissions for openshift-install
