@@ -115,22 +115,22 @@
   include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
-    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
 
 - name: boot the master nodes
   include_tasks: boot-guest.yml
   vars:
     coreos_role: masters
-    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
 
 - name: boot the worker nodes
   include_tasks: boot-guest.yml
   vars:
     coreos_role: workers
-    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
   when: cluster_nodes.workers is defined
 
 - name: wait for bootstrap node accessibility
