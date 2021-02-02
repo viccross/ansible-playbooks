@@ -87,7 +87,7 @@
       dest: "/var/www/html/ignition/"
       remote_src: yes
       mode: 0644
-    with_items: "{{ ign_raw.stdout_lines }}"
+    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
 
 - name: install kubeconfig
   tags: wait-install
@@ -102,7 +102,7 @@
   tags: etc-hosts
   connection: local
   copy:
-    dest: "{{ playbook_dir }}/../etc.hosts"
+    dest: "{% raw %}{{ playbook_dir }}{% endraw %}/../etc.hosts"
     mode: 0644
     content: >
       {{ bastion_public_ip_address }}
@@ -136,29 +136,29 @@
 - name: wait for bootstrap node accessibility
   wait_for:
     port: 22
-    host: "{{ cluster_nodes['bootstrap'][item].ip }}"
+    host: "{% raw %}{{ cluster_nodes['bootstrap'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{{ cluster_nodes['bootstrap'] }}"
+  with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
 
 - name: wait for master node accessibility
   wait_for:
     port: 22
-    host: "{{ cluster_nodes['masters'][item].ip }}"
+    host: "{% raw %}{{ cluster_nodes['masters'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{{ cluster_nodes['masters'] }}"
+  with_items: "{% raw %}{{ cluster_nodes['masters'] }}{% endraw %}"
 
 - name: wait for worker node accessibility
   wait_for:
     port: 22
-    host: "{{ cluster_nodes['workers'][item].ip }}"
+    host: "{% raw %}{{ cluster_nodes['workers'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{{ cluster_nodes['workers'] }}"
+  with_items: "{% raw %}{{ cluster_nodes['workers'] }}{% endraw %}"
   when: cluster_nodes.workers is defined
 
 - name: wait for bootstrap complete # noqa 301
