@@ -1,4 +1,0 @@
-- name: create ocp4 cluster guests
-  hosts: s390x_bastion_workstation
-  roles:
-  - cluster-guests-create

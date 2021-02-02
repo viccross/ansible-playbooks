@@ -32,6 +32,7 @@
     - "/opt/ansible/roles/create-cluster/tasks"
     - "/opt/ansible/roles/create-cluster/templates"
     - "/opt/ansible/roles/create-cluster/defaults"
+    - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
 
 - name: download and set permissions for openshift-install
@@ -95,21 +96,19 @@
   loop:
   - { src: "install-config.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/install-config.yaml.j2" }
   - { src: "guest.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/guest.direct.j2" }
-  - { src: "create-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-guest.yml" }
-  - { src: "delete-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/delete-guest.yml" }
+  - { src: "create-guest-task.yml.j2", dest: "/opt/ansible/tasks/create-guest.yml" }
+  - { src: "delete-guest-task.yml.j2", dest: "/opt/ansible/tasks/delete-guest.yml" }
   - { src: "boot-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/boot-guest.yml" }
   - { src: "create-cluster-main.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/main.yml" }
   - { src: "defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/main.yml" }
+  - { src: "cluster-guests-create.yml.j2", dest: "/opt/ansible/cluster-guests-create.yml"}
+  - { src: "cluster-guests-delete.yml.j2", dest: "/opt/ansible/cluster-guests-delete.yml"}
 
-- name: create the main playbooks
+- name: create the main playbook
   template:
-    src: /opt/ansible/local-playbooks/{{ item }}.yml
-    dest: /opt/ansible/{{ item }}.yml
+    src: /opt/ansible/local-playbooks/create-cluster.yml
+    dest: /opt/ansible/create-cluster.yml
     mode: 0644
-  loop:
-  - "create-cluster"
-  - "cluster-guests-create"
-  - "cluster-guests-delete"
 
 - name: copy the smcli script
   copy:
