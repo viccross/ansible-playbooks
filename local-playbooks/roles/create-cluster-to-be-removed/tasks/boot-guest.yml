@@ -1,0 +1,11 @@
+---
+# tasks file for create-guest-for-linux
+- name: IPL a Linux guest # noqa 301 305
+  shell: /usr/local/bin/smcli ia -T {{ cluster_nodes[coreos_role][item].guest_name|quote }} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} # noqa 204
+  args:
+    executable: /bin/bash
+
+- name: set the real IPL device for a Linux guest # noqa 301 305
+  shell: /usr/local/bin/smcli iisd -T {{ cluster_nodes[coreos_role][item].guest_name|quote }} -n 200 -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} # noqa 204
+  args:
+    executable: /bin/bash

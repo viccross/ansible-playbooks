@@ -111,22 +111,22 @@
       console-openshift-console.apps.{{ cluster_domain_name }}
       oauth-openshift.apps.{{ cluster_domain_name }}
 
-- name: create and boot the bootstrap node
-  include_tasks: create-guest.yml
+- name: boot the bootstrap node
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
     directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
   with_items: "{{ cluster_nodes[coreos_role] }}"
 
-- name: create and boot the master nodes
-  include_tasks: create-guest.yml
+- name: boot the master nodes
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: masters
     directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
   with_items: "{{ cluster_nodes[coreos_role] }}"
 
-- name: create and boot the worker nodes
-  include_tasks: create-guest.yml
+- name: boot the worker nodes
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: workers
     directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
