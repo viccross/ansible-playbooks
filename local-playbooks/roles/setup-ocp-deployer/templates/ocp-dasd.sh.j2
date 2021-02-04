@@ -48,8 +48,8 @@ for dasd in ${dasds[@]}; do
 done
 
 # Add MDISK(s) to the OCP guests
-#ocpguests="{{ cluster_nodes | map(attribute='guest_name') | join(' ') }}"
-ocpguests="{% for type in cluster_nodes %}{% for guest in cluster_nodes[type] %}{{ cluster_nodes[type][guest].'guest_name' }} {% endfor %}{% endfor %}"
+ocpguests="{{ guestnames }}"
+IFS=" ";
 
 # Do this for each guest:
 for guest in ${ocpguests}; do

@@ -123,6 +123,9 @@
       src: ocp-dasd.sh.j2
       dest: /usr/local/bin/ocp-dasd.sh
       mode: 0750
+#    vars:
+#      guestnames: "{{ named_nodes | map('extract', named_nodes) | map(attribute='guest_name') | join(' ') }}"
+#      guestnames: "{% for guest in named_nodes.keys() %}{{ named_nodes[guest].guest_name }} {% endfor %}"
   - name: copy the DASD script systemd service file
     template:
       src: ocp-dasd.service.j2
