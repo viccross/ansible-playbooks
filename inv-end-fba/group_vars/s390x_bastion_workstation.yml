@@ -80,6 +80,11 @@ cluster_nodes:
       ip: '{{ ip_worker_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
+named_nodes:
+  <<: *bootnodes
+  <<: *masternodes
+  <<: *workernodes
+guestnames: "{% for item in named_nodes.values() %}{{ item.guest_name  }} {% endfor %}"
 
 # The following variables should generally not need to be edited
 
