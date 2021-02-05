@@ -1,7 +1,9 @@
 Role Name
 =========
 
-Modified version of the create-cluster role from multiarch-ci-playbooks.  This one is designed to be deployed into the OCP Bastion (by the setup-ocp-deployer role) with most/all of the variables for the new cluster being populated in advance.
+Modified version of the create-cluster role from multiarch-ci-playbooks.  This one is designed to be deployed into the OCP Bastion (by the `setup-ocp-deployer` role) with most/all of the variables for the new cluster being populated in advance.
+
+*** To avoid duplication this is being moved to become templates under the `setup-ocp-deployer` role (where most of the content already is anyway).
 
 Requirements
 ------------

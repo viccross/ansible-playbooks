@@ -242,7 +242,7 @@
     template:
       src: ipconf.sh.j2
       dest: /usr/local/sbin/ipconf.sh
-      owner: chroot
+      owner: root
       group: root
       mode: 0750
 

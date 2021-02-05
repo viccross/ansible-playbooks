@@ -1,0 +1,9 @@
+USER {% raw %}{{ cluster_nodes[coreos_role][item].guest_name }}{% endraw %} ZVM4DEMO 8192M 16384M G
+ INCLUDE IBMDFLT
+ CPU 00
+ CPU 01
+ IPL CMS
+ MACHINE ESA 4
+ CONSOLE 0009 3215 T OPMGRM1
+ NICDEF 0600 TYPE HIPERS LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3
+ LINK {{ znetboot_cfg_disk }} 191 RR

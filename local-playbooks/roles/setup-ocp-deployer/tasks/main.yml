@@ -31,6 +31,8 @@
   loop:
     - "/opt/ansible/roles/create-cluster/tasks"
     - "/opt/ansible/roles/create-cluster/templates"
+    - "/opt/ansible/roles/create-cluster/defaults"
+    - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
 
 - name: download and set permissions for openshift-install
@@ -86,30 +88,27 @@
     state: directory
     mode: 0750
 
-- name: create the template for install-config
+- name: copy files for the playbook
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   loop:
   - { src: "install-config.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/install-config.yaml.j2" }
-  - { src: "create-guest.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-guest.yml" }
+  - { src: "guest.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/guest.direct.j2" }
+  - { src: "create-guest-task.yml.j2", dest: "/opt/ansible/tasks/create-guest.yml" }
+  - { src: "delete-guest-task.yml.j2", dest: "/opt/ansible/tasks/delete-guest.yml" }
+  - { src: "boot-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/boot-guest.yml" }
+  - { src: "create-cluster-main.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/main.yml" }
+  - { src: "defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/main.yml" }
+  - { src: "cluster-guests-create.yml.j2", dest: "/opt/ansible/cluster-guests-create.yml"}
+  - { src: "cluster-guests-delete.yml.j2", dest: "/opt/ansible/cluster-guests-delete.yml"}
 
-- name: create the playbook
+- name: create the main playbook
   template:
     src: /opt/ansible/local-playbooks/create-cluster.yml
     dest: /opt/ansible/create-cluster.yml
     mode: 0644
-
-- name: copy files for the playbook
-  copy:
-    src: "/opt/ansible/local-playbooks/roles/create-cluster/{{ item.src }}"
-    dest: "/opt/ansible/roles/create-cluster/{{ item.dest }}"
-    mode: 0644
-  loop:
-  - { src: "defaults/main.yml", dest: "defaults/" }
-  - { src: "tasks/main.yml", dest: "tasks/" }
-  - { src: "templates/guest.direct.j2", dest: "templates/" }
 
 - name: copy the smcli script
   copy:

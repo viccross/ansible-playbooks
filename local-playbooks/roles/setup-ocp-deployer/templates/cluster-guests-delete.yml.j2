@@ -1,0 +1,22 @@
+---
+- name: delete ocp4 cluster guests
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: delete the bootstrap node
+    include_tasks: tasks/delete-guest.yml
+    vars:
+      coreos_role: bootstrap
+    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+
+  - name: delete the master nodes
+    include_tasks: tasks/delete-guest.yml
+    vars:
+      coreos_role: masters
+    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+
+  - name: delete the worker nodes
+    include_tasks: tasks/delete-guest.yml
+    vars:
+      coreos_role: workers
+    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    when: cluster_nodes.workers is defined
