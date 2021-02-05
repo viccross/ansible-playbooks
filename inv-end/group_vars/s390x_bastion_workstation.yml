@@ -39,14 +39,14 @@ dev_disk:
 # CHANGEME!
 ocp_guest_pfx: OCPZ
 cluster_nodes:
-  bootstrap:
+  bootstrap: &bootnodes
     bootstrap-0:
       guest_name: "{{ ocp_guest_pfx }}BOOT"
       mac: '52:54:00:d0:f7:03'
       ip: '{{ ip_bootstrap_0 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: bootstrap.ign
-  masters:
+  masters: &masternodes
     master-0:
       guest_name: "{{ ocp_guest_pfx }}MAS0"
       mac: '52:54:00:da:70:41'
@@ -65,7 +65,7 @@ cluster_nodes:
       ip: '{{ ip_master_2 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
-  workers:
+  workers: &workernodes
     worker-0:
       guest_name: "{{ ocp_guest_pfx }}WRK0"
       mac: '52:54:00:70:8b:74'
