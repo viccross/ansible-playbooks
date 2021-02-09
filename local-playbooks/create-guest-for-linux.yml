@@ -2,6 +2,6 @@
 - name: Create guest for Linux
   hosts: s390x_bastion_workstation
   vars:
-  - directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-guest-for-linux/templates/guest.direct.j2') }}"
-  roles: 
+  - directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-guest-for-linux/templates/guest.direct.j2') }}"
+  roles:
   - "{{ playbook_dir }}/roles/create-guest-for-linux"

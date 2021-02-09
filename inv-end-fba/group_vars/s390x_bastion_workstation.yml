@@ -2,15 +2,17 @@
 # Configure the internal domain name of the cluster here.
 cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
 
+# The version of OpenShift (and CoreOS) to fetch
+openshift_version: "4.5"
+
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
 rhcos_version: "4.5.4-s390x"
-rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.5/latest/"
+rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/{{ openshift_version }}/latest/"
 
 # The download URL of the openshift-install binary
-openshift_version: "4.5.4"
-openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-install-linux-{{ openshift_version }}.tar.gz"
-openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable/openshift-client-linux-{{ openshift_version }}.tar.gz"
+openshift_install_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable-{{ openshift_version }}/openshift-install-linux.tar.gz"
+openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable-{{ openshift_version }}/openshift-client-linux.tar.gz"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
@@ -39,14 +41,14 @@ dev_disk:
 # CHANGEME!
 ocp_guest_pfx: OCPZ
 cluster_nodes:
-  bootstrap:
+  bootstrap: &bootnodes
     bootstrap-0:
       guest_name: "{{ ocp_guest_pfx }}BOOT"
       mac: '52:54:00:d0:f7:03'
       ip: '{{ ip_bootstrap_0 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: bootstrap.ign
-  masters:
+  masters: &masternodes
     master-0:
       guest_name: "{{ ocp_guest_pfx }}MAS0"
       mac: '52:54:00:da:70:41'
@@ -65,7 +67,7 @@ cluster_nodes:
       ip: '{{ ip_master_2 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
-  workers:
+  workers: &workernodes
     worker-0:
       guest_name: "{{ ocp_guest_pfx }}WRK0"
       mac: '52:54:00:70:8b:74'
@@ -78,6 +80,11 @@ cluster_nodes:
       ip: '{{ ip_worker_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
+named_nodes:
+  <<: *bootnodes
+  <<: *masternodes
+  <<: *workernodes
+guestnames: "{% for item in named_nodes.values() %}{{ item.guest_name  }} {% endfor %}"
 
 # The following variables should generally not need to be edited
 

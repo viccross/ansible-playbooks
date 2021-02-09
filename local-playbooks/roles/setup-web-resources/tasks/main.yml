@@ -167,6 +167,7 @@
     file:
       path: "{{ webroot }}/w3ds"
       state: directory
+      mode: 0755
 
   - name: download and unzip w3DS
     unarchive:
@@ -180,7 +181,7 @@
       dest: "{{ webroot }}/"
       creates: "{{ webroot }}/oqs-header-master/meta_header.html"
 
-  - name: move downloaded site directory
+  - name: move downloaded site directory # noqa 302
     shell:
       cmd: "rm -rf {{ webroot }}/{scripts,justgage} && mv {{ webroot }}/oqs-header-master/* {{ webroot }}/ && rmdir {{ webroot }}/oqs-header-master"
       removes: "{{ webroot }}/oqs-header-master"
@@ -241,16 +242,14 @@
     template:
       src: ipconf.sh.j2
       dest: /usr/local/sbin/ipconf.sh
-
-  - name: set permissions on interface reconfiguration script
-    file:
-      path: /usr/local/sbin/ipconf.sh
       owner: root
+      group: root
       mode: 0750
 
   - name: create systemd service for interface reconfiguration
     blockinfile:
       dest: /etc/systemd/system/zvm-ipconf.service
+      mode: 0644
       insertbefore: BOF
       create: yes
       block: |
@@ -281,6 +280,7 @@
     file:
       path: "{{ webroot }}/{{ item }}"
       owner: apache
+      mode: 0750
       setype: httpd_sys_rw_content_t
       state: directory
     loop:
@@ -297,11 +297,13 @@
     template:
       src: self-service-password/config.inc.local.php.j2
       dest: "{{ webroot }}/self-service-password-racf-master/conf/config.inc.local.php"
+      mode: 0644
 
   - name: create config.inc.local.php for service-desk-racf
     template:
       src: service-desk-racf/config.inc.local.php.j2
       dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
+      mode: 0644
 
 - name: permit SELinux access to LDAP from Apache
   seboolean:

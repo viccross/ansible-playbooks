@@ -20,11 +20,15 @@
   file:
     path: /etc/haproxy
     state: directory
+    group: haproxy
+    mode: 0755
 
 - name: create /etc/haproxy/haproxy.cfg
   template:
     src: etc/haproxy/haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
+    group: haproxy
+    mode: 0644
 
 - name: allow http traffic
   firewalld:
@@ -83,4 +87,3 @@
     name: firewalld.service
     state: restarted
     enabled: true
-

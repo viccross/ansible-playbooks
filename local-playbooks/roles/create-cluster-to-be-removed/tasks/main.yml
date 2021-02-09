@@ -1,18 +1,20 @@
 ---
 # tasks file for create-cluster
 
-- name: abort if the pull secret is not present
+- name: grab the pull secret
   stat:
     path: ~/.ocp4_pull_secret
   register: ps
-- fail:
+- name: abort if the pull secret is not present
+  fail:
     msg: "OCP pull secret is not found!"
-  when: ps.stat.exists == False
-    
+  when: not ps.stat.exists
+
 - name: create openshift workdir
   file:
     path: "{{ workdir }}"
     state: "directory"
+    mode: 0755
 
 - name: copy the ZNETBOOT config files to CMS
   block:
@@ -29,7 +31,7 @@
   - name: vary the DASD online
     command:
       cmd: chccwdev -e 191
-# Can't use Ansible copy module due to CMSFS semantics 
+# Can't use Ansible copy module due to CMSFS semantics
 # (and stubbornness of Ansible)
   - name: copy the files
     shell:
@@ -56,6 +58,7 @@
   template:
     dest: "{{ workdir }}/{{ item }}"
     src: install-config.yaml.j2
+    mode: 0644
   with_items:
   - install-config.yaml
   - install-config.copy.yaml
@@ -72,6 +75,7 @@
     file:
       path: /var/www/html/ignition
       state: directory
+      mode: 0755
   - name: get ign files
     tags: config
     shell: ls {{ workdir }}/*.ign
@@ -82,6 +86,7 @@
       src: "{{ item }}"
       dest: "/var/www/html/ignition/"
       remote_src: yes
+      mode: 0644
     with_items: "{{ ign_raw.stdout_lines }}"
 
 - name: install kubeconfig
@@ -91,12 +96,14 @@
     dest: "~/.kube/config"
     remote_src: yes
     force: yes
+    mode: 0640
 
 - name: create /etc/hosts entry
   tags: etc-hosts
   connection: local
   copy:
     dest: "{{ playbook_dir }}/../etc.hosts"
+    mode: 0644
     content: >
       {{ bastion_public_ip_address }}
       bastion.{{ cluster_domain_name }}
@@ -104,25 +111,25 @@
       console-openshift-console.apps.{{ cluster_domain_name }}
       oauth-openshift.apps.{{ cluster_domain_name }}
 
-- name: create and boot the bootstrap node
-  include_tasks: create-guest.yml
+- name: boot the bootstrap node
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
-    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
   with_items: "{{ cluster_nodes[coreos_role] }}"
 
-- name: create and boot the master nodes
-  include_tasks: create-guest.yml
+- name: boot the master nodes
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: masters
-    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
   with_items: "{{ cluster_nodes[coreos_role] }}"
 
-- name: create and boot the worker nodes
-  include_tasks: create-guest.yml
+- name: boot the worker nodes
+  include_tasks: boot-guest.yml
   vars:
     coreos_role: workers
-    directory_entry: "{{ lookup('template', '{{ playbook_dir}}/roles/create-cluster/templates/guest.direct.j2') }}"
+    directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
   with_items: "{{ cluster_nodes[coreos_role] }}"
   when: cluster_nodes.workers is defined
 
@@ -154,7 +161,7 @@
   with_items: "{{ cluster_nodes['workers'] }}"
   when: cluster_nodes.workers is defined
 
-- name: wait for bootstrap complete
+- name: wait for bootstrap complete # noqa 301
   tags: config
   shell: openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
   args:
@@ -167,7 +174,7 @@
     name: ocp-approve-csrs
     state: started
 
-- name: wait for install complete
+- name: wait for install complete # noqa 301
   tags: wait-install
   shell: openshift-install --dir=`pwd` wait-for install-complete
   args:

@@ -8,13 +8,13 @@
 
 ocpdasd={{ ocp_dasd_prefix }}
 
-# Check if any of the DASD is not attached
+# Check if any of the DASDs are not attached
 mapfile -t dasds < <(
         sudo vmcp -b 64k q dasd free |
         tr [','] ['\n'] | grep ${ocpdasd} | awk '{print $2;}')
 
 {% raw %}if [ ${#dasds[@]} != 0 ] ; {% endraw %}then
-        echo "Some of our DASD is not attached. Attaching now"
+        echo "Some of our DASDs are not attached. Attaching now"
         for dasd in ${dasds[@]}; do
                 sudo vmcp att ${dasd} to system
         done
@@ -30,7 +30,7 @@ mapfile -t dasds < <(
         done )
 
 {% raw %}if [ ${#dasds[@]} = 0 ] ; {% endraw %}then
-        echo "There is no DASD!";
+        echo "There are no DASDs!";
         exit 1;
 fi
 
@@ -38,11 +38,29 @@ fi
 IFS='\n';
 for dasd in ${dasds[@]}; do
         echo "Checking ${dasd% *}..."
-        smcli ivsqd -T {{ ocp_smapi_user }} -q 1 -e 1 -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }} -n ${dasd% *}
+        smcli ivsqd -T {{ ocp_smapi_user }} -q 1 -e 1 -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}' -n ${dasd% *}
         if [ $? = 1 ]; then
                 let size=${dasd#* }-1
-                smcli ivsdd -T {{ ocp_smapi_user }} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }} -f4 -t0 -r ${dasd% *} -v ${dasd% *} -g OCPDASD
+                smcli ivsdd -T {{ ocp_smapi_user }} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}' -f4 -t0 -r ${dasd% *} -v ${dasd% *} -g OCPDASD
         else
                 echo "DASD already defined, no action";
         fi
+done
+
+# Add MDISK(s) to the OCP guests
+ocpguests="{{ guestnames }}"
+IFS=" ";
+
+# Do this for each guest:
+for guest in ${ocpguests}; do
+#   list the existing MDISKs
+  if [ $(smcli iqd -T ${guest} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}' | grep MDISK | wc -l ) = "0" ]; then
+#   if none, add one:
+#     list the available volumes
+    mapfile -t dasds < <(smcli ivsqd -T {{ ocp_smapi_user }} -q 2 -e 3 -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}' -n LINUXEAV )
+#     grab the first one from the list
+    IFS=" " read -r -a dasd <<< ${dasds[0]}
+#     issue an smcli idicrd for the dasd
+    smcli idicrd -T ${guest} -a 200 -d X -t AUTOV -n ${dasd[0]} -u 1 -s ${dasd[3]} -m MR -f 1 -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  fi
 done

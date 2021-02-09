@@ -1,4 +1,6 @@
 # ansible-playbooks
+![Ansible Lint](https://github.com/viccross/ansible-playbooks/workflows/AnsibleLint/badge.svg)
+
 My collection of Ansible playbooks for various tasks.
 
 Initially capturing the work I'm doing on Openshift installation, I will expand into other areas over time.
