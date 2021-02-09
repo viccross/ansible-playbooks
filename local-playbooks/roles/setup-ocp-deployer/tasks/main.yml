@@ -138,6 +138,7 @@
     template:
       src: incrontab-ocp-build.j2
       dest: /etc/incron.d/ocp-build
+      mode: 0644
   notify: "enable incrond"
 
 - name: set up the OCP version setup incron stuff
@@ -151,6 +152,7 @@
     template:
       src: incrontab-ocp-version.j2
       dest: /etc/incron.d/ocp-version
+      mode: 0644
   notify: "enable incrond"
 
 - name: create the group_vars
