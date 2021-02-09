@@ -3,6 +3,7 @@
     src: "{{ openshift_clients_url }}/{{ item }}/release.txt"
     dest: "/usr/local/bin/{{ item }}/"
     remote_src: yes
+    mode: 0644
   environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: download and set permissions for openshift-install
