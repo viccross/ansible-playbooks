@@ -38,7 +38,7 @@
       dest: "/usr/local/bin/{{ item }}/"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
-  - name: set permissions for ocp client
-    file:
-      path: "/usr/local/bin/{{ item }}/oc"
-      mode: 0755
+#  - name: set permissions for ocp client
+#    file:
+#      path: "/usr/local/bin/{{ item }}/oc"
+#      mode: 0755
