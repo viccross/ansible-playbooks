@@ -1,0 +1,23 @@
+# download the CoreOS files for OpenShift
+# item -- name of the version to be downloaded
+#         e.g. "4.6"
+# The web resources are expected to stash this value in a file so that the
+# incron job can pick it up
+#
+- name: create destination directory if needed
+  file:
+    path: "{{ webroot }}/{{ bootfile_dest }}/{{ rhcos_ver }}"
+    state: directory
+    mode: 0755
+
+- name: download images
+  get_url:
+    url: "{{ rhcos_download_url }}/{{ rhcos_ver }}/latest/{{ item }}"
+    dest: "{{ bootfile_dest }}/{{ rhcos_ver }}/{{ item }}"
+  with_items: '{{ rhcos_download_files }}'
+  environment: "{{ local_proxy_env | default(omit) }}"
+
+- name: define alternatives for the version downloaded # noqa 301
+  command: "alternatives --install /var/www/html/bootfiles/rhcos-live-kernel-s390x rhcos-kernel /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-kernel-s390x {{ rhcos_ver.split('.')[1] }} \
+            --slave /var/www/html/bootfiles/rhcos-live-rootfs-s390x.img rhcos-rootfs /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-rootfs-s390x.img \
+            --slave /var/www/html/bootfiles/rhcos-live-initramfs-s390x.img rhcos-initramfs /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-initramfs-s390x.img
