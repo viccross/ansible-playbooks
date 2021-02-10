@@ -7,7 +7,7 @@ openshift_version: "4.5"
 
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
-rhcos_version: "4.5.4-s390x"
+#rhcos_version: "4.5.4-s390x"
 rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/{{ openshift_version }}/latest/"
 
 # The download URL of the openshift-install binary
@@ -110,9 +110,9 @@ ocp4_pull_secret: "{{ lookup('file', ocp4_pull_secret_file ) | from_json }}"
 rhcos_disk_type:
   zvm: dasd
 
-rhcos_installer_initramfs: 'rhcos-{{ rhcos_version }}-installer-initramfs.s390x.img'
-rhcos_installer_kernel: 'rhcos-{{ rhcos_version }}-installer-kernel-s390x'
-rhcos_disk_image: 'rhcos-{{ rhcos_version }}-{{ rhcos_disk_type[install_mode] }}.s390x.raw.gz'
+rhcos_installer_initramfs: 'rhcos-live-initramfs.s390x.img'
+rhcos_installer_kernel: 'rhcos-live-kernel-s390x'
+rhcos_disk_image: 'rhcos-live-rootfs.s390x.img'
 
 rhcos_download_files:
   - '{{ rhcos_installer_initramfs }}'
