@@ -35,12 +35,13 @@
     state: directory
     mode: 0755
 
+# update the loop to add another RHCOS version download
 - name: download images
-  get_url:
-    url: "{{ rhcos_download_url }}/{{ item }}"
-    dest: "{{ bootfile_dest }}/{{ item }}"
-  with_items: '{{ rhcos_download_files }}'
-  environment: "{{ local_proxy_env | default(omit) }}"
+  include_tasks: download-coreos.yml
+  loop:
+    - "4.6"
+  loop_control:
+    loop_var: rhcos_ver
 
 - block:
   - name: install git

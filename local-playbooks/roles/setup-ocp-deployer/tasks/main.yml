@@ -35,29 +35,10 @@
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
 
-- name: download and set permissions for openshift-install
-  block:
-  - name: download and unzip openshift-install
-    unarchive:
-      src: "{{ openshift_install_binary_url }}"
-      dest: "/usr/local/bin/"
-      creates: "/usr/local/bin/openshift-install"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
-  - name: set permissions for ocp installer
-    file:
-      path: "/usr/local/bin/openshift-install"
-      mode: 0755
-
-- name: download and set permissions for openshift-client
-  block:
-  - name: download and unzip openshift-client
-    unarchive:
-      src: "{{ openshift_client_binary_url }}"
-      dest: "/usr/local/bin/"
-      creates: "/usr/local/bin/oc"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
+- name: download and set permissions for openshift-install and oc
+  include_tasks: download-clients.yml
+  loop:
+    - "stable-4.6"
 
 - name: create openshift workdir
   file:
@@ -164,11 +145,21 @@
       src: incrontab-ocp-build.j2
       dest: /etc/incron.d/ocp-build
       mode: 0644
-  - name: Enable the incrond service
-    systemd:
-      name: incrond
-      state: stopped
-      enabled: yes
+    notify: "enable incrond"
+
+- name: set up the OCP version setup incron stuff
+  block:
+  - name: copy the kicker script
+    template:
+      src: ocp-version.sh.j2
+      dest: /usr/local/bin/ocp-version.sh
+      mode: 0750
+  - name: copy the incrontab file
+    template:
+      src: incrontab-ocp-version.j2
+      dest: /etc/incron.d/ocp-version
+      mode: 0644
+    notify: "enable incrond"
 
 - name: create the group_vars
   template:

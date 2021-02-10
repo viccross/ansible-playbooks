@@ -1,0 +1,7 @@
+#!/bin/sh
+# ocp-version.sh -- update symlinks for OCP utilities
+FN={{ webroot }}/ocp-version
+cd /usr/local/bin
+rm -f openshift-install oc
+ln -s ocp-$(cat ${FN})/openshift-install
+ln -s ocp-$(cat ${FN})/oc
