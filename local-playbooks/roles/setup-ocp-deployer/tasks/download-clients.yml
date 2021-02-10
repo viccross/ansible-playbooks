@@ -4,6 +4,12 @@
 # The web resources are expected to stash this value in a file so that the
 # incron job can pick it up
 #
+- name: create destination directory if needed
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: directory
+    mode: 0755
+
 - name: download release.txt
   get_url:
     url: "{{ openshift_clients_url }}/{{ item }}/release.txt"
