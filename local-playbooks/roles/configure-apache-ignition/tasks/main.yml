@@ -35,11 +35,13 @@
     state: directory
     mode: 0755
 
-# this task will be repeated to add another RHCOS version download
+# update the loop to add another RHCOS version download
 - name: download images
   include_tasks: download-coreos.yml
-  vars:
-    rhcos_ver: "{{ openshift_version }}"
+  loop:
+    - "4.6"
+  loop_control:
+    loop_var: rhcos_ver
 
 - block:
   - name: install git
