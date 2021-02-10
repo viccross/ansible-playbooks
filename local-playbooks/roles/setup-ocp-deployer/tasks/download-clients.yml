@@ -27,7 +27,7 @@
     environment: "{{ local_proxy_env | default(omit) }}"
   - name: set permissions for ocp installer
     file:
-      path: "/usr/local/bin/ocp-{{ item }}/openshift-install"
+      path: "/usr/local/bin/{{ item }}/openshift-install"
       mode: 0755
 
 - name: download and set permissions for openshift-client
