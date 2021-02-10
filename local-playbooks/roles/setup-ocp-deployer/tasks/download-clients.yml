@@ -5,10 +5,9 @@
 # incron job can pick it up
 #
 - name: download release.txt
-  copy:
-    src: "{{ openshift_clients_url }}/{{ item }}/release.txt"
+  get_url:
+    url: "{{ openshift_clients_url }}/{{ item }}/release.txt"
     dest: "/usr/local/bin/{{ item }}/"
-    remote_src: yes
     mode: 0644
   environment: "{{ local_proxy_env | default(omit) }}"
 
