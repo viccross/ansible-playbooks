@@ -281,16 +281,6 @@
       - ".secret"
       - "service-desk-racf-master/templates_c"
 
-- name: prime the ocp-version file with 'default' version
-  lineinfile:
-    dest: "{{ webroot }}/ocp-version"
-    mode: 0644
-    regexp: '^stable-'
-    line: |
-      stable-4.6
-    state: present
-    create: yes
-
 #  - name: fix path to Smarty in config file
 #    lineinfile:
 #      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.php"
@@ -308,6 +298,16 @@
       src: service-desk-racf/config.inc.local.php.j2
       dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
       mode: 0644
+
+- name: prime the ocp-version file with 'default' version
+  lineinfile:
+    dest: "{{ webroot }}/ocp-version"
+    mode: 0644
+    regexp: '^stable-'
+    line: |
+      stable-4.6
+    state: present
+    create: yes
 
 - name: permit SELinux access to LDAP from Apache
   seboolean:
