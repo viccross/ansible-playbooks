@@ -70,6 +70,60 @@
     chdir: "{{ workdir }}"
     creates: "{{ workdir }}/metadata.json"
 
+- name: create additional config mods in ignition
+  block:
+  - name: back up the ignition files
+    tags: config
+    shell: ls {{ workdir }}/*.ign
+    register: ign_raw
+  - name: back up ignition configs
+    tags: config
+    copy:
+      src: "{{ item }}"
+      dest: "{{ item }}.bak"
+      remote_src: yes
+      mode: 0644
+    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
+  - name: create bootstrap directory
+    file:
+      path: "{{ workdir }}/bootstrap/etc"
+      state: directory
+      mode: 0755
+  - name: create our chrony.conf file
+    template:
+      dest: "{{ workdir }}/bootstrap/etc/chrony.conf"
+      src: chrony.conf.j2
+      mode: 0420
+  - name: filetranspile the ignition files
+    command: filetranspile -i {{ item }}.bak -f bootstrap -o {{ item }}
+    args:
+      chdir: "{{ workdir }}"
+    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
+  - name: create ignition manifests
+    tags: config
+    shell: "openshift-install --dir=`pwd` create manifests"
+    args:
+      chdir: "{{ workdir }}"
+      creates: "{{ workdir }}/manifests"
+  - name: create manifest files for chrony config
+    template:
+      dest: "{{ workdir }}/manifests/99_{{ item }}-chrony-configuration.yaml"
+      src: chrony-manifest.yaml.j2
+      mode: 0644
+    loop:
+      - "master"
+      - "worker"
+  - name: copy/recover the install-config.yaml
+    copy:
+      src: "{{ workdir }}/install-config.copy.yaml"
+      dest: "{{ workdir }}/install-config.yaml"
+      mode: 0644
+  - name: re-create ignition configs
+    tags: config
+    shell: "openshift-install --dir=`pwd` create ignition-configs"
+    args:
+      chdir: "{{ workdir }}"
+
 - block:
   - name: make ignition config directory
     file:
@@ -115,21 +169,18 @@
   include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
-    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
   with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
 
 - name: boot the master nodes
   include_tasks: boot-guest.yml
   vars:
     coreos_role: masters
-    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
   with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
 
 - name: boot the worker nodes
   include_tasks: boot-guest.yml
   vars:
     coreos_role: workers
-    directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
   with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
   when: cluster_nodes.workers is defined
 

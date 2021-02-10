@@ -23,6 +23,20 @@
       - incron
     state: present
 
+- name: patch chrony.conf to allow connections
+  lineinfile:
+    path: /etc/chrony.conf
+    regexp: '^#?allow '
+    line: 'allow {{ subnet_cidr }}'
+  notify: restart chronyd
+
+- name: fetch the filetranspile tool
+  get_url:
+    url: https://raw.githubusercontent.com/ashcrow/filetranspiler/master/filetranspile
+    dest: /usr/local/bin/filetranspile
+    mode: 0755
+  environment: "{{ local_proxy_env | default(omit) }}"
+
 - name: ensure the Ansible playbook directories exist on the host
   file:
     path: "{{ item }}"
