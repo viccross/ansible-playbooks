@@ -1,3 +1,9 @@
+# download the client files for OpenShift
+# item -- name of the version to be downloaded
+#         e.g. "stable-4.6"
+# The web resources are expected to stash this value in a file so that the
+# incron job can pick it up
+#
 - name: download release.txt
   copy:
     src: "{{ openshift_clients_url }}/{{ item }}/release.txt"

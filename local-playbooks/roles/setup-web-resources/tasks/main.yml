@@ -33,12 +33,6 @@
       - php-mbstring
     state: present
 
-#- name: install php-Smarty
-#  yum:
-#    name: https://www.rpmfind.net/linux/fedora-secondary/releases/30/Everything/s390x/os/Packages/p/php-Smarty-3.1.33-1.fc30.noarch.rpm
-#    state: present
-#  environment: "{{ local_proxy_env | default(omit) }}"
-
 - name: set ServerName and ServerAlias
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
@@ -286,6 +280,16 @@
     loop:
       - ".secret"
       - "service-desk-racf-master/templates_c"
+
+- name: prime the ocp-version file with 'default' version
+  lineinfile:
+    dest: "{{ webroot }}/ocp-version"
+    mode: 0644
+    regexp: '^stable-'
+    line: |
+      stable-4.6
+    state: present
+    create: yes
 
 #  - name: fix path to Smarty in config file
 #    lineinfile:

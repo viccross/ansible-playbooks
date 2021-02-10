@@ -35,11 +35,9 @@
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
 
-- name: download and set permissions for openshift-install
+- name: download and set permissions for openshift-install and oc
   include_tasks: download-clients.yml
   loop:
-    - "stable-4.4"
-    - "stable-4.5"
     - "stable-4.6"
 
 - name: create openshift workdir
