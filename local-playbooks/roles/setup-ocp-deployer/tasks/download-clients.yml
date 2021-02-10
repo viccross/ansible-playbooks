@@ -45,6 +45,6 @@
 
 # using command because the community 'alternatives' module does not
 # support slave definitions
-- name: define alternatives for the version downloaded
-  command: 'alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
-            --slave /usr/local/bin/oc oc /usr/local/bin/{{ item }}/oc --slave /usr/local/bin/kubectl kubectl /usr/local/bin/{{ item }}/kubectl'
+- name: define alternatives for the version downloaded # noqa 301
+  command: "alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
+            --slave /usr/local/bin/oc oc /usr/local/bin/{{ item }}/oc --slave /usr/local/bin/kubectl kubectl /usr/local/bin/{{ item }}/kubectl"
