@@ -300,14 +300,10 @@
       mode: 0644
 
 - name: prime the ocp-version file with 'default' version
-  lineinfile:
+  copy:
+    content: "4.6"
     dest: "{{ webroot }}/ocp-version"
     mode: 0644
-    regexp: '^stable-'
-    line: |
-      stable-4.6
-    state: present
-    create: yes
 
 - name: permit SELinux access to LDAP from Apache
   seboolean:
