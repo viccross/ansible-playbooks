@@ -1,7 +1,5 @@
 #!/bin/sh
 # ocp-version.sh -- update symlinks for OCP utilities
 FN={{ webroot }}/ocp-version
-cd /usr/local/bin
-rm -f openshift-install oc
-ln -s ocp-$(cat ${FN})/openshift-install
-ln -s ocp-$(cat ${FN})/oc
+alternatives --set openshift-install /usr/local/bin/stable-$(cat ${FN})/openshift-install
+alternatives --set rhcos-kernel {{ webroot }}/bootfiles/$(cat ${FN})/rhcos-live-kernel-s390x
