@@ -8,13 +8,25 @@ MYID=`vmcp q userid | awk '{print $1;}'`
 
 function changeIP {
   FN=$1
-  echo "${FN} found, applying"
+  echo "${FN} found, checking"
   source <(grep ^IPADDR ${FN})
   echo IP Address is ${IPADDR}
   source <(grep ^NETMASK ${FN})
   echo -n Net mask is ${NETMASK}
   PFX=`ipcalc -p ${IPADDR} ${NETMASK} | sed -n 's/^PREFIX=\(.*\)/\1/p'`
   echo , prefix is ${PFX}
+
+  # check if the address is the same as existing
+  FILEIP="${IPADDR}/$PFX"
+  SYSIP=$(ip -br addr show dev ${IFN} | awk '{print $3}')
+  if [ "${FILEIP}" = "${SYSIP}" ]; then
+    echo "IP address is already the same, exiting"
+    exit 2;
+  fi
+
+  # go ahead with the address change
+  echo "Address change is required"
+  # pull the rest of tha variables
   source <(grep ^GATEWAY ${FN})
   echo Gateway is ${GATEWAY}
   source <(grep ^DNS ${FN})
@@ -58,7 +70,10 @@ EOF
 ${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
 ${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
 EOF
-  # Changing the IP address means having to restart HA-Proxy
+
+  # Restart some services due to address change
+
+  # restart HA-Proxy
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
   # upstream DNS is harder, have to change the bind config...
@@ -67,6 +82,10 @@ EOF
     systemctl restart named-chroot
     echo "BIND name server restarted"
   fi
+  # Start up the DASD configuration script becasue we're at a new site
+  systemctl start ocp-dasd.service
+  # Announce we've finished
+  echo "ipconf changes completed."
 }
 
 # Main starts here
@@ -80,4 +99,3 @@ elif [ -f ${FP}/ZVMIP.CONF ]; then
 else
   echo "No IP config file found."
 fi
-
