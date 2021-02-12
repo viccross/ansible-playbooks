@@ -248,6 +248,7 @@
       create: yes
       block: |
         [Unit]
+        Requires=NetworkManager-wait-online.service
         After=named-chroot.service
         [Service]
         Type=oneshot
