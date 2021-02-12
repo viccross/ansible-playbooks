@@ -248,8 +248,8 @@
       create: yes
       block: |
         [Unit]
-        Requires=NetworkManager-wait-online.service
-        After=named-chroot.service
+        Requires=network-online.target
+        After=network-online.target named-chroot.service
         [Service]
         Type=oneshot
         ExecStart=/usr/local/sbin/ipconf.sh
