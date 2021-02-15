@@ -23,5 +23,5 @@ networking:
   - 172.30.0.0/16
 platform:
   none: {}
-pullSecret: {% raw %}'{{ ocp4_pull_secret | to_json }}'{% endraw %}
-sshKey: '{{ bastion_pubkey.content | b64decode }}'
+pullSecret: '{% raw %}{{ ocp4_pull_secret | to_json }}{% endraw %}'
+sshKey: '{{ bastion_pubkey.content | b64decode | trim }}'

@@ -1,6 +1,7 @@
 #!/bin/sh
 # ocp-ansible.sh -- Kick off a build of OCP using Ansible
 sleep 10
+truncate -s 0 {{ webroot }}/logfile.txt
 cd /opt/ansible
 export ANSIBLE_LOG_PATH=/var/www/html/logfile.txt
 curtime=$(date)
