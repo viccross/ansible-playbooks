@@ -95,7 +95,7 @@
       src: chrony.conf.j2
       mode: 0420
   - name: filetranspile the ignition files
-    command: filetranspile -i {% raw %}{{ item }}{% endraw %}.bak -f bootstrap -o {% raw %}{{ item }}{% endraw %}
+    command: filetranspile -i {% raw %}{{ item }}{% endraw %}.bak -f bootstrap -o {% raw %}{{ item }}{% endraw %}{{ '' }}
     args:
       chdir: "{{ workdir }}"
     with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
