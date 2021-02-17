@@ -102,7 +102,7 @@
   - { src: "chrony-manifest.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/chrony-manifest.yaml.j2" }
   - { src: "ldapIdentityCr.yml.j2", dest: "/opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml" }
   - { src: "create-certificate.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-certificate.yml" }
-  - { src: "configure-cluster.yml.j2", dest: "opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
+  - { src: "configure-cluster.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
 
 - name: create the main playbook
   template:
