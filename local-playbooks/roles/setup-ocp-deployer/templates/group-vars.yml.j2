@@ -56,9 +56,9 @@ cluster_nodes:
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
 guestmemory:
-  bootstrap: "{{ guestmemory[bootstrap] }}"
-  masters: "{{ guestmemory[masters] }}"
-  workers: "{{ guestmemory[workers] }}"
+  bootstrap: "{{ guestmemory['bootstrap'] }}"
+  masters: "{{ guestmemory['masters'] }}"
+  workers: "{{ guestmemory['workers'] }}"
 
 # The following variables should generally not need to be edited
 
