@@ -60,18 +60,20 @@ frontend ocp4-router-https
 
 backend ocp4-kubernetes-api-server
    mode tcp
-   balance source
-   server boostrap-0 bootstrap-0.{{ cluster_domain_name }}:6443 check
+   option httpchk GET /readyz HTTP/1.0
+   option log-health-checks
+   balance roundrobin
+   server boostrap-0 bootstrap-0.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
 {% for item in masters.keys() %}
-   server {{ item }} {{ item }}.{{ cluster_domain_name }}:6443 check
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
 {% endfor %}
 
 backend ocp4-machine-config-server
    mode tcp
-   balance source
-   server bootstrap-0 bootstrap-0.{{ cluster_domain_name }}:22623 check
+   balance roundrobin
+   server bootstrap-0 bootstrap-0.{{ cluster_domain_name }}:22623 weight 1 check backup non-stick
 {% for item in masters.keys() %}
-   server {{ item }} {{ item }}.{{ cluster_domain_name }}:22623 check
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:22623 weight 100 check
 {% endfor %}
 
 backend ocp4-router-http
@@ -97,5 +99,3 @@ backend ocp4-router-https
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
 {% endif %}
-
-
