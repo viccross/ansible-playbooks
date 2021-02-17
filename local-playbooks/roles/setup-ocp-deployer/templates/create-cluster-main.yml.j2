@@ -113,11 +113,11 @@
     loop:
       - "master"
       - "worker"
-  - name: copy/recover the install-config.yaml
-    copy:
-      src: "{{ workdir }}/install-config.copy.yaml"
-      dest: "{{ workdir }}/install-config.yaml"
-      mode: 0644
+#  - name: copy/recover the install-config.yaml
+#    copy:
+#      src: "{{ workdir }}/install-config.copy.yaml"
+#      dest: "{{ workdir }}/install-config.yaml"
+#      mode: 0644
   - name: re-create ignition configs
     tags: config
     shell: "openshift-install --dir=`pwd` create ignition-configs"
