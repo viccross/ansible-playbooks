@@ -99,30 +99,30 @@
     args:
       chdir: "{{ workdir }}"
     with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
-  - name: create ignition manifests
-    tags: config
-    shell: "openshift-install --dir=`pwd` create manifests"
-    args:
-      chdir: "{{ workdir }}"
-      creates: "{{ workdir }}/manifests"
-  - name: create manifest files for chrony config
-    template:
-      dest: "{{ workdir }}/manifests/99_{% raw %}{{ item }}{% endraw %}-chrony-configuration.yaml"
-      src: chrony-manifest.yaml.j2
-      mode: 0644
-    loop:
-      - "master"
-      - "worker"
+#  - name: create ignition manifests
+#    tags: config
+#    shell: "openshift-install --dir=`pwd` create manifests"
+#    args:
+#      chdir: "{{ workdir }}"
+#      creates: "{{ workdir }}/manifests"
+#  - name: create manifest files for chrony config
+#    template:
+#      dest: "{{ workdir }}/manifests/99_{% raw %}{{ item }}{% endraw %}-chrony-configuration.yaml"
+#      src: chrony-manifest.yaml.j2
+#      mode: 0644
+#    loop:
+#      - "master"
+#      - "worker"
 #  - name: copy/recover the install-config.yaml
 #    copy:
 #      src: "{{ workdir }}/install-config.copy.yaml"
 #      dest: "{{ workdir }}/install-config.yaml"
 #      mode: 0644
-  - name: re-create ignition configs
-    tags: config
-    shell: "openshift-install --dir=`pwd` create ignition-configs"
-    args:
-      chdir: "{{ workdir }}"
+#  - name: re-create ignition configs
+#    tags: config
+#    shell: "openshift-install --dir=`pwd` create ignition-configs"
+#    args:
+#      chdir: "{{ workdir }}"
 
 - block:
   - name: make ignition config directory
