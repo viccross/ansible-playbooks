@@ -86,6 +86,10 @@ named_nodes:
   <<: *masternodes
   <<: *workernodes
 guestnames: "{% for item in named_nodes.values() %}{{ item.guest_name  }} {% endfor %}"
+guestmemory:
+  bootstrap: 16
+  masters: 16
+  workers: 8
 
 # The following variables should generally not need to be edited
 
