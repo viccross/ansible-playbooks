@@ -112,9 +112,11 @@ rhcos_disk_type:
 
 rhcos_installer_initramfs: 'rhcos-live-initramfs.s390x.img'
 rhcos_installer_kernel: 'rhcos-live-kernel-s390x'
-rhcos_disk_image: 'rhcos-live-rootfs.s390x.img'
+rhcos_live_image: 'rhcos-live-rootfs.s390x.img'
+rhcos_disk_image: 'rhcos-dasd.s390x.raw'
 
 rhcos_download_files:
   - '{{ rhcos_installer_initramfs }}'
   - '{{ rhcos_installer_kernel }}'
-  - '{{ rhcos_disk_image }}'
+  - '{{ rhcos_live_image }}'
+#  - '{{ rhcos_disk_image }}'
