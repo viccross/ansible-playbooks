@@ -100,6 +100,9 @@
   - { src: "cluster-guests-delete.yml.j2", dest: "/opt/ansible/cluster-guests-delete.yml"}
   - { src: "chrony.conf.j2", dest: "/opt/ansible/roles/create-cluster/templates/chrony.conf.j2" }
   - { src: "chrony-manifest.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/chrony-manifest.yaml.j2" }
+  - { src: "ldapIdentityCr.yml.j2", dest: "/opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml" }
+  - { src: "create-certificate.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-certificate.yml" }
+  - { src: "configure-cluster.yml.j2", dest: "opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
 
 - name: create the main playbook
   template:

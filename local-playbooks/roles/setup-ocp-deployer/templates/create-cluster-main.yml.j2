@@ -237,3 +237,6 @@
   systemd:
     name: ocp-approve-csrs
     state: stopped
+
+- name: configure the cluster (LDAP, ingress certificate)
+  include_tasks: configure-cluster.yml

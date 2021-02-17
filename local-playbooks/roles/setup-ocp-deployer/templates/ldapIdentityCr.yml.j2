@@ -20,4 +20,4 @@ spec:
       ca:
         name: custom-ca
       insecure: false
-      url: "ldap://LDAPSRV.{{ cluster_name }}.{{ cluster_base_domain }}/ou=people,ou=ibmzvm,o=ibm?uid"
+      url: "ldap://LDAPSRV.ibmpoc.internal/ou=people,{{ ldap_base }}?uid"

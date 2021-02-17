@@ -1,0 +1,37 @@
+---
+- name: generate the certificate
+  include_tasks: create-certificate.yml
+  with_items:
+  - { filename: "ocpApps", common_name: "*.apps.{{ cluster_name }}.{{ cluster_base_domain }}" }
+
+- name: create combined PEM file for OCP apps
+  shell:
+    cmd: cat ocpApps.cert oqsCA.cert oqsRootCA.cert > ocpApps-bundle.cert
+    chdir: {{ ca_cert_path }}
+
+- name: Create OCP ConfigMap for CA certs
+  command:
+    cmd: oc create configmap custom-ca --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
+
+- name: Add OCP ConfigMap for CA cert
+  command:
+    cmd: |
+      oc patch proxy/cluster --type=merge -p '{"spec":{"trustedCA":{"name":"custom-ca"}}}'
+
+- name: Create OCP secret for the certificate and chain
+  command:
+    cmd: oc create secret tls oqscert --cert={{ ca_cert_path }}/ocpApps-bundle.cert --key={{ ca_key_path }}/ocpApps.pem -n openshift-ingress
+
+- name: Update the Ingress Controller
+  command:
+    cmd: |
+      oc patch ingresscontroller.operator default --type=merge -p '{"spec":{"defaultCertificate": {"name": "oqscert"}}}' -n openshift-ingress-operator
+
+- name: Create the Custom Resource for the LDAP identity provider
+  template:
+    src: ldapIdentityCr.yml.j2
+    dest: "{{ workdir }}/ldapIdentityCr.yml"
+
+- name: Add the identity provider
+  command:
+    cmd: oc apply -f {{ workdir }}/ldapIdentityCr.yml
