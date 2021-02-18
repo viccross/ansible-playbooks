@@ -11,7 +11,7 @@
 
 - name: Create OCP ConfigMap for CA certs
   command:
-    cmd: oc create configmap custom-ca --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
+    cmd: oc create configmap custom-ca --from-file=ca-bundle.crt={{ ca_cert_path }}/oqsRootCA.cert --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
 
 - name: Add OCP ConfigMap for CA cert
   command:
