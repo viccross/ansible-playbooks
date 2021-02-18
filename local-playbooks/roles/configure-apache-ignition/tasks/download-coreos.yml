@@ -12,7 +12,7 @@
 
 - name: download images
   get_url:
-    url: "{{ rhcos_download_url }}/{{ rhcos_ver }}/latest/{{ item }}"
+    url: "{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/{{ item }}"
     dest: "{{ bootfile_dest }}/{{ rhcos_ver }}/{{ item }}"
   with_items: '{{ rhcos_download_files }}'
   environment: "{{ local_proxy_env | default(omit) }}"

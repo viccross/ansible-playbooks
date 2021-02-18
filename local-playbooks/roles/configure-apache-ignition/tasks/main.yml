@@ -40,6 +40,7 @@
   include_tasks: download-coreos.yml
   loop:
     - "4.6"
+    - "4.7"
   loop_control:
     loop_var: rhcos_ver
 
