@@ -5,4 +5,4 @@
   roles:
   - configure-apache-ignition
   vars:
-    bootfile_dest: "/var/www/html/bootfiles/"
+    bootfile_dest: "/var/www/html/bootfiles"
