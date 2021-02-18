@@ -35,3 +35,13 @@
 - name: Add the identity provider
   command:
     cmd: oc apply -f {{ workdir }}/ldapIdentityCr.yml
+
+- name: Set admin users as cluster-admin
+  command:
+    cmd: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
+  loop:
+    - "admin01"
+    - "admin02"
+    - "admin03"
+    - "admin04"
+    - "admin05"
