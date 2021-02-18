@@ -6,7 +6,7 @@
 #
 - name: create destination directory if needed
   file:
-    path: "{{ webroot }}/{{ bootfile_dest }}/{{ rhcos_ver }}"
+    path: "{{ bootfile_dest }}/{{ rhcos_ver }}"
     state: directory
     mode: 0755
 
