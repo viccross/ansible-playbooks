@@ -9,6 +9,8 @@ jobs:
       uses: ansible/ansible-lint-action@master
       with:
         args: "-x 106"
+        override-deps: |
+          ansible==2.9.17
         targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/create-guest-for-linux.yml
