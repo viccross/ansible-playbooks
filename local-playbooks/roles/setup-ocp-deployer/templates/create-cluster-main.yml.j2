@@ -31,6 +31,9 @@
   - name: vary the DASD online
     command:
       cmd: chccwdev -e 191
+  - name: pause for udev/systemd
+    pause:
+      seconds: 3
 # Can't use Ansible copy module due to CMSFS semantics
 # (and stubbornness of Ansible)
   - name: copy the files

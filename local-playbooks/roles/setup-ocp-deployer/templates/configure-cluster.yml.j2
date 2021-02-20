@@ -38,7 +38,7 @@
 
 - name: Set admin users as cluster-admin
   command:
-    cmd: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
+    cmd: oc adm policy add-cluster-role-to-user cluster-admin {% raw %}{{ item }}{% endraw %}
   loop:
     - "admin01"
     - "admin02"
