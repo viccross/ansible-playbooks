@@ -5,12 +5,12 @@ rhcos_versions:
   "4.6":
     path: "4.6/4.6.1"
   "4.7":
-    path: "pre-release/4.7.0-rc.2"
+    path: "4.7/4.7.0"
 openshift_versions:
   "4.6":
     path: "stable-4.6"
   "4.7":
-    path: "candidate-4.7"
+    path: "stable-4.7"
 #
 ldap_base: ou=ibmzvm,o={{ cert_organization }}
 ldap_url: ldap://{{ zvm_internal_ip_address }}:389
