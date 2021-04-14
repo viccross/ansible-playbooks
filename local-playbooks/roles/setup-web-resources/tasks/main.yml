@@ -171,7 +171,7 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/oqs-header-master.zip"
+      src: "/opt/resources/oqs-header-v0.3.zip"
       dest: "{{ webroot }}/"
       creates: "{{ webroot }}/oqs-header-master/meta_header.html"
 

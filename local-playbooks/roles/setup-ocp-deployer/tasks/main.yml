@@ -52,7 +52,7 @@
 - name: download and set permissions for openshift-install and oc
   include_tasks: download-clients.yml
   loop:
-    - "stable-4.6"
+    - "stable-4.7"
 
 - name: create openshift workdir
   file:
