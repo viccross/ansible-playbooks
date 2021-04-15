@@ -25,5 +25,5 @@
                          --slave /var/www/html/bootfiles/rhcos-live-initramfs.s390x.img rhcos-initramfs \
                                  /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-initramfs.s390x.img "
 
-- name: set alternative to auto mode
+- name: set alternative to auto mode # noqa 301
   command: "alternatives --auto rhcos-kernel "
