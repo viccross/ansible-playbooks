@@ -48,3 +48,6 @@
 - name: define alternatives for the version downloaded # noqa 301
   command: "alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
             --slave /usr/local/bin/oc oc /usr/local/bin/{{ item }}/oc --slave /usr/local/bin/kubectl kubectl /usr/local/bin/{{ item }}/kubectl"
+
+- name: set alternative to auto mode
+  command: "alternatives --auto openshift-install "
