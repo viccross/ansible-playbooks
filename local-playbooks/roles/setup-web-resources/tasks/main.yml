@@ -171,17 +171,17 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/oqs-header-{{ oqs_header_pkgname }}.zip"
+      src: "/opt/resources/{{ oqs_header_pkgname }}.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/oqs-header-{{ oqs_header_pkgname }}/meta_header.html"
+      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/meta_header.html"
 
   - name: move downloaded site directory # noqa 302
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
-        && mv {{ webroot }}/oqs-header-{{ oqs_header_pkgname }}/* {{ webroot }}/ \
-        && rmdir {{ webroot }}/oqs-header-{{ oqs_header_pkgname }}
-      removes: "{{ webroot }}/oqs-header-{{ oqs_header_pkgname }}"
+        && mv {{ webroot }}/{{ oqs_header_pkgname }}/* {{ webroot }}/ \
+        && rmdir {{ webroot }}/{{ oqs_header_pkgname }}
+      removes: "{{ webroot }}/{{ oqs_header_pkgname }}"
 
   - name: Set permission on the HTML files to enable Includes
     file:
