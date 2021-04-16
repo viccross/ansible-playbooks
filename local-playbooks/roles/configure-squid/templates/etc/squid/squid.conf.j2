@@ -27,6 +27,9 @@ acl Safe_ports port 591		# filemaker
 acl Safe_ports port 777		# multiling http
 acl CONNECT method CONNECT
 
+{% if upstream_proxy_ip is defined %}acl localhosts dstdomain .{{ cluster_domain_name }} {% endif %}
+
+
 #
 # Recommended minimum Access Permission configuration:
 #
@@ -48,7 +51,10 @@ http_access deny manager
 #
 # INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
 #
-{% if upstream_proxy_ip is defined %}cache_peer {{ upstream_proxy_ip }} parent {{ upstream_proxy_port }} 0 no-query no-digest {% endif %}
+{% if upstream_proxy_ip is defined %}cache_peer {{ upstream_proxy_ip }} parent {{ upstream_proxy_port }} 0 no-query no-digest
+cache_peer_domain {{ upstream_proxy_ip }} !.{{ cluster_base_domain }}
+never_direct deny localhosts
+never_direct allow all{% endif %}
 
 
 # Example rule allowing access from your local networks.
