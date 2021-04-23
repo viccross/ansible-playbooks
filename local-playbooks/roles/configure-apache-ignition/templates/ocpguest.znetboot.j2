@@ -7,3 +7,4 @@ coreos.live.rootfs_url=http://bastion.{{ cluster_domain_name }}:8080/bootfiles/{
 coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster_nodes[coreos_role][item].ign_profile }}
 {{ coreos_kargs_net[install_mode] }}
 {{ coreos_kargs_extra[install_mode] }}
+dfltcc=off
