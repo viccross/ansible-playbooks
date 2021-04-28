@@ -1,0 +1,43 @@
+# setup-podman-and-registry
+#
+
+- name: install podman with Cockpit support, plus jq for JSON things
+  yum:
+    name:
+      - podman
+      - cockpit-podman
+      - jq
+    state: present
+
+- name: pull the registry image
+  podman_image:
+    name: docker.io/ibmcom/registry-s390x:2.6.2.5
+
+- name: create systemd service for interface reconfiguration
+  blockinfile:
+    dest: /etc/systemd/system/podman-registry.service
+    mode: 0644
+    insertbefore: BOF
+    create: yes
+    block: |
+      [Unit]
+      Requires=network-online.target
+      After=network-online.target named-chroot.service
+      Wants=syslog.service
+
+      [Service]
+      Restart=on-failure
+      ExecStart=/usr/bin/podman run --name FVMRegistry \
+          --conmon-pidfile /%t/%n-pid --cidfile /%t/%n-cid \
+          -p 5000:5000 --env-file /opt/registry/FVMRegistry.env \
+          -v /opt/registry/data:/var/lib/registry:z \
+          -v /opt/registry/auth:/auth:z \
+          -v /opt/registry/certs:/certs:z \
+          -d docker.io/ibmcom/registry-s390x:2.6.2.5
+      ExecStop=/usr/bin/sh -c "/usr/bin/podman rm -f `cat /%t/%n-cid`"
+      KillMode=none
+      Type=forking
+      PIDFile=/%t/%n-pid
+
+      [Install]
+      WantedBy=default.target

@@ -16,3 +16,4 @@ jobs:
           local-playbooks/create-guest-for-linux.yml
           local-playbooks/create-root-ca.yml
           local-playbooks/create-zvm-certificates.yml
+          local-playbooks/setup-podman-and-registry.yml
