@@ -6,6 +6,14 @@
 # - Run at boot time to detect required DASD
 #
 
+# pause until SMAPI is active, then a little more
+until vmcp Q VSMREQIN 2>/dev/null ; do
+  echo "Pausing to wait for SMAPI listener"
+  sleep 10
+done
+sleep 3
+echo "SMAPI listener active, continuing..."
+
 #ocpdasd={{ ocp_dasd_prefix }}
 #
 ## Check if any of the DASDs are not attached
