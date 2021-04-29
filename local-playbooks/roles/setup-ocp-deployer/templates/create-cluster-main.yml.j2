@@ -241,5 +241,18 @@
     name: ocp-approve-csrs
     state: stopped
 
+- name: update boot device on the master nodes
+  include_tasks: guest-IPLdev.yml
+  vars:
+    coreos_role: masters
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+
+- name: update boot device on the worker nodes
+  include_tasks: guest-IPLdev.yml
+  vars:
+    coreos_role: workers
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+  when: cluster_nodes.workers is defined
+
 - name: configure the cluster (LDAP, ingress certificate)
   include_tasks: configure-cluster.yml

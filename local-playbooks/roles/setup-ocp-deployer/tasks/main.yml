@@ -94,6 +94,7 @@
   - { src: "create-guest-task.yml.j2", dest: "/opt/ansible/tasks/create-guest.yml" }
   - { src: "delete-guest-task.yml.j2", dest: "/opt/ansible/tasks/delete-guest.yml" }
   - { src: "boot-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/boot-guest.yml" }
+  - { src: "guest-IPLdev-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/guest-IPLdev.yml" }
   - { src: "create-cluster-main.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/main.yml" }
   - { src: "defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/main.yml" }
   - { src: "cluster-guests-create.yml.j2", dest: "/opt/ansible/cluster-guests-create.yml"}
