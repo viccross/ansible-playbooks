@@ -1,4 +1,4 @@
-USER {% raw %}{{ cluster_nodes[coreos_role][item].guest_name }}{% endraw %} ZVM4DEMO {% raw %}{{ guestmemory[coreos_role] }}{% endraw %}G {% raw %}{{ guestmemory[coreos_role] * 2 }}{% endraw %}G  G
+USER {% raw %}{{ cluster_nodes[coreos_role][item].guest_name }}{% endraw %} ZVM4DEMO {% raw %}{{ guestmemory[coreos_role] }}{% endraw %}G {% raw %}{{ (guestmemory[coreos_role] | int) * 2 }}{% endraw %}G  G
  INCLUDE IBMDFLT
  CPU 00
  CPU 01
