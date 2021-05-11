@@ -193,7 +193,7 @@
     host: "{% raw %}{{ cluster_nodes['bootstrap'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
-    timeout: 5000
+    timeout: 10000
   with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
 
 - name: wait for master node accessibility
