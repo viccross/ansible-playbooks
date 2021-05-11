@@ -3,12 +3,12 @@
 
 - name: grab the pull secret
   stat:
-    path: ~/.ocp4_pull_secret
+    path: "{{ ocp4_pull_secret_file }}"
   register: ps
 - name: abort if the pull secret is not present
   fail:
     msg: "OCP pull secret is not found!"
-  when: not ps.stat.exists
+  when: ps.stat.size == 0
 
 - name: create openshift workdir
   file:
