@@ -69,6 +69,10 @@ EOF
   cat <<EOF > {{ webroot }}/etc.hosts
 ${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
 ${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
+## The following are used for direct access to the OCP monitoring components,
+##  add them if you want this direct access
+${IPADDR} grafana-openshift-monitoring.apps.{{ cluster_domain_name }}
+${IPADDR} prometheus-k8s-openshift-monitoring.apps.{{ cluster_domain_name }}
 EOF
 
   # Restart some services due to address change
