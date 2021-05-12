@@ -10,6 +10,11 @@
     msg: "OCP pull secret is not found!"
   when: ps.stat.size == 0
 
+- name: remove prior openshift workdir
+  file:
+    path: "{{ workdir }}"
+    state: absent
+
 - name: create openshift workdir
   file:
     path: "{{ workdir }}"
