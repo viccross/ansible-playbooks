@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# ocp-retry.sh
+# Reset the state of the OCP guests, to allow another try of the build
+# - Script is deployed by Ansible
+# - Run when required to prepare for another build attempt
+#
+
+# pause until SMAPI is active, then a little more
+until vmcp Q VSMREQIN >/dev/null 2>&1 ; do
+  echo "Pausing to wait for SMAPI listener"
+  sleep 10
+done
+echo "SMAPI listener active, continuing..."
+sleep 3
+
+# Obtain the list of guests
+ocpguests="{{ guestnames }}"
+IFS=" "
+
+# Stop the incron daemon to prevent a redrive while this is happening
+echo "Stopping incrond"
+systemctl stop incrond.service
+
+# Do this for each guest:
+for guest in ${ocpguests} ; do
+  # Shut down the guest
+  smcli id -T ${guest} -t 'WITHIN 60' -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  # Nap for a moment
+  sleep 2
+  # Set the boot device to CMS
+  smcli iisd -T ${guest} -n CMS -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+done
+
+# give some time to make sure the guests are down
+sleep 10
+
+# Do this for each guest:
+for guest in ${ocpguests} ; do
+  while vmcp q ${guest} >/dev/null 2>&1 ; do
+    sleep 1
+  done
+  echo "${guest} is down"
+done
+
+# Start the incron daemon to allow normal processing again
+echo "Restarting incrond"
+systemctl start incrond.service
+
+# Issue message
+echo "Guest state is reset, you can retry your build!"

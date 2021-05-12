@@ -153,6 +153,24 @@
       state: stopped
       enabled: no
 
+- name: set up ocp-retry script
+  block:
+  - name: copy the retry script
+    template:
+      src: ocp-retry.sh.j2
+      dest: /usr/local/bin/ocp-retry.sh
+      mode: 0750
+  - name: copy the ocp-retry script systemd service file
+    template:
+      src: ocp-retry.service.j2
+      dest: /etc/systemd/system/ocp-retry.service
+      mode: 0644
+  - name: Do not enable the ocp-retry service
+    systemd:
+      name: ocp-retry
+      state: stopped
+      enabled: no
+
 - name: set up the kick-off-the-build incron stuff
   block:
   - name: copy the kicker script
