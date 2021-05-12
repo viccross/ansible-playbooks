@@ -246,6 +246,9 @@
     name: ocp-approve-csrs
     state: stopped
 
+- name: shut down the bootstrap node # noqa 301
+  shell: smcli id -T {{ cluster_nodes['bootstrap']['bootstrap-0'].guest_name }} -t 'WITHIN 60' -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+
 - name: update boot device on the master nodes
   include_tasks: guest-IPLdev.yml
   vars:
@@ -261,3 +264,9 @@
 
 - name: configure the cluster (LDAP, ingress certificate)
   include_tasks: configure-cluster.yml
+
+- name: enable the start-the-guests service
+  systemd:
+    name: ocp-cluster-guests
+    state: stopped
+    enabled: yes

@@ -1,0 +1,15 @@
+[Unit]
+Description=Start or stop the guests of our OCP cluster
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+User=root
+Group=root
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/ocp-cluster-guests.sh start
+ExecStop=/usr/local/bin/ocp-cluster-guests.sh stop
+
+[Install]
+WantedBy=multi-user.target
