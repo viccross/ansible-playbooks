@@ -171,6 +171,34 @@
       state: stopped
       enabled: no
 
+- name: set up ocp-cluster-guests script and start/stop services
+  block:
+  - name: copy the action script
+    template:
+      src: ocp-cluster-guests.sh.j2
+      dest: /usr/local/bin/ocp-cluster-guests.sh
+      mode: 0750
+  - name: copy the ocp-guests-start systemd service file
+    template:
+      src: ocp-guests-start.service.j2
+      dest: /etc/systemd/system/ocp-guests-start.service
+      mode: 0644
+  - name: copy the ocp-guests-stop systemd service file
+    template:
+      src: ocp-guests-stop.service.j2
+      dest: /etc/systemd/system/ocp-guests-stop.service
+      mode: 0644
+  - name: Do not enable the ocp-guests-start service
+    systemd:
+      name: ocp-guests-start
+      state: stopped
+      enabled: no
+  - name: Do not enable the ocp-guests-stop service
+    systemd:
+      name: ocp-guests-stop
+      state: stopped
+      enabled: no
+
 - name: set up the kick-off-the-build incron stuff
   block:
   - name: copy the kicker script
