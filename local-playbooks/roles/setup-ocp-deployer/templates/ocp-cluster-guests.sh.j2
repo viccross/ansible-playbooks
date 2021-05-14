@@ -3,14 +3,24 @@
 # ocp-cluster-guests.sh
 # Start or stop the OCP guests
 # - Script is deployed by Ansible
-# - Run when required to prepare for another build attempt
+# - Invoke using systemctl services for better locking!
 #
 
 mode=$1
-if [ -z ${mode} ]; then
-  echo "Run mode not entered: must enter 'start' or 'stop'"
-  exit 1
-fi
+case "${mode}" in
+  "start")
+    operands="ia -T ${guest}"
+    othersvc="stop"
+    ;;
+  "stop")
+    operands="id -T ${guest} -t 'WITHIN 60'"
+    othersvc="start"
+    ;;
+  *)
+    echo "Run mode bad or missing: must be 'start' or 'stop'"
+    exit 1
+    ;;
+esac
 
 # pause until SMAPI is active, then a little more
 until vmcp Q VSMREQIN >/dev/null 2>&1 ; do
@@ -26,12 +36,8 @@ allguests="{{ guestnames }}"
 ocpguests=${allguests//{{ cluster_nodes['bootstrap']['bootstrap-0'].guest_name }}}
 IFS=" "
 
-case "${mode}" in
-  "start" ) operands="ia -T ${guest}"
-    ;;
-  "stop" ) operands="id -T ${guest} -t 'WITHIN 60'"
-    ;;
-esac
+# Mask the other service
+systemctl mask ocp-guests-${othersvc}.service
 
 # Do this for each guest:
 for guest in ${ocpguests} ; do
@@ -41,7 +47,7 @@ for guest in ${ocpguests} ; do
   sleep 2
 done
 
-if [ "${mode}" eq "stop" ]; then
+if [ "${mode}" == "stop" ]; then
   # give some time to make sure the guests are down
   sleep 10
   # Do this for each guest:
@@ -52,3 +58,6 @@ if [ "${mode}" eq "stop" ]; then
     echo "${guest} is down"
   done
 fi
+
+# Unmask the other service
+systemctl unmask ocp-guests-${othersvc}.service
