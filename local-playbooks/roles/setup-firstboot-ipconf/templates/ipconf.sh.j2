@@ -17,16 +17,17 @@ function changeIP {
   echo , prefix is ${PFX}
 
   # check if the address is the same as existing
+  # **** This check may be removed if we decide change is mandatory
   FILEIP="${IPADDR}/$PFX"
   SYSIP=$(ip -br addr show dev ${IFN} | awk '{print $3}')
   if [ "${FILEIP}" = "${SYSIP}" ]; then
     echo "IP address is already the same, exiting"
-    exit 2;
+    exit 0;
   fi
 
   # go ahead with the address change
   echo "Address change is required"
-  # pull the rest of tha variables
+  # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
   echo Gateway is ${GATEWAY}
   source <(grep ^DNS ${FN})
@@ -41,7 +42,7 @@ function changeIP {
     echo DNS servers are: ${DNS}
   fi
 
-  # all the details retrieved, let's use nmcli to do the work
+  # all the details retrieved, let's use nmcli to do the address work
   # first, obtain the UUID of the interface
   source <(grep ^UUID /etc/sysconfig/network-scripts/ifcfg-${IFN})
   if [ ! -v UUID ]; then
@@ -52,25 +53,34 @@ function changeIP {
   nmcli con mod ${UUID} ipv4.method manual ipv4.addresses "${IPADDR}/${PFX}"
   nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
   nmcli con up ${UUID}
+
+  # **** Commenting out the DDNS method right now :|
   # next, do the dynamic DNS update to fix BIND
-  nsupdate -l -v <<EOF
-zone {{ cluster_domain_name }}
-update delete bastion.{{ cluster_domain_name }}. A
-update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
-update delete api.{{ cluster_domain_name }}. A
-update add api.{{ cluster_domain_name }}. 900 A ${IPADDR}
-update delete apps.{{ cluster_domain_name }}. A
-update add apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
-update delete *.apps.{{ cluster_domain_name }}. A
-update add *.apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
-send
-EOF
+#  nsupdate -l -v <<EOF
+#zone {{ cluster_domain_name }}
+#update delete bastion.{{ cluster_domain_name }}. A
+#update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
+#update delete api.{{ cluster_domain_name }}. A
+#update add api.{{ cluster_domain_name }}. 900 A ${IPADDR}
+#update delete apps.{{ cluster_domain_name }}. A
+#update add apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
+#update delete *.apps.{{ cluster_domain_name }}. A
+#update add *.apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
+#send
+#EOF
+
+  # stop named
+  systemctl stop named-chroot.service
+  # Run Ansible playbook to update the BIND configuration
+  pushd /opt/ansible && ansible-playbook -i inventory -e cluster_base_domain=${DOMAIN} update-dns.yml
+
+
   # update the file in the web server directory
   cat <<EOF > {{ webroot }}/etc.hosts
 ${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
 ${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
 ## The following are used for direct access to the OCP monitoring components,
-##  add them if you want this direct access
+##  add them as well if you want this direct access
 ${IPADDR} grafana-openshift-monitoring.apps.{{ cluster_domain_name }}
 ${IPADDR} prometheus-k8s-openshift-monitoring.apps.{{ cluster_domain_name }}
 EOF
@@ -86,7 +96,7 @@ EOF
     systemctl restart named-chroot
     echo "BIND name server restarted"
   fi
-  # Start up the DASD configuration script becasue we're at a new site
+  # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service
   # Announce we've finished
   echo "ipconf changes completed."
