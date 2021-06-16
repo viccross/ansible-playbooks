@@ -39,6 +39,7 @@
   loop:
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
+    - "/opt/ansible/templates/named"
 
 - name: copy files for the playbook
   template:
