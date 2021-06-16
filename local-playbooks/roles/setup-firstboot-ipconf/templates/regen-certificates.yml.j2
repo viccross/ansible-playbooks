@@ -1,25 +1,28 @@
 ---
-- name: generate the Cockpit certificate
-  include_tasks: tasks/create-certificate.yml
-  with_items:
-  - { filename: "cockpit", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}" }
+- name: regenerate certificates for the new domain name
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: generate the Cockpit certificate
+    include_tasks: tasks/create-certificate.yml
+    with_items:
+    - { filename: "cockpit", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}" }
 
-- name: create combined PEM file for Cockpit
-  shell:
-    cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
-    chdir: /etc/pki/tls/
+  - name: create combined PEM file for Cockpit
+    shell:
+      cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
+      chdir: /etc/pki/tls/
 
-- name: generate the Apache (httpd) certificate
-  include_tasks: tasks/create-certificate.yml
-  with_items:
-  - { filename: "httpd", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}" }
+  - name: generate the Apache (httpd) certificate
+    include_tasks: tasks/create-certificate.yml
+    with_items:
+    - { filename: "httpd", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}" }
 
-- name: generate the certificate for the HA-Proxy stats interface
-  include_tasks: tasks/create-certificate.yml
-  with_items:
-  - { filename: "haproxy", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: "DNS:{% raw %}{{ host_name }}.{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}" }
+  - name: generate the certificate for the HA-Proxy stats interface
+    include_tasks: tasks/create-certificate.yml
+    with_items:
+    - { filename: "haproxy", common_name: "{% raw %}{{ host_name }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: "DNS:{% raw %}{{ host_name }}.{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}" }
 
-- name: create combined PEM file for HAProxy
-  shell:
-    cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
-    chdir: /etc/pki/tls/
+  - name: create combined PEM file for HAProxy
+    shell:
+      cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
+      chdir: /etc/pki/tls/

@@ -1,45 +1,48 @@
 ---
-- name: recreate DNS Forward zone
-  template:
-    src: named/cluster_domain_name.zone.j2
-    dest: /var/named/{{ cluster_domain_name }}.zone
-    owner: named
-    group: named
-    mode: 0640
-  notify:
-  - restart dns
+- name: reconfigure BIND DNS for the new domain name
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: recreate DNS Forward zone
+    template:
+      src: named/cluster_domain_name.zone.j2
+      dest: /var/named/{{ cluster_domain_name }}.zone
+      owner: named
+      group: named
+      mode: 0640
+    notify:
+    - restart dns
 
-- name: recreate DNS Forward zone (internal)
-  template:
-    src: named/ibmpoc_internal.zone.j2
-    dest: /var/named/ibmpoc_internal.zone
-    owner: named
-    group: named
-    mode: 0640
-  notify:
-  - restart dns
+  - name: recreate DNS Forward zone (internal)
+    template:
+      src: named/ibmpoc_internal.zone.j2
+      dest: /var/named/ibmpoc_internal.zone
+      owner: named
+      group: named
+      mode: 0640
+    notify:
+    - restart dns
 
-- name: recreate DNS Reverse zone
-  template:
-    src: named/subnet.in-addr.arpa.zone.j2
-    dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
-    owner: named
-    group: named
-    mode: 0640
-  notify:
-  - restart dns
+  - name: recreate DNS Reverse zone
+    template:
+      src: named/subnet.in-addr.arpa.zone.j2
+      dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
+      owner: named
+      group: named
+      mode: 0640
+    notify:
+    - restart dns
 
-- name: recreate /etc/named.conf
-  template:
-    src: named/named.conf.j2
-    dest: /etc/named.conf
-    group: named
-    mode: 0640
-  notify:
-  - restart dns
+  - name: recreate /etc/named.conf
+    template:
+      src: named/named.conf.j2
+      dest: /etc/named.conf
+      group: named
+      mode: 0640
+    notify:
+    - restart dns
 
-- name: recreate resolv.conf
-  lineinfile:
-    line: search {{ cluster_domain_name }}
-    dest: /etc/resolv.conf
-    regexp: "^search .*"
+  - name: recreate resolv.conf
+    lineinfile:
+      line: search {{ cluster_domain_name }}
+      dest: /etc/resolv.conf
+      regexp: "^search .*"
