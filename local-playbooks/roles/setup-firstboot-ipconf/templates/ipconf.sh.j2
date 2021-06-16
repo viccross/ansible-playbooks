@@ -30,6 +30,8 @@ function changeIP {
   # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
   echo Gateway is ${GATEWAY}
+  source <(grep ^DOMAIN ${FN})
+  echo Domain is ${DOMAIN}
   source <(grep ^DNS ${FN})
   if [ -v DNS1 ]; then
     DNS="${DNS1}"
