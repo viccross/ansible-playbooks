@@ -48,3 +48,8 @@
   loop:
   - { src: "create-certificate.yml.j2", dest: "/opt/ansible/tasks/create-certificate.yml" }
   - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml"}
+  - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml"}
+  - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2"}
+  - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2"}
+  - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2"}
+  - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2"}
