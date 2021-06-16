@@ -71,18 +71,26 @@ function changeIP {
 
   # stop named
   systemctl stop named-chroot.service
+  # Write out the new cluster_base_domain variable to the group_vars YAML
+  echo "cluster_base_domain: ${DOMAIN}" >> /opt/ansible/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
-  pushd /opt/ansible && ansible-playbook -i inventory -e cluster_base_domain=${DOMAIN} update-dns.yml
+  pushd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml && popd
+  # start named
+  systemctl start named-chroot.service
+
+  # Regenerate all the certificates
+  pushd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml && popd
 
 
   # update the file in the web server directory
+  FULLDOMAIN="{{ cluster_name }}.${DOMAIN}"
   cat <<EOF > {{ webroot }}/etc.hosts
-${IPADDR} bastion.{{ cluster_domain_name }} api.{{ cluster_domain_name }}
-${IPADDR} console-openshift-console.apps.{{ cluster_domain_name }} oauth-openshift.apps.{{ cluster_domain_name }}
+${IPADDR} bastion.${FULLDOMAIN} api.${FULLDOMAIN}
+${IPADDR} console-openshift-console.apps.${FULLDOMAIN} oauth-openshift.apps.${FULLDOMAIN}
 ## The following are used for direct access to the OCP monitoring components,
 ##  add them as well if you want this direct access
-${IPADDR} grafana-openshift-monitoring.apps.{{ cluster_domain_name }}
-${IPADDR} prometheus-k8s-openshift-monitoring.apps.{{ cluster_domain_name }}
+${IPADDR} grafana-openshift-monitoring.apps.${FULLDOMAIN}
+${IPADDR} prometheus-k8s-openshift-monitoring.apps.${FULLDOMAIN}
 EOF
 
   # Restart some services due to address change
@@ -98,8 +106,10 @@ EOF
   fi
   # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service
+  # Prevent service from starting next time
+  systemctl disable zvm-ipconf.service
   # Announce we've finished
-  echo "ipconf changes completed."
+  echo "zvm-ipconf changes completed."
 }
 
 # Main starts here
