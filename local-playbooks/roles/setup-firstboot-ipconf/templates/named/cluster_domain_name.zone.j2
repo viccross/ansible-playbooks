@@ -1,0 +1,30 @@
+{% set bootstrap = cluster_nodes['bootstrap'] %}
+{% set masters = cluster_nodes['masters'] %}
+{% set workers = cluster_nodes['workers'] %}
+$TTL 900
+
+@                     IN SOA bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
+                        2021061801 1D 1H 1W 3H
+                      )
+                      IN NS bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+
+bastion               IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+bastion-int           IN A {{ bastion_private_ip_address }}
+api                   IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+api-int               IN A {{ bastion_private_ip_address }}
+apps                  IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+*.apps                IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+
+{% for item in bootstrap.keys() %}
+{{ item }}           IN A {{ bootstrap[item].ip }}
+{% endfor %}
+
+{% for item in masters.keys() %}
+{{ item }}              IN A {{ masters[item].ip }}
+{% endfor %}
+
+{% if workers is defined %}
+{% for item in workers.keys() %}
+{{ item }}              IN A {{ workers[item].ip }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,56 @@
+---
+- name: reconfigure BIND DNS for the new domain name
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: recreate DNS Forward zone
+    template:
+      src: named/cluster_domain_name.zone.j2
+      dest: /var/named/{% raw %}{{ cluster_domain_name }}{% endraw %}.zone
+      owner: named
+      group: named
+      mode: 0640
+
+  - name: recreate DNS Forward zone (internal)
+    template:
+      src: named/ibmpoc_internal.zone.j2
+      dest: /var/named/ibmpoc_internal.zone
+      owner: named
+      group: named
+      mode: 0640
+
+  - name: recreate DNS Reverse zone
+    template:
+      src: named/subnet.in-addr.arpa.zone.j2
+      dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
+      owner: named
+      group: named
+      mode: 0640
+
+  - name: recreate /etc/named.conf
+    template:
+      src: named/named.conf.j2
+      dest: /etc/named.conf
+      group: named
+      mode: 0640
+
+  - name: recreate resolv.conf
+    lineinfile:
+      line: search {% raw %}{{ cluster_domain_name }}{% endraw %}{{''}}
+      dest: /etc/resolv.conf
+      regexp: "^search .*"
+
+  - name: patch HAProxy service script
+    lineinfile:
+      dest: /usr/lib/systemd/system/haproxy.service
+      regex: ^ExecStartPre=
+      line: ExecStartPre=/bin/bash -c 'until host api.{% raw %}{{ cluster_domain_name }}{% endraw %}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
+
+  - name: signal systemd to reload
+    systemd: daemon_reload=yes
+
+  - name: recreate haproxy.cfg
+    template:
+      src: haproxy/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      group: named
+      mode: 0644

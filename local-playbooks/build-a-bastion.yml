@@ -10,6 +10,7 @@
   roles:
   - configure-squid
   - setup-web-resources
+  - setup-firstboot-ipconf
   - configure-dns
   - configure-haproxy
   - enable-haproxy-stats

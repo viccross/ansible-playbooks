@@ -1,0 +1,58 @@
+---
+- name: install the interface reconfiguration script to local executable path
+  template:
+    src: ipconf.sh.j2
+    dest: /usr/local/sbin/ipconf.sh
+    owner: root
+    group: root
+    mode: 0750
+
+- name: create systemd service for interface reconfiguration
+  blockinfile:
+    dest: /etc/systemd/system/zvm-ipconf.service
+    mode: 0644
+    insertbefore: BOF
+    create: yes
+    block: |
+      [Unit]
+      Requires=network-online.target
+      After=network-online.target named-chroot.service
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/ipconf.sh
+      RemainAfterExit=true
+      StandardOutput=journal
+      [Install]
+      WantedBy=default.target
+
+- name: enable the interface reconfiguration systemd service
+  systemd:
+    name: zvm-ipconf
+    state: stopped
+    enabled: yes
+
+- name: ensure the Ansible playbook directories exist on the host
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "/opt/ansible/tasks"
+    - "/opt/ansible/inventory/group_vars"
+    - "/opt/ansible/templates/named"
+    - "/opt/ansible/templates/haproxy"
+
+- name: copy files for the playbook
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+  - { src: "create-certificate.yml.j2", dest: "/opt/ansible/tasks/create-certificate.yml" }
+  - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml"}
+  - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml"}
+  - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2"}
+  - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2"}
+  - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2"}
+  - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2"}
+  - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2"}

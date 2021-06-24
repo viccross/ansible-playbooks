@@ -1,0 +1,37 @@
+---
+- name: generate private key
+  openssl_privatekey:
+    path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
+
+- name: generate z/VM CSR
+  openssl_csr:
+    path: "{{ ca_csr_path }}/{% raw %}{{ item.filename }}{% endraw %}.csr"
+    privatekey_path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
+    common_name: "{% raw %}{{ item.common_name }}{% endraw %}"
+    organization_name: "IBM"
+    organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
+    country_name: "US"
+    keyUsage: ["digitalSignature","keyAgreement"]
+    extendedKeyUsage: ["clientAuth","serverAuth"]
+    subject_alt_name: "DNS:{% raw %}{{ item.common_name }}{{ item.subject_alt_name | default(omit) }}{% endraw %}"
+
+- name: generate Certificate
+  openssl_certificate:
+    path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.cert"
+    csr_path: "{{ ca_csr_path }}/{% raw %}{{ item.filename }}{% endraw %}.csr"
+    ownca_path: "{{ ca_cert_path }}/oqsCA.cert"
+    ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
+    ownca_not_after: +365d
+    provider: ownca
+
+- name: Generate PKCS12 file
+  openssl_pkcs12:
+    action: export
+    path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.p12"
+    friendly_name: "{% raw %}{{ item.filename }}{% endraw %}"
+    privatekey_path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
+    certificate_path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.cert"
+    other_certificates:
+    - "{{ ca_cert_path }}/oqsRootCA.cert"
+    - "{{ ca_cert_path }}/oqsCA.cert"
+    passphrase: zvm4demo

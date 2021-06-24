@@ -1,0 +1,5 @@
+---
+- name: Setup firstboot reconfiguration on the OCP Bastion
+  hosts: s390x_bastion_workstation
+  roles:
+  - "roles/setup-firstboot-ipconf"

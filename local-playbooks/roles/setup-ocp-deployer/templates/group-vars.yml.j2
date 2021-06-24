@@ -1,6 +1,6 @@
 ---
 # Configure the internal domain name of the cluster here.
-cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
+cluster_domain_name: "{{ cluster_name }}.{% raw %}{{ cluster_base_domain }}{% endraw %}"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
@@ -72,3 +72,6 @@ ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/.ocp4_pull_
 znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
 webroot: "{{ webroot }}"
+
+# The IP configuration will write out the cluster_base_domain variable here
+# If this is the end of the file then the IP configuration did not run :/
