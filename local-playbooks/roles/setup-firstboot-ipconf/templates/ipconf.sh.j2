@@ -107,15 +107,19 @@ EOF
 
   # Restart some services due to address change
 
+  # restart Apache
+  systemctl restart httpd.service
+  echo "Apache httpd restarted"
   # restart HA-Proxy
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
-  # upstream DNS is harder, have to change the bind config...
-  if [ -v DNS ]; then
-    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
-    systemctl restart named-chroot
-    echo "BIND name server restarted"
-  fi
+  ### This is the old DNS change, comment this before removal
+#  # upstream DNS is harder, have to change the bind config...
+#  if [ -v DNS ]; then
+#    sed "s/XXX.XXX.XXX.XXX/${DNS}/g" </etc/named.conf.source >/etc/named.conf
+#    systemctl restart named-chroot
+#    echo "BIND name server restarted"
+#  fi
   # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service
   # Prevent service from starting next time
