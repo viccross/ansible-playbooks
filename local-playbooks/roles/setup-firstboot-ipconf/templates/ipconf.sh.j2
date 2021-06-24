@@ -99,6 +99,9 @@ function changeIP {
   # Regenerate all the certificates
   pushd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml && popd
 
+  # update Apache configuration
+  sed -i.bak "s/wsc.ibm/${DOMAIN}/g" /etc/httpd/conf/httpd.conf
+  sed -i.bak "s/wsc.ibm/${DOMAIN}/g" /etc/httpd/conf.d/ssl.conf
 
   # update the file in the web server directory
   cat <<EOF > {{ webroot }}/etc.hosts
