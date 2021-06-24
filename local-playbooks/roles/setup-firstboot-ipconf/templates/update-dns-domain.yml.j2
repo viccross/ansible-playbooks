@@ -19,8 +19,6 @@
       owner: named
       group: named
       mode: 0640
-    notify:
-    - restart dns
 
   - name: recreate DNS Reverse zone
     template:
@@ -29,8 +27,6 @@
       owner: named
       group: named
       mode: 0640
-    notify:
-    - restart dns
 
   - name: recreate /etc/named.conf
     template:
@@ -38,8 +34,6 @@
       dest: /etc/named.conf
       group: named
       mode: 0640
-    notify:
-    - restart dns
 
   - name: recreate resolv.conf
     lineinfile:
@@ -59,5 +53,3 @@
       dest: /etc/haproxy/haproxy.conf
       group: named
       mode: 0644
-    notify:
-    - restart haproxy
