@@ -40,6 +40,7 @@
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
     - "/opt/ansible/templates/named"
+    - "/opt/ansible/templates/haproxy"
 
 - name: copy files for the playbook
   template:
@@ -54,3 +55,4 @@
   - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2"}
   - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2"}
   - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2"}
+  - { src: "haproxy/haproxy.conf.j2", dest: "/opt/ansible/templates/haproxy/haproxy.conf.j2"}
