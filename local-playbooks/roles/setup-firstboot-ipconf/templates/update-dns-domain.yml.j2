@@ -46,3 +46,18 @@
       line: search {% raw %}{{ cluster_domain_name }}{% endraw %}{{''}}
       dest: /etc/resolv.conf
       regexp: "^search .*"
+
+  - name: patch HAProxy service script
+    lineinfile:
+      dest: /usr/lib/systemd/system/haproxy.service
+      regex: ^ExecStartPre=
+      line: ExecStartPre=/bin/bash -c 'until host api.{% raw %}{{ cluster_domain_name }}{% endraw %}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
+
+  - name: recreate haproxy.conf
+    template:
+      src: haproxy/haproxy.conf.j2
+      dest: /etc/haproxy/haproxy.conf
+      group: named
+      mode: 0644
+    notify:
+    - restart haproxy

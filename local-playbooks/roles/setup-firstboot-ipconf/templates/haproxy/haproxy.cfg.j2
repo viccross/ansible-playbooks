@@ -1,0 +1,108 @@
+{% set bootstrap  = cluster_nodes['bootstrap'] %}
+{% set masters    = cluster_nodes['masters'] %}
+{% set workers    = cluster_nodes['workers'] %}
+
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option                  http-server-close
+    option                  forwardfor except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          30m
+    timeout server          30m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+frontend ocp4-kubernetes-api-server
+   mode tcp
+   option tcplog
+   bind api.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443
+   bind api-int.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443
+   default_backend ocp4-kubernetes-api-server
+
+frontend ocp4-machine-config-server
+   mode tcp
+   option tcplog
+   bind api.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623
+   bind api-int.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623
+   default_backend ocp4-machine-config-server
+
+frontend ocp4-router-http
+   mode tcp
+   option tcplog
+   bind apps.{% raw %}{{ cluster_domain_name }}{% endraw %}:80
+   default_backend ocp4-router-http
+
+frontend ocp4-router-https
+   mode tcp
+   option tcplog
+   bind apps.{% raw %}{{ cluster_domain_name }}{% endraw %}:443
+   default_backend ocp4-router-https
+
+backend ocp4-kubernetes-api-server
+   mode tcp
+   option httpchk GET /readyz HTTP/1.0
+   option log-health-checks
+   balance roundrobin
+   server boostrap-0 bootstrap-0.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+{% for item in masters.keys() %}
+   server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+{% endfor %}
+
+backend ocp4-machine-config-server
+   mode tcp
+   balance roundrobin
+   server bootstrap-0 bootstrap-0.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623 weight 1 check backup non-stick
+{% for item in masters.keys() %}
+   server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623 weight 100 check
+{% endfor %}
+
+backend ocp4-router-http
+   mode tcp
+{% if workers is defined %}
+   {% for item in workers.keys() %}
+      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:80 check
+   {% endfor %}
+{% else %}
+    {% for item in masters.keys() %}
+      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:80 check
+   {% endfor %}
+{% endif %}
+
+backend ocp4-router-https
+   mode tcp
+{% if workers is defined %}
+   {% for item in workers.keys() %}
+      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:443 check
+   {% endfor %}
+{% else %}
+    {% for item in masters.keys() %}
+      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:443 check
+   {% endfor %}
+{% endif %}
+
+frontend stats
+  bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
+  stats enable
+  stats uri /stats
+  stats refresh 10s
+  stats admin if LOCALHOST

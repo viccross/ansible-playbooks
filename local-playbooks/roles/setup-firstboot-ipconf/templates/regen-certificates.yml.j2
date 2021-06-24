@@ -20,7 +20,7 @@
   - name: generate the certificate for the HA-Proxy stats interface
     include_tasks: tasks/create-certificate.yml
     with_items:
-    - { filename: "haproxy", common_name: "{% raw %}{{ bastion_host_name }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: "DNS:{% raw %}{{ bastion_host_name }}.{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}" }
+    - { filename: "haproxy", common_name: "{% raw %}{{ bastion_host_name }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: "DNS:{% raw %}{{ bastion_host_name }}{% endraw %}.{{ cluster_name }}.{% raw %}{{ cluster_base_domain }}{% endraw %}" }
 
   - name: create combined PEM file for HAProxy
     shell:
