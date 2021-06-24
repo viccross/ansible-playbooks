@@ -1,9 +1,9 @@
 $TTL 900
 
-@                     IN SOA bastion-int.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
-                        2020083001 1D 1H 1W 3H
+@                     IN SOA bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
+                        2021061801 1D 1H 1W 3H
                       )
-                      IN NS bastion-int.{{ cluster_domain_name }}.
+                      IN NS bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
 
 zVM                   IN A {{ zvm_internal_ip_address }}
 LDAPSRV               IN A {{ zvm_internal_ip_address }}

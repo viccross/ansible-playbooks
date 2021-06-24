@@ -8,12 +8,12 @@ $TTL 900
                       )
                       IN NS bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
 
-bastion               IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}
+bastion               IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 bastion-int           IN A {{ bastion_private_ip_address }}
-api                   IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}
+api                   IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 api-int               IN A {% raw %}{{ bastion_private_ip_address }}
-apps                  IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}
-*.apps                IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}
+apps                  IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+*.apps                IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 
 {% for item in bootstrap.keys() %}
 {{ item }}           IN A {{ bootstrap[item].ip }}
