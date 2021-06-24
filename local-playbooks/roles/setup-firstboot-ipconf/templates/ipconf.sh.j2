@@ -37,6 +37,7 @@ function changeIP {
   fi
   echo Hostname is ${HOSTNM} ${HOSTSET}
   source <(grep ^DOMAIN ${FN})
+  DOMAIN=${DOMAIN,,}
   echo Domain is ${DOMAIN}
   source <(grep ^DNS ${FN})
   if [ -v DNS1 ]; then

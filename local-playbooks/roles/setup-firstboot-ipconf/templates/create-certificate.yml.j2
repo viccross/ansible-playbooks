@@ -13,7 +13,7 @@
     country_name: "US"
     keyUsage: ["digitalSignature","keyAgreement"]
     extendedKeyUsage: ["clientAuth","serverAuth"]
-    subject_alt_name: "{% raw %}{{ item.subject_alt_name | default(omit) }}{% endraw %}"
+    subject_alt_name: "DNS:{% raw %}{{ item.common_name }}{{ item.subject_alt_name | default(omit) }}{% endraw %}"
 
 - name: generate Certificate
   openssl_certificate:
