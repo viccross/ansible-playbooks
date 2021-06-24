@@ -20,10 +20,10 @@ function changeIP {
   # **** This check may be removed if we decide change is mandatory
   FILEIP="${IPADDR}/$PFX"
   SYSIP=$(ip -br addr show dev ${IFN} | awk '{print $3}')
-#  if [ "${FILEIP}" = "${SYSIP}" ]; then
-#    echo "IP address is already the same, exiting"
-#    exit 0;
-#  fi
+  if [ "${FILEIP}" = "${SYSIP}" ]; then
+    echo "IP address is already the same, exiting"
+    exit 0;
+  fi
 
   # go ahead with the address change
   echo "Address change is required"
@@ -59,9 +59,9 @@ function changeIP {
     exit 1;
   fi
   # next, update the interface
-#  nmcli con mod ${UUID} ipv4.method manual ipv4.addresses "${IPADDR}/${PFX}"
-#  nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
-#  nmcli con up ${UUID}
+  nmcli con mod ${UUID} ipv4.method manual ipv4.addresses "${IPADDR}/${PFX}"
+  nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
+  nmcli con up ${UUID}
 
   # **** Commenting out the DDNS method right now :|
   # next, do the dynamic DNS update to fix BIND
