@@ -48,9 +48,9 @@
   - name: signal systemd to reload
     systemd: daemon_reload=yes
 
-  - name: recreate haproxy.conf
+  - name: recreate haproxy.cfg
     template:
-      src: haproxy/haproxy.conf.j2
-      dest: /etc/haproxy/haproxy.conf
+      src: haproxy/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
       group: named
       mode: 0644
