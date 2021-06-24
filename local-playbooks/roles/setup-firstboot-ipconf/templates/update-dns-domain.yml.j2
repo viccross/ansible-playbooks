@@ -5,7 +5,7 @@
   - name: recreate DNS Forward zone
     template:
       src: named/cluster_domain_name.zone.j2
-      dest: /var/named/{{ cluster_domain_name }}.zone
+      dest: /var/named/{% raw %}{{ cluster_domain_name }}{% endraw %}.zone
       owner: named
       group: named
       mode: 0640
@@ -43,6 +43,6 @@
 
   - name: recreate resolv.conf
     lineinfile:
-      line: search {{ cluster_domain_name }}
+      line: search {% raw %}{{ cluster_domain_name }}{% endraw %}
       dest: /etc/resolv.conf
       regexp: "^search .*"

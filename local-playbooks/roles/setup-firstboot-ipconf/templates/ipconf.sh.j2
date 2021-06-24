@@ -30,6 +30,12 @@ function changeIP {
   # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
   echo Gateway is ${GATEWAY}
+  source <(grep ^HOSTNAME ${FN})
+  if [ -z "${HOSTNAME}"]; then
+    HOSTNAME="{{ guest_install_hostname }}"
+    HOSTSET="(default value)"
+  fi
+  echo Hostname is ${HOSTNAME} ${HOSTSET}
   source <(grep ^DOMAIN ${FN})
   echo Domain is ${DOMAIN}
   source <(grep ^DNS ${FN})
@@ -73,8 +79,12 @@ function changeIP {
 
   # stop named
   systemctl stop named-chroot.service
-  # Write out the new cluster_base_domain variable to the group_vars YAML
+  # Write out new variables to the group_vars YAML
   echo "cluster_base_domain: ${DOMAIN}" >> /opt/ansible/inventory/group_vars/all.yml
+  echo "dns_nameserver: \"${DNS}\"" >> /opt/ansible/inventory/group_vars/all.yml
+  echo "bastion_host_name: \"${HOSTNAME}\"" >> /opt/ansible/inventory/group_vars/all.yml
+  # Update the bastion_public_ip_address in the group_vars
+  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
   pushd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml && popd
   # start named

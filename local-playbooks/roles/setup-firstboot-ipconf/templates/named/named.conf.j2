@@ -29,7 +29,7 @@ options {
 
 	recursion yes;
 	allow-recursion { localhost; internal_nets; };
-	forwarders { {{ dns_nameserver }}; };
+	forwarders { {% raw %}{{ dns_nameserver }}{% endraw %}; };
 
 	dnssec-enable yes;
 	dnssec-validation no;
@@ -58,9 +58,9 @@ zone "." IN {
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 
-zone "{{ cluster_domain_name }}" {
+zone "{% raw %}{{ cluster_domain_name }}{% endraw %}" {
 	type master;
-	file "{{ cluster_domain_name }}.zone";
+	file "{% raw %}{{ cluster_domain_name }}{% endraw %}.zone";
 	allow-query { any; };
 	allow-transfer { none; };
 	update-policy local;
@@ -81,4 +81,3 @@ zone "ibmpoc.internal" {
 	allow-transfer { none; };
 	update-policy local;
 };
-
