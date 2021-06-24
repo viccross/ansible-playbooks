@@ -43,6 +43,6 @@
 
   - name: recreate resolv.conf
     lineinfile:
-      line: search {% raw %}{{ cluster_domain_name }}{% endraw %}
+      line: search {% raw %}{{ cluster_domain_name }}{% endraw %}{{ }}
       dest: /etc/resolv.conf
       regexp: "^search .*"
