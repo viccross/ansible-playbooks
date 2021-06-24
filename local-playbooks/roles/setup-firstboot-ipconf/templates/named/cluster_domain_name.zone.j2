@@ -11,7 +11,7 @@ $TTL 900
 bastion               IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 bastion-int           IN A {{ bastion_private_ip_address }}
 api                   IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
-api-int               IN A {% raw %}{{ bastion_private_ip_address }}
+api-int               IN A {{ bastion_private_ip_address }}
 apps                  IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 *.apps                IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
 
