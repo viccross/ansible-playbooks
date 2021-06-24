@@ -78,6 +78,11 @@ function changeIP {
 #send
 #EOF
 
+  # Update the system hostname
+  FULLDOMAIN="{{ cluster_name }}.${DOMAIN}"
+  echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
+  hostname -F /etc/hostname
+  echo "System hostname updated to $(hostname)"
   # stop named
   systemctl stop named-chroot.service
   # Write out new variables to the group_vars YAML
@@ -96,9 +101,8 @@ function changeIP {
 
 
   # update the file in the web server directory
-  FULLDOMAIN="{{ cluster_name }}.${DOMAIN}"
   cat <<EOF > {{ webroot }}/etc.hosts
-${IPADDR} bastion.${FULLDOMAIN} api.${FULLDOMAIN}
+${IPADDR} ${HOSTNM}.${FULLDOMAIN} api.${FULLDOMAIN}
 ${IPADDR} console-openshift-console.apps.${FULLDOMAIN} oauth-openshift.apps.${FULLDOMAIN}
 ## The following are used for direct access to the OCP monitoring components,
 ##  add them as well if you want this direct access
@@ -123,7 +127,7 @@ EOF
 #  fi
   # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service
-  # Prevent service from starting next time
+  # Prevent this service from starting next time
   systemctl disable zvm-ipconf.service
   # Announce we've finished
   echo "zvm-ipconf changes completed."
