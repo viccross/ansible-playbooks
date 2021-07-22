@@ -19,8 +19,8 @@ admin_uid: IBMAUTO
 admin_pwd: "8L$YN2FO"
 webroot: "/var/www/html"
 meta_header_file: "meta_header.html"
-oqs_header_version: "0.3"
-oqs_header_pkgname: "oqs-header-{%- if oqs_header_version == 'master' -%}master{%- else -%}v{{ oqs_header_version }}{%- endif -%}"
+oqs_header_version: "0.4"
+oqs_header_pkgname: "oqs-header-{{ oqs_header_version }}"
 #
 # CA paramaters
 ca_csr_path: /etc/pki/tls/misc
