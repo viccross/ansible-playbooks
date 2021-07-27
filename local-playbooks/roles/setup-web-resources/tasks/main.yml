@@ -277,6 +277,12 @@
     dest: "{{ webroot }}/ocp-version"
     mode: 0644
 
+- name: permit SELinux access to network from Apache (for reverse proxy)
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+
 - name: permit SELinux access to LDAP from Apache
   seboolean:
     name: httpd_can_connect_ldap
