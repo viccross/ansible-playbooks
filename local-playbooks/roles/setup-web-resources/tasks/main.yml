@@ -106,6 +106,13 @@
         AllowOverride None
         Require all granted
       </Directory>
+      # Reverse-proxy configuration for PerfKit 
+      AddOutputFilterByType SUBSTITUTE text/html
+      SSLProxyEngine on
+      ProxyPassMatch "^/perftk/(.*)$" "https://zvm.ibmpoc.internal:81/$1"
+      ProxyPassReverse "/perftk/" "https://zvm.ibmpoc.internal:81/"
+      Substitute s|https://zvm.ibmpoc.internal:81|/perftk|in
+      Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
 
 - name: allow traffic at 8080 for apache
   tags: firewall
