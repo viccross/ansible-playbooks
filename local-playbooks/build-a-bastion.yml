@@ -5,7 +5,7 @@
   roles:
   - create-local-ca
 
-- name: Configure services on the OCP Bastion
+- name: Configure services on the FastVM Portal system
   hosts: s390x_bastion_workstation
   roles:
   - configure-squid
@@ -17,3 +17,4 @@
   - configure-cockpit
   - configure-apache-ignition
   - setup-ocp-deployer
+  - setup-icic-deployer

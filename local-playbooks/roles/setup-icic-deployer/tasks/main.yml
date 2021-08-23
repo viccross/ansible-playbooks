@@ -1,0 +1,85 @@
+---
+- name: ensure the Ansible playbook directories exist on the host
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "/opt/ansible/tasks"
+    - "/opt/ansible/files"
+
+- name: copy files for the playbooks and scripts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+  - { src: "icic-add-host.j2", dest: "/opt/ansible/files/icic-add-host.sh" }
+  - { src: "icic-ldap.exp.j2", dest: "/opt/ansible/files/icic-ldap.exp" }
+  - { src: "ICICCMP0.direct.j2", dest: "/opt/ansible/files/ICICCMP0.direct" }
+  - { src: "ICICMGT0.direct.j2", dest: "/opt/ansible/files/ICICMGT0.direct" }
+  - { src: "setup-icic-compute.yml.j2", dest: "/opt/ansible/setup-icic-compute.yml" }
+  - { src: "setup-icic-ldap.yml.j2", dest: "/opt/ansible/setup-icic-ldap.yml" }
+  - { src: "setup-icic-management.yml.j2", dest: "/opt/ansible/setup-icic-management.yml" }
+
+- name: set up the build script and incron stuff
+  block:
+  - name: copy the script
+    template:
+      src: icic-setup.sh.j2
+      dest: /usr/local/bin/icic-setup.sh
+      mode: 0750
+  - name: copy the incrontab file
+    template:
+      src: incrontab-icic-build.j2
+      dest: /etc/incron.d/icic-build
+      mode: 0644
+    notify: "enable incrond"
+
+- name: set up icic-guests script and start/stop services
+  block:
+  - name: copy the action script
+    template:
+      src: icic-guests.sh.j2
+      dest: /usr/local/bin/icic-guests.sh
+      mode: 0750
+  - name: copy the icic-guests-start systemd service file
+    template:
+      src: icic-guests-start.service.j2
+      dest: /etc/systemd/system/icic-guests-start.service
+      mode: 0644
+  - name: copy the icic-guests-stop systemd service file
+    template:
+      src: icic-guests-stop.service.j2
+      dest: /etc/systemd/system/icic-guests-stop.service
+      mode: 0644
+  - name: Do not enable the icic-guests-start service
+    systemd:
+      name: icic-guests-start
+      state: stopped
+      enabled: no
+  - name: Do not enable the icic-guests-stop service
+    systemd:
+      name: icic-guests-stop
+      state: stopped
+      enabled: no
+
+- name: update the inventory host file
+  blockinfile:
+    path: /opt/ansible/inventory/inventory
+    block: |
+      [s390x_ICIC_management_node]
+      172.24.26.11 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+- name: display a message
+  debug:
+    msg:
+      - '        The ICIC build deployer is now completed!          '
+      - '                                                           '
+      - '      _|_|_|_|            _|                      _|       '
+      - '      _|        _|_|_|          _|_|    _|    _|  _|       '
+      - '      _|_|_|    _|    _|  _|  _|    _|  _|    _|  _|       '
+      - '      _|        _|    _|  _|  _|    _|  _|    _|           '
+      - '      _|_|_|_|  _|    _|  _|    _|_|      _|_|_|  _|       '
+      - '                          _|                  _|           '
+      - '                        _|                _|_|             '

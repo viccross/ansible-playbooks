@@ -1,0 +1,92 @@
+---
+- name: wait for ICIC management node accessibility
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: wait for SSH
+    wait_for:
+      port: 22
+      host: "172.24.26.11"
+      search_regex: OpenSSH
+      delay: 1
+      timeout: 10000
+
+- name: gather facts from the ICIC management node
+  hosts: s390x_ICIC_management_node
+  tasks:
+    - setup:
+
+- name: create the certificate for ICIC
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: create ICIC certificate
+    include_tasks: tasks/icic-certificate.yml
+
+- name: setup the ICIC management node
+  hosts: s390x_ICIC_management_node
+  vars:
+    fastvmurlfile: "/var/www/html/.secret/.fastvmurl"
+    fastvmurl: "{% raw %}{{ lookup('file', fastvmurlfile) }}{% endraw %}"
+  tasks:
+  - name: create installation config file
+    block:
+    - name: create the configuration direcctory
+      file:
+        dest: /etc/icic
+        state: directory
+        mode: '0750'
+    - name: create config file
+      template:
+        src: icic-config-properties.j2
+        dest: /etc/icic/config.properties
+
+  - name: set the system locale
+    command: localectl set-locale en_US.UTF8
+
+  - name: extract the installation code
+    block:
+    - name: fetch the name of the icic code
+      shell:
+        cmd: curl {% raw %}{{ fastvmurl }}{% endraw %}/ICICCODE.txt 2>/dev/null
+        warn: false
+      register: icicfile
+    - name: extract the remote archive
+      unarchive:
+        src: "{% raw %}{{ fastvmurl }}/{{ icicfile.stdout }}{% endraw %}"
+        dest: /tmp/
+        remote_src: yes
+    - name: pull the version from the supplied file name
+      set_fact:
+        icicver: '{% raw %}{{ icicfile.stdout.split("-")[4] | splitext | first }}{% endraw %}'
+
+  - name: run the silent installation script
+    command:
+      chdir: /tmp/icic-{% raw %}{{ icicver }}{% endraw %}/
+      cmd: ./install -s -z -e -c
+    environment:
+      HOST_INTERFACE: encad0
+
+  - name: make sure CA certificates are onboarded
+    block:
+    - name: run update-ca-trust
+      command:
+        cmd: update-ca-trust
+    - name: run c_rehash
+      command:
+        cmd: openssl rehash /etc/pki/ca-trust/source/anchors/
+
+  - name: install the ICIC certificate
+    block:
+    - name: copy the certificate and key
+      copy:
+        src: /etc/pki/tls/{% raw %}{{ item.src }}{% endraw %}
+        dest: /etc/pki/tls/{% raw %}{{ item.dest }}{% endraw %}
+        backup: yes
+        owner: "{% raw %}{{ item.owner }}{% endraw %}"
+        group: "{% raw %}{{ item.group }}{% endraw %}"
+        mode: "{% raw %}{{ item.mode }}{% endraw %}"
+      loop:
+        - { src: "certs/icic.crt", dest: "certs/icic.crt", owner: root, group: root, mode: "0644" }
+        - { src: "private/icic.pem", dest: "private/icic.key", owner: root, group: pvcservices, mode: "0440" }
+    - name: restart the ICIC services
+      command:
+        cmd: /opt/ibm/icic/bin/icic-services restart

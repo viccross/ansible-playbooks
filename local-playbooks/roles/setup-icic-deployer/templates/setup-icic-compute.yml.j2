@@ -1,0 +1,40 @@
+---
+- name: wait for ICIC management node accessibility
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: wait for SSH
+    wait_for:
+      port: 22
+      host: "172.24.26.12"
+      search_regex: OpenSSH
+      delay: 1
+      timeout: 10000
+
+- name: setup the ICIC compute node
+  hosts: s390x_ICIC_management_node
+  vars:
+    fastvmurlfile: "/var/www/html/.secret/.fastvmurl"
+    fastvmurl: "{% raw %}{{ lookup('file', fastvmurlfile) }}{% endraw %}"
+  tasks:
+  - name: copy the script to the management node
+    copy:
+      src: icic-add-host.sh
+      dest: /usr/local/bin/icic-add-host.sh
+      mode: "0750"
+      owner: root
+      group: root
+
+  - name: run the script for setup
+    command:
+      cmd: /usr/local/bin/icic-add-host.sh
+    environment:
+      controller_host: "icicmgt0.{% raw %}{{ cluster_base_domain }}{% endraw %}"
+      controller_user_name: "root"
+      controller_passwd: "lnx4vm"
+      compute_host: "iciccmp0.{% raw %}{{ cluster_base_domain }}{% endraw %}"
+      compute_user_name: "root"
+      compute_private_key_data: "{% raw %}{{ lookup('file', '/root/.ssh/id_rsa') | replace('\n','\\n') }}{% endraw %}"
+      compute_vswitch: "VSW1"
+      disk_pool: "ECKD:LINUX"
+      host_type: "powervm"
+      host_display_name: "FastVM"
