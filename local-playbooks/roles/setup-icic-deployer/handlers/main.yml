@@ -1,0 +1,8 @@
+---
+# handlers file for setup-icic-deployer
+- name: Enable incrond service
+  systemd:
+    name: incrond
+    state: stopped
+    enabled: yes
+  listen: "enable incrond"
