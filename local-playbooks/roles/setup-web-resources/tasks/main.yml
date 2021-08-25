@@ -201,7 +201,7 @@
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
         && mv {{ webroot }}/{{ oqs_header_pkgname }}/* {{ webroot }}/ \
-        && rmdir {{ webroot }}/{{ oqs_header_pkgname }}
+        && rm -rf {{ webroot }}/{{ oqs_header_pkgname }}
       removes: "{{ webroot }}/{{ oqs_header_pkgname }}"
 
   - name: Set permission on the HTML files to enable Includes
