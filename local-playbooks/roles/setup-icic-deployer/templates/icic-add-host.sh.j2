@@ -26,8 +26,8 @@ if [[ "$host_type" == "kvm" ]]; then
 fi
 
 if [[ "$host_type" == "powervm" ]]; then
-    $compute_host_name=$(vmcp q userid | awk '{print $3}')
-    $host_display_name=$compute_host_name
+    compute_host_name=$(vmcp q userid | awk '{print $3}')
+    host_display_name=$compute_host_name
 fi
 
 current_hosts=`icic-services remote list | tail -n 1 | grep "$host_display_name"`
