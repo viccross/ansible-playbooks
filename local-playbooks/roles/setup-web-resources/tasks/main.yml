@@ -37,7 +37,7 @@
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
     regexp: ^#?ServerName
-    line: ServerName {{ guest_install_hostname }}.{{ cluster_base_domain }}
+    line: ServerName {{ guest_install_hostname }}.{{ cluster_domain_name }}
 
 - name: define CA details for apache, SSLCertificateFile
   lineinfile:
@@ -64,9 +64,9 @@
     mode: "0644"
     owner: root
     group: root
-    block: |2
-          <VirtualHost {{ guest_install_hostname }}.{{ cluster_base_domain }}:8080>
-          <Directory "/var/www/html">
+    block: |
+      <VirtualHost {{ guest_install_hostname }}.{{ cluster_domain_name }}:8080>
+        <Directory "/var/www/html">
           Options Indexes FollowSymLinks Includes
           XBitHack On
           <FilesMatch ".*\.php$">
@@ -78,8 +78,8 @@
           ErrorDocument 403 /error.html
           AllowOverride None
           Require all granted
-          </Directory>
-          </VirtualHost>
+        </Directory>
+      </VirtualHost>
 
 - name: bind httpd to port 8080
   lineinfile:
