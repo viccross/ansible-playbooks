@@ -60,6 +60,7 @@
 - name: create configuration for our external non-SSL VirtualHost
   blockinfile:
     dest: /etc/httpd/conf.d/nonssl.conf
+    create: yes
     mode: "0644"
     owner: root
     group: root
