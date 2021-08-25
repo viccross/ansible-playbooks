@@ -194,7 +194,7 @@
     unarchive:
       src: "/opt/resources/{{ oqs_header_pkgname }}.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/meta_header.html"
+      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/s_header.html"
 
   - name: move downloaded site directory # noqa 302
     shell:
