@@ -37,7 +37,7 @@
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
     regexp: ^#?ServerName
-    line: ServerName {{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}
+    line: ServerName {{ guest_install_hostname }}.{{ cluster_base_domain }}
 
 - name: define CA details for apache, SSLCertificateFile
   lineinfile:
@@ -57,18 +57,16 @@
     regexp: "^#?SSLCertificateChainFile"
     line: SSLCertificateChainFile /etc/pki/tls/certs/oqsCA.cert
 
-- name: enable Apache Server Side Includes (SSI)
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: '^(\s*)Options Indexes FollowSymLinks'
-    line: '\1Options Indexes FollowSymLinks Includes'
-    backrefs: yes
-
-- name: add XBitHack, and FilesMatch sections to hide the SSL-safe stuff
+- name: create configuration for our external non-SSL VirtualHost
   blockinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    insertafter: '\s*Options Indexes FollowSymLinks Includes'
+    dest: /etc/httpd/conf.d/nonssl.conf
+    mode: "0644"
+    owner: root
+    group: root
     block: |2
+          <VirtualHost {{ guest_install_hostname }}.{{ cluster_base_domain }}:8080>
+          <Directory "/var/www/html">
+          Options Indexes FollowSymLinks Includes
           XBitHack On
           <FilesMatch ".*\.php$">
             Require all denied
@@ -77,6 +75,10 @@
             Require all denied
           </FilesMatch>
           ErrorDocument 403 /error.html
+          AllowOverride None
+          Require all granted
+          </Directory>
+          </VirtualHost>
 
 - name: bind httpd to port 8080
   lineinfile:
@@ -96,7 +98,7 @@
     regexp: "VirtualHost _default_:443"
     line: <VirtualHost _default_:8443>
 
-- name: add the Apache configuration for the LDAP tools
+- name: add the Apache configuration for the tools
   blockinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
