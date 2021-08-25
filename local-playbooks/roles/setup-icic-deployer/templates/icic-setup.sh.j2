@@ -84,23 +84,7 @@ growguest() {
   # space until we get what's needed.
 
   GUEST=$1
-
-  # Look for what type of space we have: if we find no "3390-" then it's FBA.
-  if [ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]; then
-    mdsize=${mdsizefba}
-    if [[ ${GUEST} =~ "MGT" ]]; then
-      SPACE=${mgtspacefba}
-    else
-      SPACE=${cmpspacefba}
-    fi
-  else
-    mdsize=${mdsizeckd}
-    if [[ ${GUEST} =~ "MGT" ]]; then
-      SPACE=${mgtspaceckd}
-    else
-      SPACE=${cmpspaceckd}
-    fi
-  fi
+  SPACE=$2
 
   # list the available volumes, filtering out anything smaller than half the size of the initial disk
   mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=$((mdsize / 2)) '{ if ($4 >= size) {print} }')
@@ -137,6 +121,17 @@ echo "SMAPI listener active, continuing..."
 myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
 tmpip=${myip%/*}
 IFS=" ";
+
+# Look for what type of space we have: if we find no "3390-" then it's FBA.
+if [ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]; then
+  mdsize=${mdsizefba}
+  mgtspace=${mgtspacefba}
+  cmpspace=${cmpspacefba}
+else
+  mdsize=${mdsizeckd}
+  mgtspace=${mgtspaceckd}
+  cmpspace=${cmpspaceckd}
+fi
 
 # list the available volumes with sufficient free space
 mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=${mdsize} '{ if ($4 >= size) {print} }')
@@ -234,9 +229,9 @@ cio_ignore -a 1200,1201
 vmcp detach 1200 1201
 
 # Call function to grow the managaement node
-growguest ${icicmgt}
+growguest ${icicmgt} ${mgtspace}
 # Call function to grow the compute node
-growguest ${iciccmp}
+growguest ${iciccmp} ${cmpspace}
 
 # Add the host details to our local /etc/hosts
 echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}" >> /etc/hosts
