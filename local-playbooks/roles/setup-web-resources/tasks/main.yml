@@ -60,14 +60,27 @@
 - name: enable Apache Server Side Includes (SSI)
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
-    regexp: ^    Options Indexes FollowSymLinks
-    line:     Options Indexes FollowSymLinks Includes
+    regexp: '^(\s*)Options Indexes FollowSymLinks'
+    line: '\1Options Indexes FollowSymLinks Includes'
 
 - name: enable XBitHack for SSI
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
-    insertafter:     Options Indexes FollowSymLinks Includes
-    line:     XBitHack On
+    insertafter: '(\s*)Options Indexes FollowSymLinks Includes'
+    line: '\1XBitHack On'
+
+- name: add File sections to hide the SSL-safe stuff
+  blockinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    insertafter: '\s*XBitHack On'
+    block: |2
+          <FilesMatch ".*\.php$">
+            Require all denied
+          </FilesMatch>
+          <FilesMatch "(s_|ocp-|start).*$">
+            Require all denied
+          </FilesMatch>
+          ErrorDocument 403 /error.html
 
 - name: bind httpd to port 8080
   lineinfile:
@@ -92,6 +105,7 @@
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
+      DirectoryIndex s_index.html
       Alias /password {{ webroot }}/self-service-password-racf-master
       Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs
       <Directory "{{ webroot }}/self-service-password-racf-master">
@@ -106,7 +120,7 @@
         AllowOverride None
         Require all granted
       </Directory>
-      # Reverse-proxy configuration for PerfKit 
+      # Reverse-proxy configuration for PerfKit
       AddOutputFilterByType SUBSTITUTE text/html
       SSLProxyEngine on
       ProxyPassMatch "^/perftk/(.*)$" "https://zvm.ibmpoc.internal:81/$1"
