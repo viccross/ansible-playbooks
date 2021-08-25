@@ -104,6 +104,13 @@
       DirectoryIndex s_index.html
       Alias /password {{ webroot }}/self-service-password-racf-master
       Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs
+      <Directory "/var/www/html">
+        Options Indexes FollowSymLinks Includes
+        XBitHack On
+        ErrorDocument 403 /error.html
+        AllowOverride None
+        Require all granted
+      </Directory>
       <Directory "{{ webroot }}/self-service-password-racf-master">
         AllowOverride None
         Require all granted
