@@ -62,18 +62,14 @@
     dest: /etc/httpd/conf/httpd.conf
     regexp: '^(\s*)Options Indexes FollowSymLinks'
     line: '\1Options Indexes FollowSymLinks Includes'
+    backrefs: yes
 
-- name: enable XBitHack for SSI
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    insertafter: '(\s*)Options Indexes FollowSymLinks Includes'
-    line: '\1XBitHack On'
-
-- name: add File sections to hide the SSL-safe stuff
+- name: add XBitHack, and FilesMatch sections to hide the SSL-safe stuff
   blockinfile:
     dest: /etc/httpd/conf/httpd.conf
-    insertafter: '\s*XBitHack On'
+    insertafter: '\s*Options Indexes FollowSymLinks Includes'
     block: |2
+          XBitHack On
           <FilesMatch ".*\.php$">
             Require all denied
           </FilesMatch>
