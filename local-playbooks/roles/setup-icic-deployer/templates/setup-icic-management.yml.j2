@@ -78,8 +78,8 @@
     block:
     - name: copy the certificate and key
       copy:
-        src: /etc/pki/tls/{% raw %}{{ item.src }}{% endraw %}
-        dest: /etc/pki/tls/{% raw %}{{ item.dest }}{% endraw %}
+        src: "/etc/pki/tls/{% raw %}{{ item.src }}{% endraw %}"
+        dest: "/etc/pki/tls/{% raw %}{{ item.dest }}{% endraw %}"
         backup: yes
         owner: "{% raw %}{{ item.owner }}{% endraw %}"
         group: "{% raw %}{{ item.group }}{% endraw %}"
