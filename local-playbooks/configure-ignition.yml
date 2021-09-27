@@ -1,0 +1,8 @@
+---
+# set up to serve ignition configs
+- name: Download installer and create ignition configs
+  hosts: s390x_bastion_workstation
+  roles:
+  - configure-ignition
+  vars:
+    bootfile_dest: "/var/www/html/bootfiles"
