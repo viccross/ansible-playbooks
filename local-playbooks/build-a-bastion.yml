@@ -12,9 +12,10 @@
   - setup-web-resources
   - setup-firstboot-ipconf
   - configure-dns
+  - configure-apache
   - configure-haproxy
   - enable-haproxy-stats
   - configure-cockpit
-  - configure-apache-ignition
+  - configure-ignition
   - setup-ocp-deployer
   - setup-icic-deployer

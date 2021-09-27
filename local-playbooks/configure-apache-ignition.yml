@@ -1,8 +1,0 @@
----
-# configures minimal httpd server to serve ignition configs
-- name: Configure apache to serve ignition configs
-  hosts: s390x_bastion_workstation
-  roles:
-  - configure-apache-ignition
-  vars:
-    bootfile_dest: "/var/www/html/bootfiles"
