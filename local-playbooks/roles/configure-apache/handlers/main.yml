@@ -6,3 +6,9 @@
     state: restarted
   listen: "restart firewalld"
 
+- name: restart httpd
+  service:
+    name: httpd.service
+    state: restarted
+    enabled: yes
+  listen: "restart httpd"
