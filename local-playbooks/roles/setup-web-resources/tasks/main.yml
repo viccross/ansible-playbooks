@@ -1,5 +1,4 @@
 ---
-    common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
 - name: install php and requisites
   yum:
     name:
