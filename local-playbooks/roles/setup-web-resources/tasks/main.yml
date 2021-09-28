@@ -36,7 +36,7 @@
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
-      DirectoryIndex s_index.html
+      DirectoryIndex s_index.html index.php
       Alias /password {{ webroot }}/self-service-password-racf-master
       Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs
       <Directory "/var/www/html">
