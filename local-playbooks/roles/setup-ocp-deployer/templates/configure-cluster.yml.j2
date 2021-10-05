@@ -2,7 +2,7 @@
 - name: generate the certificate
   include_tasks: create-certificate.yml
   with_items:
-  - { filename: "ocpApps", common_name: "*.apps.{{ cluster_name }}.{{ cluster_base_domain }}" }
+  - { filename: "ocpApps", common_name: "*.apps.{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}" }
 
 - name: create combined PEM file for OCP apps
   shell:

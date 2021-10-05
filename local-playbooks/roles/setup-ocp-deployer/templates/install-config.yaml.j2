@@ -1,9 +1,9 @@
 apiVersion: v1
-baseDomain: "{{ cluster_base_domain }}"
+baseDomain: "{% raw %}{{ cluster_base_domain }}{% endraw %}"
 proxy:
   httpProxy: http://{{ bastion_private_ip_address }}:3128
   httpsProxy: http://{{ bastion_private_ip_address }}:3128
-  noProxy: .{{ cluster_domain_name }},169.254.169.254,{{ subnet_cidr }}
+  noProxy: .{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %},169.254.169.254,{{ subnet_cidr }}
 compute:
 - hyperthreading: Enabled
   name: worker
