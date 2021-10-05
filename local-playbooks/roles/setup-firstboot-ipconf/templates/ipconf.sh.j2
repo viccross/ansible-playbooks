@@ -30,14 +30,13 @@ function changeIP {
   # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
   echo Gateway is ${GATEWAY}
-  source <(grep ^HOSTNM ${FN})
+  source <(grep ^HOSTNM ${FN} | tr '[A-Z]' '[a-z]')
   if [ -z "${HOSTNM}"]; then
     HOSTNM="{{ guest_install_hostname }}"
     HOSTSET="(default value)"
   fi
   echo Hostname is ${HOSTNM} ${HOSTSET}
-  source <(grep ^DOMAIN ${FN})
-  DOMAIN=${DOMAIN,,}
+  source <(grep ^DOMAIN ${FN} | tr '[A-Z]' '[a-z]')
   echo Domain is ${DOMAIN}
   source <(grep ^DNS ${FN})
   if [ -v DNS1 ]; then
