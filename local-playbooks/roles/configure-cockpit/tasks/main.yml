@@ -25,6 +25,7 @@
       ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
       ownca_not_after: +397d
       provider: ownca
+      force: yes
 
   - name: create combined PEM file for Cockpit
     shell:

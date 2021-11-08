@@ -22,6 +22,7 @@
     ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
     ownca_not_after: +397d
     provider: ownca
+    force: yes
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
