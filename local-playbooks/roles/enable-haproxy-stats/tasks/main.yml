@@ -23,6 +23,7 @@
       csr_path: /etc/pki/tls/misc/haproxy.csr
       ownca_path: /etc/pki/tls/certs/oqsCA.cert
       ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+      ownca_not_after: +397d
       provider: ownca
 
   - name: create combined PEM file for HAProxy
@@ -60,4 +61,3 @@
   with_items:
   - internal
   - public
-

@@ -27,7 +27,7 @@
     csr_path: /etc/pki/tls/misc/httpd.csr
     ownca_path: /etc/pki/tls/certs/oqsCA.cert
     ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
-    ownca_not_after: +365d
+    ownca_not_after: +397d
     provider: ownca
 
 - name: bind httpd to port 8080
