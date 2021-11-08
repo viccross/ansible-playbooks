@@ -24,6 +24,18 @@
       - nfs-utils
     state: present
 
+- name: add ntp to firewall
+  firewalld:
+    permanent: true
+    service: ntp
+    state: enabled
+    zone: "{{ item }}"
+  with_items:
+    - internal
+    - public
+  notify:
+  - restart firewalld
+
 - name: patch chrony.conf to allow connections
   lineinfile:
     path: /etc/chrony.conf
