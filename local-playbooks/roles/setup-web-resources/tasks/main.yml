@@ -137,11 +137,23 @@
       - starticic.html
       - startocp.html
 
-  - name: symlink to the OQS CA certificate
-    file:
-      src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
-      dest: "{{ webroot }}/oqsCA.cert"
-      state: link
+  - name: symlink to the CA certificates
+    block:
+    - name: symlink to the bundle
+      file:
+        src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
+        dest: "{{ webroot }}/ESICABundle.pem"
+        state: link
+    - name: symlink to the Root CA cert
+      file:
+        src: "/etc/pki/tls/certs/oqsRootCA.cert"
+        dest: "{{ webroot }}/ESIRootCA.pem"
+        state: link
+    - name: symlink to the Intermediate CA cert
+      file:
+        src: "/etc/pki/tls/certs/oqsCA.cert"
+        dest: "{{ webroot }}/ESICA.pem"
+        state: link
 
   - name: install the basic stats script to local executable path
     shell:
@@ -212,7 +224,7 @@
 
 - name: prime the ocp-version file with 'default' version
   copy:
-    content: "4.6"
+    content: "4.7"
     dest: "{{ webroot }}/ocp-version"
     mode: 0644
 
