@@ -18,8 +18,8 @@ sdbm_base: o=IBMZVM
 admin_uid: IBMAUTO
 admin_pwd: "8L$YN2FO"
 webroot: "/var/www/html"
-meta_header_file: "meta_header.html"
-oqs_header_version: "0.4"
+meta_header_file: "s_header.html"
+oqs_header_version: "0.5"
 oqs_header_pkgname: "oqs-header-{{ oqs_header_version }}"
 #
 # CA paramaters
