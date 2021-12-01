@@ -36,6 +36,7 @@
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
+      SetEnv DOMAIN_NAME {{ cluster_base_domain }}
       DirectoryIndex s_index.html index.php
       Alias /password {{ webroot }}/self-service-password-racf-master
       Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs

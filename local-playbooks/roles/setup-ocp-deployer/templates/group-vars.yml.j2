@@ -1,6 +1,6 @@
 ---
 # Configure the internal domain name of the cluster here.
-cluster_domain_name: "{{ cluster_name }}.{% raw %}{{ cluster_base_domain }}{% endraw %}"
+cluster_domain_name: "{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
