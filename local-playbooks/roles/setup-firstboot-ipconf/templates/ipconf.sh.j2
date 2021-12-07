@@ -35,6 +35,7 @@ function changeIP {
     HOSTNM="{{ guest_install_hostname }}"
     HOSTSET="(default value)"
   fi
+  HOSTNM=${HOSTNM,,}
   echo Hostname is ${HOSTNM} ${HOSTSET}
   source <(grep ^DOMAIN ${FN})
   DOMAIN=${DOMAIN,,}
