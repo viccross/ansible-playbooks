@@ -19,8 +19,8 @@ admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
-oqs_header_version: "0.6"
-oqs_header_pkgname: "oqs-header-{{ oqs_header_version }}"
+elan_web_version: "0.7"
+elan_web_pkgname: "elan-web-{{ elan_web_version }}"
 #
 # CA paramaters
 ca_csr_path: /etc/pki/tls/misc

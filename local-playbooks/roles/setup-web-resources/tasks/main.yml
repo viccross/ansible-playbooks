@@ -107,17 +107,17 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/{{ oqs_header_pkgname }}.zip"
+      src: "/opt/resources/{{ elan_web_pkgname }}.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/{{ meta_header_file }}"
+      creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
 
   - name: move downloaded site directory # noqa 302
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
-        && mv {{ webroot }}/{{ oqs_header_pkgname }}/* {{ webroot }}/ \
-        && rm -rf {{ webroot }}/{{ oqs_header_pkgname }}
-      removes: "{{ webroot }}/{{ oqs_header_pkgname }}"
+        && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
+        && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
+      removes: "{{ webroot }}/{{ elan_web_pkgname }}"
 
   - name: Set permission on the HTML files to enable Includes
     file:
@@ -130,6 +130,7 @@
       - ocp-console.html
       - ocp-haproxy.html
       - ocp-perfkit.html
+      - dashboard.html
       - metrics.html
       - gethelp.html
       - index.html
