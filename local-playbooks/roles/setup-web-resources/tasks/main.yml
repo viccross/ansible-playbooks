@@ -81,7 +81,6 @@
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/self-service-password-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -89,7 +88,6 @@
     unarchive:
       src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/service-desk-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -160,7 +158,6 @@
   - name: install the basic stats script to local executable path
     shell:
       cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
-      creates: /usr/local/sbin/metrics.pl
       removes: "{{ webroot }}/scripts"
 
   - name: Set permission on metrics.pl
