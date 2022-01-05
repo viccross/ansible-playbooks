@@ -16,7 +16,7 @@ ldap_base: ou=ibmzvm,o={{ cert_organization }}
 ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=IBMZVM
 admin_uid: IBMAUTO
-admin_pwd: "8L$YN2FO"
+admin_pwd: "jTghTGinJupD63yh"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
 oqs_header_version: "0.6"
@@ -33,7 +33,7 @@ ocp_cluster_lan_name: "OCPLAN"
 ocp_dasd_prefix: ZVMU
 ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
 ocp_smapi_user: IBMAUTO
-ocp_smapi_password: "8L$YN2FO"
+ocp_smapi_password: "jTghTGinJupD63yh"
 #
 # Details needed for the cluster to be built
 cluster_base_domain: "wsc.ibm"
