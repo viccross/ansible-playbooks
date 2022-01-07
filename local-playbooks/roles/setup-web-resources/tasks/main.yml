@@ -81,7 +81,6 @@
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/self-service-password-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -89,7 +88,6 @@
     unarchive:
       src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/service-desk-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -107,17 +105,17 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/{{ oqs_header_pkgname }}.zip"
+      src: "/opt/resources/{{ elan_web_pkgname }}.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/{{ meta_header_file }}"
+      creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
 
   - name: move downloaded site directory # noqa 302
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
-        && mv {{ webroot }}/{{ oqs_header_pkgname }}/* {{ webroot }}/ \
-        && rm -rf {{ webroot }}/{{ oqs_header_pkgname }}
-      removes: "{{ webroot }}/{{ oqs_header_pkgname }}"
+        && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
+        && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
+      removes: "{{ webroot }}/{{ elan_web_pkgname }}"
 
   - name: Set permission on the HTML files to enable Includes
     file:
@@ -130,6 +128,7 @@
       - ocp-console.html
       - ocp-haproxy.html
       - ocp-perfkit.html
+      - dashboard.html
       - metrics.html
       - gethelp.html
       - index.html
@@ -159,7 +158,6 @@
   - name: install the basic stats script to local executable path
     shell:
       cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
-      creates: /usr/local/sbin/metrics.pl
       removes: "{{ webroot }}/scripts"
 
   - name: Set permission on metrics.pl
