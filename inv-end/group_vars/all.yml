@@ -19,7 +19,7 @@ admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
-elan_web_version: "0.7"
+elan_web_version: "0.7.1"
 elan_web_pkgname: "elan-web-{{ elan_web_version }}"
 #
 # CA paramaters
