@@ -4,9 +4,9 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
-    - { src: "{{ root_ca_key_path }}/oqsCA-{{ cluster_domain_name }}.pem", dest: "{{ ca_key_path }}/oqsCA.pem" }
-    - { src: "{{ root_ca_csr_path }}/oqsCA-{{ cluster_domain_name }}.csr", dest: "{{ ca_csr_path }}/oqsCA.csr" }
-    - { src: "{{ root_ca_cert_path }}/oqsCA-{{ cluster_domain_name }}.cert", dest: "{{ ca_cert_path }}/oqsCA.cert" }
+    - { src: "{{ root_ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem", dest: "{{ ca_key_path }}/oqsCA.pem" }
+    - { src: "{{ root_ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr", dest: "{{ ca_csr_path }}/oqsCA.csr" }
+    - { src: "{{ root_ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert", dest: "{{ ca_cert_path }}/oqsCA.cert" }
     - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/" }
 
 - name: add the root certs to the trust store
