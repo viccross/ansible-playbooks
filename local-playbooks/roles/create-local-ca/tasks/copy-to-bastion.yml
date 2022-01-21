@@ -5,9 +5,9 @@
     dest: "{{ item.dest }}"
     mode: 0644
   loop:
-    - { src: "{{ root_ca_key_path }}/oqsCA.key", dest: "{{ ca_key_path }}/" }
-    - { src: "{{ root_ca_csr_path }}/oqsCA.csr", dest: "{{ ca_csr_path }}/" }
-    - { src: "{{ root_ca_cert_path }}/oqsCA.cert", dest: "{{ ca_cert_path }}/" }
+    - { src: "{{ root_ca_key_path }}/oqsCA-{{ cluster_base_domain }}.key", dest: "{{ ca_key_path }}/oqsCA.key" }
+    - { src: "{{ root_ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr", dest: "{{ ca_csr_path }}/oqsCA.csr" }
+    - { src: "{{ root_ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert", dest: "{{ ca_cert_path }}/oqsCA.cert" }
     - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/" }
 
 - name: add the root certs to the trust store
