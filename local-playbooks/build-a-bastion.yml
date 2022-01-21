@@ -4,9 +4,17 @@
   roles:
   - create-local-ca
 
-- name: Configure services on the FastVM Portal system
+- name: Copy Intermediate CA cert to the ESI ELAN system
   hosts: s390x_bastion_workstation
   roles:
+  - copy-ca-to-bastion
+  vars:
+    root_ca_key_path: "{{ hostvars['localhost']['ca_key_path'] }}"
+    root_ca_csr_path: "{{ hostvars['localhost']['ca_csr_path'] }}"
+    root_ca_cert_path: "{{ hostvars['localhost']['ca_cert_path'] }}"
+
+- name: Configure services on the ESI ELAN system
+  hosts: s390x_bastion_workstation
   - configure-squid
   - setup-web-resources
   - setup-firstboot-ipconf
