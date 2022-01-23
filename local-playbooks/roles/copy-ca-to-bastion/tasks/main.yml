@@ -7,10 +7,10 @@
     group: root
     mode: "{{ item.mode }}"
   loop:
-    - { src: "{{ root_ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem", dest: "{{ ca_key_path }}/oqsCA.pem", mode: 0600 }
-    - { src: "{{ root_ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr", dest: "{{ ca_csr_path }}/oqsCA.csr", mode: 0644 }
-    - { src: "{{ root_ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert", dest: "{{ ca_cert_path }}/oqsCA.cert", mode: 0644 }
-    - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/", mode: 0644 }
+    - { src: "{{ root_ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem", dest: "{{ ca_key_path }}/oqsCA.pem", mode: '0600' }
+    - { src: "{{ root_ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr", dest: "{{ ca_csr_path }}/oqsCA.csr", mode: '0644' }
+    - { src: "{{ root_ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert", dest: "{{ ca_cert_path }}/oqsCA.cert", mode: '0644' }
+    - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/", mode: '0644' }
 
 - name: add the root certs to the trust store
   file:
