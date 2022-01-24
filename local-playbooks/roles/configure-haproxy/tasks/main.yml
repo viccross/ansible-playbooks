@@ -6,9 +6,6 @@
       - haproxy
       - python3-libsemanage
     state: present
-  notify:
-  - restart haproxy
-  - restart firewalld
 
 - name: patch HAProxy service script
   lineinfile:
@@ -16,19 +13,57 @@
     regex: ^ExecStartPre=
     line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
 
-- name: create /etc/haproxy
-  file:
-    path: /etc/haproxy
-    state: directory
-    group: haproxy
-    mode: 0755
+- name: create certificate for Stats page
+  block:
+  - name: generate haproxy private key
+    openssl_privatekey:
+      path: /etc/pki/tls/private/haproxy.pem
 
-- name: create /etc/haproxy/haproxy.cfg
-  template:
-    src: etc/haproxy/haproxy.cfg.j2
-    dest: /etc/haproxy/haproxy.cfg
-    group: haproxy
-    mode: 0644
+  - name: generate haproxy CSR
+    openssl_csr:
+      path: /etc/pki/tls/misc/haproxy.csr
+      privatekey_path: /etc/pki/tls/private/haproxy.pem
+      common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+      subject_alt_name:
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+        - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
+      organization_name: "{{ cert_organization }}"
+      organizational_unit_name: "Red Hat Openshift PoC"
+      country_name: "{{ cert_country }}"
+
+  - name: generate Certificate
+    openssl_certificate:
+      path: /etc/pki/tls/certs/haproxy.cert
+      csr_path: /etc/pki/tls/misc/haproxy.csr
+      ownca_path: /etc/pki/tls/certs/oqsCA.cert
+      ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+      ownca_not_after: +397d
+      provider: ownca
+      force: yes
+
+  - name: create combined PEM file for HAProxy
+    shell:
+      cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
+      chdir: /etc/pki/tls/
+
+  - name: set permissions on certificate
+    file:
+      path: /etc/haproxy/haproxy-combined.pem
+      owner: root
+      group: haproxy
+      mode: 0640
+
+- name: allow traffic at 8404 for haproxy
+  tags: firewall
+  firewalld:
+    port: 8404/tcp
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
 
 - name: allow http traffic
   firewalld:
@@ -70,20 +105,25 @@
   - internal
   - public
 
+- name: create /etc/haproxy
+  file:
+    path: /etc/haproxy
+    state: directory
+    group: haproxy
+    mode: 0755
+
+- name: create /etc/haproxy/haproxy.cfg
+  template:
+    src: etc/haproxy/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    group: haproxy
+    mode: 0644
+  notify:
+  - restart haproxy
+  - restart firewalld
+
 - name: turn on haproxy_connect_any
   seboolean:
     name: haproxy_connect_any
     state: yes
     persistent: yes
-
-- name: restart haproxy
-  service:
-    name: haproxy.service
-    state: restarted
-    enabled: true
-
-- name: Restart firewalld.service
-  service:
-    name: firewalld.service
-    state: restarted
-    enabled: true

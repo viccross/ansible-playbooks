@@ -99,3 +99,10 @@ backend ocp4-router-https
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
 {% endif %}
+
+frontend stats
+  bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
+  stats enable
+  stats uri /stats
+  stats refresh 10s
+  stats admin if LOCALHOST
