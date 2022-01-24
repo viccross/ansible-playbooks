@@ -22,7 +22,6 @@
   - configure-dns
   - configure-apache
   - configure-haproxy
-  - enable-haproxy-stats
   - configure-cockpit
   - configure-ignition
   - setup-ocp-deployer
