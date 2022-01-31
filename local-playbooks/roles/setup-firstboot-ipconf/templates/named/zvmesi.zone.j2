@@ -1,9 +1,9 @@
 $ORIGIN .
 $TTL 900
-{% raw %}{{ esigroup }}{% endraw %}.zvmesi.       IN SOA {% raw %}{{ elan_host_name }}{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
+{% raw %}{{ esigroup }}{% endraw %}.zvmesi.       IN SOA {% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
                         1 1D 1H 1W 3H
                       )
-                      NS {% raw %}{{ elan_host_name }}{{ cluster_domain_name }}{% endraw %}.
+                      NS {% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}.
 $ORIGIN {% raw %}{{ esigroup }}{% endraw %}.zvmesi.
 _finnad._udp          SRV 0 5 6000 finnad
 finnad                A   239.0.0.1

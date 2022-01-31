@@ -55,4 +55,5 @@
   - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2"}
   - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2"}
   - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2"}
+  - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2"}
   - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2"}
