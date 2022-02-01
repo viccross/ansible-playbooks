@@ -64,8 +64,10 @@
       SSLProxyEngine on
       ProxyPassMatch "^/perftk/(.*)$" "https://zvm.ibmpoc.internal:81/$1"
       ProxyPassReverse "/perftk/" "https://zvm.ibmpoc.internal:81/"
-      Substitute s|https://zvm.ibmpoc.internal:81|/perftk|in
+      Substitute s|https://zvm.ibmpoc.internal:81|/perftk/|in
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
+      # Reverse-proxy configuration for cross-system stats
+      ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
 
 - name: download and unwind LDAP tools
   block:
