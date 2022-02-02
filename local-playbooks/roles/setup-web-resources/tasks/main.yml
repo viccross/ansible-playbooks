@@ -187,14 +187,7 @@
       name: MAILTO
       value: root
 
-  - name: Create directory for pull secret
-    file:
-      path: "{{ webroot }}/.secret"
-      mode: 0700
-      owner: apache
-      state: directory
-
-  - name: Set permission on secret directory and Smarty template cache
+  - name: Create/set permission on secret directory and Smarty template cache
     file:
       path: "{{ webroot }}/{{ item }}"
       owner: apache
