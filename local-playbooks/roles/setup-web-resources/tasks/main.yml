@@ -64,8 +64,10 @@
       SSLProxyEngine on
       ProxyPassMatch "^/perftk/(.*)$" "https://zvm.ibmpoc.internal:81/$1"
       ProxyPassReverse "/perftk/" "https://zvm.ibmpoc.internal:81/"
-      Substitute s|https://zvm.ibmpoc.internal:81|/perftk|in
+      Substitute s|https://zvm.ibmpoc.internal:81|/perftk/|in
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
+      # Reverse-proxy configuration for cross-system stats
+      ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
 
 - name: download and unwind LDAP tools
   block:
@@ -185,14 +187,7 @@
       name: MAILTO
       value: root
 
-  - name: Create directory for pull secret
-    file:
-      path: "{{ webroot }}/.secret"
-      mode: 0700
-      owner: apache
-      state: directory
-
-  - name: Set permission on secret directory and Smarty template cache
+  - name: Create/set permission on secret directory and Smarty template cache
     file:
       path: "{{ webroot }}/{{ item }}"
       owner: apache
