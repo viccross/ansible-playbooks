@@ -198,6 +198,18 @@
       - ".secret"
       - "service-desk-racf-master/templates_c"
 
+  - name: Create and set perms on incrond trigger files
+    file:
+      path: "{{ webroot }}/.secret/{{ item }}"
+      owner: apache
+      group: root
+      mode: 0660
+      setype: httpd_sys_rw_content_t
+      state: present
+    loop:
+      - ".ocp4_pull_secret"
+      - ".fastvmurl"
+
 #  - name: fix path to Smarty in config file
 #    lineinfile:
 #      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.php"
