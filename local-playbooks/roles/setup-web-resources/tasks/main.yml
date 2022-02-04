@@ -205,7 +205,7 @@
       group: root
       mode: 0660
       setype: httpd_sys_rw_content_t
-      state: file
+      state: touch
     loop:
       - ".ocp4_pull_secret"
       - ".fastvmurl"
