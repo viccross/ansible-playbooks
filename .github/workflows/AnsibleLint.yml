@@ -20,3 +20,4 @@ jobs:
           local-playbooks/setup-podman-and-registry.yml
           local-playbooks/setup-icic-deployer.yml
           local-playbooks/setup-ocp-deployer.yml
+          local-playbooks/setup-web-resources.yml
