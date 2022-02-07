@@ -1,5 +1,5 @@
 ---
-- name: ensure the Ansible playbook directories exist on the host
+- name: ensure directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -7,6 +7,7 @@
   loop:
     - "/opt/ansible/tasks"
     - "/opt/ansible/files"
+    - "/mnt/sysimage"
 
 - name: copy files for the playbooks and scripts
   template:
@@ -15,6 +16,7 @@
     mode: 0644
   loop:
   - { src: "icic-add-host.sh.j2", dest: "/opt/ansible/files/icic-add-host.sh" }
+  - { src: "icic-config-properties.j2", dest: "/opt/ansible/templates/icic-config-properties.j2"}
   - { src: "icic-ldap.exp.j2", dest: "/opt/ansible/files/icic-ldap.exp" }
   - { src: "ICICCMP0.direct.j2", dest: "/opt/ansible/files/ICICCMP0.direct" }
   - { src: "ICICMGT0.direct.j2", dest: "/opt/ansible/files/ICICMGT0.direct" }

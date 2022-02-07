@@ -19,7 +19,9 @@
   hosts: s390x_bastion_workstation
   tasks:
   - name: create ICIC certificate
-    include_tasks: tasks/icic-certificate.yml
+    include_tasks: tasks/create-certificate.yml
+    with_items:
+    - { filename: "icic", common_name: "icicmgt0.{% raw %}{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",IP:{% raw %}{{ icic_management_ip_address }}{% endraw %}" }
 
 - name: setup the ICIC management node
   hosts: s390x_ICIC_management_node
@@ -85,7 +87,7 @@
         group: "{% raw %}{{ item.group }}{% endraw %}"
         mode: "{% raw %}{{ item.mode }}{% endraw %}"
       loop:
-        - { src: "certs/icic.crt", dest: "certs/icic.crt", owner: root, group: root, mode: "0644" }
+        - { src: "certs/icic.cert", dest: "certs/icic.crt", owner: root, group: root, mode: "0644" }
         - { src: "private/icic.pem", dest: "private/icic.key", owner: root, group: pvcservices, mode: "0440" }
     - name: restart the ICIC services
       command:
