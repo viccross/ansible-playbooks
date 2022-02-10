@@ -8,6 +8,7 @@
     - "/opt/ansible/tasks"
     - "/opt/ansible/files"
     - "/mnt/sysimage"
+    - "/usr/local/lib/systemd/system"
 
 - name: copy files for the playbooks and scripts
   template:
@@ -48,12 +49,12 @@
   - name: copy the icic-guests-start systemd service file
     template:
       src: icic-guests-start.service.j2
-      dest: /etc/systemd/system/icic-guests-start.service
+      dest: /usr/local/lib/systemd/system/icic-guests-start.service
       mode: 0644
   - name: copy the icic-guests-stop systemd service file
     template:
       src: icic-guests-stop.service.j2
-      dest: /etc/systemd/system/icic-guests-stop.service
+      dest: /usr/local/lib/systemd/system/icic-guests-stop.service
       mode: 0644
   - name: Do not enable the icic-guests-start service
     systemd:

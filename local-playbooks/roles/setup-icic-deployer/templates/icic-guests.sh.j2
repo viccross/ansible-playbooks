@@ -9,11 +9,11 @@
 mode=$1
 case "${mode}" in
   "start")
-    operands="ia -T ${guest}"
+    operation="ia"; operand="";
     othersvc="stop"
     ;;
   "stop")
-    operands="id -T ${guest} -t 'WITHIN 60'"
+    operation="id"; operand="-t 'WITHIN 60'";
     othersvc="start"
     ;;
   *)
@@ -31,7 +31,7 @@ echo "SMAPI listener active, continuing..."
 sleep 3
 
 # Obtain the list of guests
-allguests="ICICMGT0 ICICCMP0"
+icicguests="ICICMGT0 ICICCMP0"
 IFS=" "
 
 # Mask the other service
@@ -40,7 +40,7 @@ systemctl mask icic-guests-${othersvc}.service
 # Do this for each guest:
 for guest in ${icicguests} ; do
   # Act on the guest
-  smcli ${operands} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  smcli ${operation} -T ${guest} ${operand} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
   # Nap a moment
   sleep 2
 done
