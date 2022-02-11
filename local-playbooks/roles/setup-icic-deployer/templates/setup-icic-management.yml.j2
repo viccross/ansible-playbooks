@@ -76,19 +76,24 @@
       command:
         cmd: openssl rehash /etc/pki/ca-trust/source/anchors/
 
-  - name: install the ICIC certificate
+  - name: install the ICIC certificate(s)
     block:
-    - name: copy the certificate and key
+    - name: copy the private key
       copy:
-        src: "/etc/pki/tls/{% raw %}{{ item.src }}{% endraw %}"
-        dest: "/etc/pki/tls/{% raw %}{{ item.dest }}{% endraw %}"
+        src: "/etc/pki/tls/private/icic.pem"
+        dest: "/etc/pki/tls/private/icic.key"
         backup: yes
-        owner: "{% raw %}{{ item.owner }}{% endraw %}"
-        group: "{% raw %}{{ item.group }}{% endraw %}"
-        mode: "{% raw %}{{ item.mode }}{% endraw %}"
-      loop:
-        - { src: "certs/icic.cert", dest: "certs/icic.crt", owner: root, group: root, mode: "0644" }
-        - { src: "private/icic.pem", dest: "private/icic.key", owner: root, group: pvcservices, mode: "0440" }
+        owner: root
+        group: root
+        mode: "0440"
+    - name: copy the certificate(s)
+      template:
+        src: icic-cert-bundle.j2
+        dest: "/etc/pki/tls/certs/icic.cert"
+        backup: yes
+        owner: root
+        group: root
+        mode: "0644"
     - name: restart the ICIC services
       command:
         cmd: /opt/ibm/icic/bin/icic-services restart

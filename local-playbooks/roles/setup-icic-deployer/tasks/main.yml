@@ -17,6 +17,7 @@
     mode: 0644
   loop:
   - { src: "icic-add-host.sh.j2", dest: "/opt/ansible/files/icic-add-host.sh" }
+  - { src: "icic-cert-bundle.j2", dest: "/opt/ansible/templates/icic-cert-bundle.j2"}
   - { src: "icic-config-properties.j2", dest: "/opt/ansible/templates/icic-config-properties.j2"}
   - { src: "icic-ldap.exp.j2", dest: "/opt/ansible/files/icic-ldap.exp" }
   - { src: "ICICCMP0.direct.j2", dest: "/opt/ansible/files/ICICCMP0.direct" }

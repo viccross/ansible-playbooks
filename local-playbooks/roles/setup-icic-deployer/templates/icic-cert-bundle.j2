@@ -1,0 +1,3 @@
+{{ lookup('file', '/etc/pki/tls/certs/icic.crt') }}
+{{ lookup('file', '/etc/pki/tls/certs/oqsCA-{% raw %}{{ cluster_base_domain }}{% endraw %}.crt') }}
+{{ lookup('file', '/etc/pki/tls/certs/oqsRootCA.crt') }}
