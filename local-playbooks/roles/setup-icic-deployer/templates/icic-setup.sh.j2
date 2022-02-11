@@ -149,6 +149,21 @@ IFS=" " read -r -a dasd <<< ${dasds[1]}
 smcli idicrd -T ${iciccmp} -a 200 -d X -t AUTOV -n ${dasd[0]} -u 1 -s ${mdsize} -m MR -f 1 ${smapiauth}
 
 # at this point we have two guests with one minidisk each.
+# let's get permission to write to them
+echo "Adding RACF permissions to CIC boot disks..."
+ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' <<EOFLDIF
+dn: profilename=ICICMGT0.200,profiletype=VMMDISK,o=ibmzvm
+changetype: modify
+add: racfaccesscontrol
+racfaccesscontrol: ID(LXOCPB01) ACCESS(UPDATE) COUNT(0)
+
+dn: profilename=ICICCMP0.200,profiletype=VMMDISK,o=ibmzvm
+changetype: modify
+add: racfaccesscontrol
+racfaccesscontrol: ID(LXOCPB01) ACCESS(UPDATE) COUNT(0)
+
+EOFLDIF
+
 # Now we can do the work to populate.
 echo "Writing out the disk image to the ICIC guests..."
 # Restore the disk image to the guests
