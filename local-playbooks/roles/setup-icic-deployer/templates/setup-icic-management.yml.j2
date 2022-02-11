@@ -89,7 +89,7 @@
     - name: copy the certificate(s)
       template:
         src: icic-cert-bundle.j2
-        dest: "/etc/pki/tls/certs/icic.cert"
+        dest: "/etc/pki/tls/certs/icic.crt"
         backup: yes
         owner: root
         group: root
