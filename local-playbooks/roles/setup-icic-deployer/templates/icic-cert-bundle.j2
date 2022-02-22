@@ -1,4 +1,4 @@
 #jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
 {{ lookup('file', '/etc/pki/tls/certs/icic.cert') }}
-{{ lookup('file', '/etc/pki/tls/certs/oqsCA-{{ cluster_base_domain }}.cert') }}
+{{ lookup('file', '/etc/pki/tls/certs/oqsCA.cert') }}
 {{ lookup('file', '/etc/pki/tls/certs/oqsRootCA.cert') }}
