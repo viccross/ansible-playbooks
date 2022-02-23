@@ -109,6 +109,7 @@
   - { src: "boot-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/boot-guest.yml" }
   - { src: "guest-IPLdev-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/guest-IPLdev.yml" }
   - { src: "create-cluster-main.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/main.yml" }
+  - { src: "create-cluster.yml.j2", dest: "/opt/ansible/create-cluster.yml" }
   - { src: "defaults/main.yml", dest: "/opt/ansible/roles/create-cluster/defaults/main.yml" }
   - { src: "cluster-guests-create.yml.j2", dest: "/opt/ansible/cluster-guests-create.yml"}
   - { src: "cluster-guests-delete.yml.j2", dest: "/opt/ansible/cluster-guests-delete.yml"}
@@ -117,12 +118,6 @@
   - { src: "ldapIdentityCr.yml.j2", dest: "/opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml.j2" }
   - { src: "create-certificate.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-certificate.yml" }
   - { src: "configure-cluster.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
-
-- name: create the main playbook
-  template:
-    src: /opt/ansible/local-playbooks/create-cluster.yml
-    dest: /opt/ansible/create-cluster.yml
-    mode: 0644
 
 - name: copy the smcli script
   copy:
