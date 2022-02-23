@@ -27,7 +27,7 @@
       provider: ownca
       force: yes
 
-  - name: create combined PEM file for Cockpit
+  - name: create combined PEM file for Cockpit # noqa no-changed-when
     shell:
       cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
       chdir: /etc/pki/tls/
