@@ -70,7 +70,7 @@
 
 - name: update the inventory host file
   blockinfile:
-    path: /opt/ansible/inventory/inventory
+    path: /opt/ansible/inventory/inventory-CICmgt
     block: |
       [s390x_ICIC_management_node]
       172.24.26.11 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
