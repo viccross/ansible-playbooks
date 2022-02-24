@@ -190,7 +190,7 @@ done
 mgtip=$(nextip ${tmpip})
 cmpip=$(nextip ${mgtip})
 echo "Telling Ansible about our IP addresses..."
-cat >> /opt/ansible/inventory/group_vars/all.yml <<EOFYML
+cat >> /opt/ansible/inventory/group_vars/all/runtime.yml <<EOFYML
 #
 icic_management_ip_address: ${mgtip}
 icic_compute_ip_address: ${cmpip}

@@ -73,5 +73,6 @@ znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
 webroot: "{{ webroot }}"
 
-# The IP configuration will write out the cluster_base_domain variable here
-# If this is the end of the file then the IP configuration did not run :/
+# The IP configuration will write out the cluster_base_domain variable.
+# Look for runtime.yml in the group_vars/all directory (where this file is).
+# If this is the only file in the 'all' directory then the IP configuration did not run :/

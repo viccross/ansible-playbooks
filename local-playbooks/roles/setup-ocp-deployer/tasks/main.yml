@@ -61,6 +61,7 @@
     - "/opt/ansible/roles/create-cluster/defaults"
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
+    - "/opt/ansible/inventory/group_vars/all"
 
 - name: download and set permissions for openshift-install and oc
   include_tasks: download-clients.yml
@@ -238,7 +239,7 @@
 - name: create the group_vars
   template:
     src: group-vars.yml.j2
-    dest: /opt/ansible/inventory/group_vars/all.yml
+    dest: /opt/ansible/inventory/group_vars/all/default.yml
     mode: 0644
 
 - name: create the inventory host file

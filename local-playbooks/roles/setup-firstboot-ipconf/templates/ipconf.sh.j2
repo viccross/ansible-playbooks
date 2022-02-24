@@ -88,15 +88,17 @@ function changeIP {
   # stop named
   systemctl stop named-chroot.service
   # Write out new variables to the group_vars YAML
-  cat <<EOF >> /opt/ansible/inventory/group_vars/all.yml
+  cat <<EOF >> /opt/ansible/inventory/group_vars/all/runtime.yml
+bastion_public_ip_address: "${IPADDR}"
+#
 cluster_base_domain: "${DOMAIN}"
 dns_nameserver: "${DNS}"
 elan_host_name: "${HOSTNM}"
 esigroup: "${ESIGROUP}"
 EOF
 
-  # Update the bastion_public_ip_address in the group_vars
-  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
+#  # Update the bastion_public_ip_address in the group_vars
+#  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
   pushd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml && popd
   # start named
