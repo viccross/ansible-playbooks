@@ -1,0 +1,125 @@
+#!/bin/bash
+# =================================================================
+# Licensed Materials - Property of IBM
+#
+# (c) Copyright IBM Corp. 2021 All Rights Reserved
+#
+# US Government Users Restricted Rights - Use, duplication or
+# disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+# =================================================================
+#
+# Changes for FastVM:
+# - Query VM system name for the compute_host_name
+# - Change compute_password for compute_private_key_data in JSON request
+#
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_COLLATE=C
+export LC_CTYPE=en_US.UTF-8
+source /etc/bashrc
+source /opt/ibm/icic/icicrc $controller_user_name $controller_passwd
+
+
+if [[ "$host_type" == "kvm" ]]; then
+    touch /opt/ibm/icic/.devenv
+    touch /opt/ibm/.devenv
+fi
+
+if [[ "$host_type" == "powervm" ]]; then
+    compute_host_name=$(vmcp q userid | awk '{print $3}')
+    host_display_name=$compute_host_name
+fi
+
+current_hosts=`icic-services remote list | tail -n 1 | grep "$host_display_name"`
+
+if [ -n "$current_hosts" ]; then
+    echo "Current host $current_hosts detected, exiting..."
+    exit 0
+fi
+
+
+controller_host=$controller_host
+#Get project_id for test job
+project_id=`openstack project list | grep 'ibm-default' | awk -F"|" '{print $2}' | tr -d ' '`
+if [ -z "$project_id" ]; then
+    echo "Error: Get project_id failed !"
+    exit -1
+fi
+
+CONTENT_TYPE_HEAD="Content-Type:application/json"
+HYPERVISORS="hypervisors"
+HOST="host"
+ACCEPT_ENCODING_HEAD="Accept-Encoding:gzip, deflate, br"
+OS_HYPERVISORS_URL="https://$controller_host/icic/openstack/compute/v2.1/$project_id/os-hypervisors/detail?include_remote_restart_enabled=true"
+host_type=$host_type
+host_display_name=$host_display_name
+OS_HOSTS_URL="https://$controller_host/icic/openstack/compute/v2.1/$project_id/os-hosts"
+DELETE_HYPERVISORS_URL="https://$controller_host/icic/openstack/compute/v2.1/$project_id/os-hosts/$compute_host_name/uninstall"
+
+
+# Get temptoken by name and password
+echo "###Get temp token by name password!###"
+AUTH_TOKENS_URL="https://$controller_host/icic/openstack/identity/v3/auth/tokens"
+temptoken_request_json='{"auth":{"identity":{"methods":["password"],"password":{"user":{"domain":{"id":"default"},"name":"'$controller_user_name'","password":"'$controller_passwd'"}}}}}'
+temptoken=`curl -s -k -i -H "$CONTENT_TYPE_HEAD" -H "$ACCEPT_ENCODING_HEAD" -X POST -d "$temptoken_request_json" $AUTH_TOKENS_URL| tr -d '\r'|grep -i "X-Subject-Token"|awk -F ":" '{print $2}'|tr -d ' '`
+if [ -z "$temptoken" ]; then
+    echo "Error: Get temp token failed!"
+    exit -1
+else
+    echo "Get temp token successfully!"
+fi
+
+# Get X-AUTH-TOKEN token by temp token
+echo "###Get X-AUTH-TOKEN by temp token!###"
+authtoken_request_json='{"auth":{"identity":{"methods":["token"],"token":{"id":"'$temptoken'"}},"scope":{"project":{"domain":{"id":"default"},"name":"ibm-default"}}}}'
+authtoken=`curl -k -i -H "$CONTENT_TYPE_HEAD" -H "$ACCEPT_ENCODING_HEAD" -X POST -d "$authtoken_request_json" $AUTH_TOKENS_URL | tr -d '\r'|grep -i "X-Subject-Token"|awk -F ":" '{print $2}'|tr -d ' '`
+
+if [ -z "$authtoken" ]; then
+    echo "ERROR: Get X-AUTH-TOKEN failed!"
+    exit -1
+else
+    echo "X-AUTH-TOKEN is $authtoken"
+fi
+
+# Add a KVM Host
+echo "###Add a new $host_type host $host_display_name ###"
+#set -x
+if [[ "$host_type" == "kvm" ]]; then
+    oshosts_request_json='{"host":{"registration":{"access_ip":"'$compute_host'","nic_name":"'$nic_name'","user_id":"'$compute_user_name'","host_type":"'$host_type'","asynchronous":true,"host_display_name":"'$host_display_name'","private_key_data":"'$compute_private_key_data'","host_intention":"deploy","physical_network_mappings":"icicvlan1:'$compute_vswitch'","force_unmanage":false,"auto_add_host_key":true,"force_switch":false,"accept_scale":false,"fcp_list":"'$fcp_list'","disk_pool":"'$disk_pool'"}}}'
+else
+    oshosts_request_json='{"host":{"registration":{"access_ip":"'$compute_host'","user_id":"'$compute_user_name'","host_type":"'$host_type'","asynchronous":true,"host_display_name":"'$host_display_name'","private_key_data":"'$compute_private_key_data'","host_intention":"deploy","physical_network_mappings":"icicvlan1:'$compute_vswitch'","force_unmanage":false,"auto_add_host_key":true,"force_switch":false,"accept_scale":false,"fcp_list":"'$fcp_list'","disk_pool":"'$disk_pool'"}}}'
+fi
+oshosts_response=`curl -H "$CONTENT_TYPE_HEAD" -H "X-Auth-Token:$authtoken" -X POST -d "$oshosts_request_json" -k $OS_HOSTS_URL`
+#set +x
+oshosts_host=`echo $oshosts_response | awk -F ":" '{print $1}' | tr -d "{" | tr -d "\""`
+if [[ "$oshosts_host" != "$HOST" ]]; then
+	echo "ERROR: Add Host failed !"
+    exit -1
+fi
+
+sleep 200
+echo "###To check if the host added sucessfully###"
+# Get Hypervisors to check if the host added successfully.
+for ((s=40;s>0;s--))
+    do
+        os_hypervisors_response=`curl -k -H "X-Auth-Token:${authtoken}" -X GET $OS_HYPERVISORS_URL`
+        os_hypervisor=`echo $os_hypervisors_response | awk -F ":" '{print $1}' | tr -d "{" | tr -d "\""`
+        os_hypervisors_host=`echo $os_hypervisors_response | grep -i $host_display_name | awk -F ":" '{print $0}'`
+        if [[ "$os_hypervisor" != "$HYPERVISORS" ]]; then
+				echo "ERROR: Get HYPERVISORS failed !"
+    			exit -1
+		fi
+        if [ -n "$os_hypervisors_host" ]; then
+            break
+        fi
+        sleep 30
+    done
+
+os_hypervisors_response=`curl -k -s -H "X-Auth-Token:${authtoken}" -X GET $OS_HYPERVISORS_URL`
+os_hypervisors_host=`echo $os_hypervisors_response | grep -i $host_display_name | awk -F ":" '{print $0}'`
+if [ -n "$os_hypervisors_host" ]; then
+    echo "The host $host_display_name added successfully!"
+else
+    echo "ERROR: Time out, host does not return as expected!"
+    exit -1
+fi

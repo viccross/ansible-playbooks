@@ -1,5 +1,5 @@
 ---
-- name: Configure apache to servei the web resources (LDAP Tools, etc)
+- name: Configure apache to serve the web resources (LDAP Tools, etc)
   hosts: s390x_bastion_workstation
   roles:
   - setup-web-resources

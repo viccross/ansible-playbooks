@@ -23,4 +23,29 @@ $change_sshkey = true;
 
 $racf_mode = true;
 
+# Local password policy
+# This is applied before directory password policy
+$pwd_min_length = 9;
+$pwd_max_length = 100;
+$pwd_min_lower = 0;
+$pwd_min_upper = 0;
+$pwd_min_digit = 2;
+$pwd_min_special = 0;
+# Definition of special characters
+$pwd_special_chars = "^a-zA-Z0-9";
+$pwd_forbidden_chars = "/@%";
+$pwd_no_reuse = true;
+# Check that password is different than login
+$pwd_diff_login = true;
+# Complexity: number of different class of character required
+$pwd_complexity = 1;
+# Maximum consecutive identical chars
+$pwd_max_cons_same = 2;
+# use pwnedpasswords api v2 to securely check if the password has been on a leak
+$use_pwnedpasswords = false;
+# Show policy constraints message: always | never | onerror
+$pwd_show_policy = "always";
+# Position of password policy constraints message: above or below the form
+$pwd_show_policy_pos = "above";
+
 ?>

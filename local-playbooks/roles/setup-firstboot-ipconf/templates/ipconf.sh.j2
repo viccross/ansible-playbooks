@@ -5,6 +5,7 @@
 FP={{ znetboot_cfg_path }}
 IFN=enc{{ bastion_vsw_dev }}
 MYID=`vmcp q userid | awk '{print $1;}'`
+ESIGROUP=`vmcp q variable zvmesi.sysgroup`
 
 function changeIP {
   FN=$1
@@ -35,6 +36,7 @@ function changeIP {
     HOSTNM="{{ guest_install_hostname }}"
     HOSTSET="(default value)"
   fi
+  HOSTNM=${HOSTNM,,}
   echo Hostname is ${HOSTNM} ${HOSTSET}
   source <(grep ^DOMAIN ${FN})
   DOMAIN=${DOMAIN,,}
@@ -86,11 +88,17 @@ function changeIP {
   # stop named
   systemctl stop named-chroot.service
   # Write out new variables to the group_vars YAML
-  echo "cluster_base_domain: ${DOMAIN}" >> /opt/ansible/inventory/group_vars/all.yml
-  echo "dns_nameserver: \"${DNS}\"" >> /opt/ansible/inventory/group_vars/all.yml
-  echo "bastion_host_name: \"${HOSTNM}\"" >> /opt/ansible/inventory/group_vars/all.yml
-  # Update the bastion_public_ip_address in the group_vars
-  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
+  cat <<EOF >> /opt/ansible/inventory/group_vars/all/runtime.yml
+bastion_public_ip_address: "${IPADDR}"
+#
+cluster_base_domain: "${DOMAIN}"
+dns_nameserver: "${DNS}"
+elan_host_name: "${HOSTNM}"
+esigroup: "${ESIGROUP}"
+EOF
+
+#  # Update the bastion_public_ip_address in the group_vars
+#  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
   pushd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml && popd
   # start named
@@ -100,8 +108,11 @@ function changeIP {
   pushd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml && popd
 
   # update Apache configuration
-  sed -i.bak "s/wsc.ibm/${DOMAIN}/g" /etc/httpd/conf/httpd.conf
-  sed -i.bak "s/wsc.ibm/${DOMAIN}/g" /etc/httpd/conf.d/ssl.conf
+  sed -i.bak "s/wsc.ibm/${DOMAIN}/g" /etc/httpd/conf/httpd.conf /etc/httpd/conf.d/ssl.conf
+  # Hostname might have been updated, make those changes before restarting things
+  if [ -z "${HOSTSET}" ]; then
+    sed -i.bak "s/{{ guest_install_hostname }}/${HOSTNM}/g" /etc/httpd/conf/httpd.conf /etc/httpd/conf.d/ssl.conf
+  fi
 
   # update the file in the web server directory
   cat <<EOF > {{ webroot }}/etc.hosts
@@ -113,7 +124,7 @@ ${IPADDR} grafana-openshift-monitoring.apps.${FULLDOMAIN}
 ${IPADDR} prometheus-k8s-openshift-monitoring.apps.${FULLDOMAIN}
 EOF
 
-  # Restart some services due to address change
+  # Restart some services due to address and hostname changes
 
   # restart Apache
   systemctl restart httpd.service
@@ -128,6 +139,13 @@ EOF
 #    systemctl restart named-chroot
 #    echo "BIND name server restarted"
 #  fi
+
+  # If Finna is installed, go ahead and start it
+  if [ -x /usr/local/sbin/finnad ] ; then
+    systemctl enable finnad.service
+    systemctl start finnad.service
+  fi
+
   # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service
   # Prevent this service from starting next time

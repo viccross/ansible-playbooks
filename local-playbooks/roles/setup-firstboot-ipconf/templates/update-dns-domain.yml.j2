@@ -26,6 +26,14 @@
       group: named
       mode: 0640
 
+  - name: create new finnad forward zone
+    template:
+      src: named/zvmesi.zone.j2
+      dest: /var/named/{% raw %}{{ esigroup }}{% endraw %}.zvmesi.zone
+      owner: named
+      group: named
+      mode: 0640
+
   - name: recreate /etc/named.conf
     template:
       src: named/named.conf.j2

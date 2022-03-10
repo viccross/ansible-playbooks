@@ -1,6 +1,6 @@
 ---
 - name: Create a local Certificate Authority
-  hosts: localhost
+  hosts: lxwork01
   roles:
   - create-local-ca
 

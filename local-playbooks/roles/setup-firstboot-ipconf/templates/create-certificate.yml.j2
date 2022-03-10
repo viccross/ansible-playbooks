@@ -3,7 +3,7 @@
   openssl_privatekey:
     path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
 
-- name: generate z/VM CSR
+- name: generate CSR
   openssl_csr:
     path: "{{ ca_csr_path }}/{% raw %}{{ item.filename }}{% endraw %}.csr"
     privatekey_path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
@@ -21,8 +21,9 @@
     csr_path: "{{ ca_csr_path }}/{% raw %}{{ item.filename }}{% endraw %}.csr"
     ownca_path: "{{ ca_cert_path }}/oqsCA.cert"
     ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
-    ownca_not_after: +365d
+    ownca_not_after: +397d
     provider: ownca
+    force: yes
 
 - name: Generate PKCS12 file
   openssl_pkcs12:

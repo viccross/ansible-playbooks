@@ -1,0 +1,13 @@
+[Unit]
+Description=Stop the guests of our ICIC installation
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+User=root
+Group=root
+Type=oneshot
+ExecStart=/usr/local/bin/icic-guests.sh stop
+
+[Install]
+WantedBy=multi-user.target

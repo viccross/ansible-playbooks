@@ -1,11 +1,14 @@
 ---
-- name: install the interface reconfiguration script to local executable path
+- name: install the ipconf and "embiggen" scripts to local executable path
   template:
-    src: ipconf.sh.j2
-    dest: /usr/local/sbin/ipconf.sh
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0750
+  loop:
+  - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
+  - { src: "embiggen-elan.sh.j2", dest: "/usr/local/sbin/embiggen-elan.sh" }
 
 - name: create systemd service for interface reconfiguration
   blockinfile:
@@ -55,4 +58,5 @@
   - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2"}
   - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2"}
   - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2"}
+  - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2"}
   - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2"}

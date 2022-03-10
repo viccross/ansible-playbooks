@@ -1,99 +1,52 @@
 ---
-- name: generate httpd private key
-  openssl_privatekey:
-    path: /etc/pki/tls/private/httpd.pem
-
-- name: generate httpd CSR
-  openssl_csr:
-    path: /etc/pki/tls/misc/httpd.csr
-    privatekey_path: /etc/pki/tls/private/httpd.pem
-    common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-    organization_name: "{{ cert_organization }}"
-    organizational_unit_name: "Red Hat Openshift PoC"
-    country_name: "{{ cert_country }}"
-    keyUsage: ["digitalSignature","keyAgreement"]
-    extendedKeyUsage: ["clientAuth","serverAuth"]
-
-- name: generate Certificate
-  openssl_certificate:
-    path: /etc/pki/tls/certs/httpd.cert
-    csr_path: /etc/pki/tls/misc/httpd.csr
-    ownca_path: /etc/pki/tls/certs/oqsCA.cert
-    ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
-    ownca_not_after: +365d
-    provider: ownca
-
-- name: install apache httpd and mod_ssl
+- name: install php and requisites
   yum:
     name:
-      - httpd
-      - mod_ssl
       - php
       - php-ldap
       - php-mbstring
     state: present
 
-- name: set ServerName and ServerAlias
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: ^#?ServerName
-    line: ServerName {{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}
+- name: create configuration for our external non-SSL VirtualHost
+  blockinfile:
+    dest: /etc/httpd/conf.d/nonssl.conf
+    create: yes
+    mode: "0644"
+    owner: root
+    group: root
+    block: |
+      <VirtualHost {{ guest_install_hostname }}.{{ cluster_domain_name }}:8080>
+        <Directory "/var/www/html">
+          Options Indexes FollowSymLinks Includes
+          XBitHack On
+          <FilesMatch ".*\.php$">
+            Require all denied
+          </FilesMatch>
+          <FilesMatch "(s_|ocp-|start).*$">
+            Require all denied
+          </FilesMatch>
+          ErrorDocument 403 /error.html
+          AllowOverride None
+          Require all granted
+        </Directory>
+      </VirtualHost>
 
-- name: define CA details for apache, SSLCertificateFile
-  lineinfile:
-    dest: /etc/httpd/conf.d/ssl.conf
-    regexp: "^#?SSLCertificateFile"
-    line: SSLCertificateFile /etc/pki/tls/certs/httpd.cert
-
-- name: define CA details for apache, SSLCertificateKeyFile
-  lineinfile:
-    dest: /etc/httpd/conf.d/ssl.conf
-    regexp: "^#?SSLCertificateKeyFile"
-    line: SSLCertificateKeyFile /etc/pki/tls/private/httpd.pem
-
-- name: define CA details for apache, SSLCertificateChainFile
-  lineinfile:
-    dest: /etc/httpd/conf.d/ssl.conf
-    regexp: "^#?SSLCertificateChainFile"
-    line: SSLCertificateChainFile /etc/pki/tls/certs/oqsCA.cert
-
-- name: enable Apache Server Side Includes (SSI)
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: ^    Options Indexes FollowSymLinks
-    line:     Options Indexes FollowSymLinks Includes
-
-- name: enable XBitHack for SSI
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    insertafter:     Options Indexes FollowSymLinks Includes
-    line:     XBitHack On
-
-- name: bind httpd to port 8080
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: ^Listen 80
-    line: Listen 8080
-
-- name: switch Apache SSL port to 8443
-  lineinfile:
-    dest: /etc/httpd/conf.d/ssl.conf
-    regexp: "^Listen"
-    line: Listen *:8443
-
-- name: switch Apache SSL VirtualHost to 8443
-  lineinfile:
-    dest: /etc/httpd/conf.d/ssl.conf
-    regexp: "VirtualHost _default_:443"
-    line: <VirtualHost _default_:8443>
-
-- name: add the Apache configuration for the LDAP tools
+- name: add the Apache configuration for the tools
   blockinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
+      SetEnv DOMAIN_NAME {{ cluster_base_domain }}
+      DirectoryIndex s_index.html index.php
       Alias /password {{ webroot }}/self-service-password-racf-master
       Alias /ldap-sd  {{ webroot }}/service-desk-racf-master/htdocs
+      <Directory "/var/www/html">
+        Options Indexes FollowSymLinks Includes
+        XBitHack On
+        ErrorDocument 403 /error.html
+        AllowOverride None
+        Require all granted
+      </Directory>
       <Directory "{{ webroot }}/self-service-password-racf-master">
         AllowOverride None
         Require all granted
@@ -106,37 +59,15 @@
         AllowOverride None
         Require all granted
       </Directory>
-      # Reverse-proxy configuration for PerfKit 
+      # Reverse-proxy configuration for PerfKit
       AddOutputFilterByType SUBSTITUTE text/html
       SSLProxyEngine on
       ProxyPassMatch "^/perftk/(.*)$" "https://zvm.ibmpoc.internal:81/$1"
       ProxyPassReverse "/perftk/" "https://zvm.ibmpoc.internal:81/"
-      Substitute s|https://zvm.ibmpoc.internal:81|/perftk|in
+      Substitute s|https://zvm.ibmpoc.internal:81|/perftk/|in
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
-
-- name: allow traffic at 8080 for apache
-  tags: firewall
-  firewalld:
-    port: 8080/tcp
-    zone: "{{ item }}"
-    state: enabled
-    immediate: true
-    permanent: true
-  with_items:
-  - internal
-  - public
-
-- name: allow traffic at 8443 for apache
-  tags: firewall
-  firewalld:
-    port: 8443/tcp
-    zone: "{{ item }}"
-    state: enabled
-    immediate: true
-    permanent: true
-  with_items:
-  - internal
-  - public
+      # Reverse-proxy configuration for cross-system stats
+      ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
 
 - name: download and unwind LDAP tools
   block:
@@ -152,7 +83,6 @@
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/self-service-password-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -160,7 +90,6 @@
     unarchive:
       src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/service-desk-racf"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
@@ -178,17 +107,17 @@
 
   - name: download and unzip site structure
     unarchive:
-      src: "/opt/resources/{{ oqs_header_pkgname }}.zip"
+      src: "/opt/resources/{{ elan_web_pkgname }}.zip"
       dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ oqs_header_pkgname }}/meta_header.html"
+      creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
 
   - name: move downloaded site directory # noqa 302
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
-        && mv {{ webroot }}/{{ oqs_header_pkgname }}/* {{ webroot }}/ \
-        && rmdir {{ webroot }}/{{ oqs_header_pkgname }}
-      removes: "{{ webroot }}/{{ oqs_header_pkgname }}"
+        && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
+        && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
+      removes: "{{ webroot }}/{{ elan_web_pkgname }}"
 
   - name: Set permission on the HTML files to enable Includes
     file:
@@ -201,20 +130,36 @@
       - ocp-console.html
       - ocp-haproxy.html
       - ocp-perfkit.html
+      - dashboard.html
       - metrics.html
       - gethelp.html
       - index.html
+      - s_header.html
+      - s_index.html
+      - starticic.html
+      - startocp.html
 
-  - name: symlink to the OQS CA certificate
-    file:
-      src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
-      dest: "{{ webroot }}/oqsCA.cert"
-      state: link
+  - name: symlink to the CA certificates
+    block:
+    - name: symlink to the bundle
+      file:
+        src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
+        dest: "{{ webroot }}/ESICABundle.pem"
+        state: link
+    - name: symlink to the Root CA cert
+      file:
+        src: "/etc/pki/tls/certs/oqsRootCA.cert"
+        dest: "{{ webroot }}/ESIRootCA.pem"
+        state: link
+    - name: symlink to the Intermediate CA cert
+      file:
+        src: "/etc/pki/tls/certs/oqsCA.cert"
+        dest: "{{ webroot }}/ESICA.pem"
+        state: link
 
   - name: install the basic stats script to local executable path
     shell:
       cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
-      creates: /usr/local/sbin/metrics.pl
       removes: "{{ webroot }}/scripts"
 
   - name: Set permission on metrics.pl
@@ -242,14 +187,7 @@
       name: MAILTO
       value: root
 
-  - name: Create directory for pull secret
-    file:
-      path: "{{ webroot }}/.secret"
-      mode: 0700
-      owner: apache
-      state: directory
-
-  - name: Set permission on secret directory and Smarty template cache
+  - name: Create/set permission on secret directory and Smarty template cache
     file:
       path: "{{ webroot }}/{{ item }}"
       owner: apache
@@ -259,6 +197,18 @@
     loop:
       - ".secret"
       - "service-desk-racf-master/templates_c"
+
+  - name: Create and set perms on incrond trigger files
+    file:
+      path: "{{ webroot }}/.secret/{{ item }}"
+      owner: apache
+      group: root
+      mode: 0660
+      setype: httpd_sys_rw_content_t
+      state: touch
+    loop:
+      - ".ocp4_pull_secret"
+      - ".fastvmurl"
 
 #  - name: fix path to Smarty in config file
 #    lineinfile:
@@ -280,8 +230,11 @@
 
 - name: prime the ocp-version file with 'default' version
   copy:
-    content: "4.6"
+    content: "4.7"
     dest: "{{ webroot }}/ocp-version"
+    owner: apache
+    group: apache
+    setype: httpd_sys_rw_content_t
     mode: 0644
 
 - name: permit SELinux access to network from Apache (for reverse proxy)

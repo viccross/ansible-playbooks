@@ -1,15 +1,16 @@
 ---
 - name: generate CA private key
   openssl_privatekey:
-    path: "{{ ca_key_path }}/oqsCA.pem"
+    path: "{{ ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem"
     group: support
     mode: 0640
 
 - name: generate CA CSR
   openssl_csr:
-    path: "{{ ca_csr_path }}/oqsCA.csr"
-    privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
-    common_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
+    path: "{{ ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr"
+    privatekey_path: "{{ ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem"
+    common_name: "z/VM ESI Intermediate Certificate Authority"
+    use_common_name_for_san: no
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "IBM LinuxONE PoC"
     country_name: "{{ cert_country }}"
@@ -18,16 +19,16 @@
 
 - name: generate CA Certificate
   openssl_certificate:
-    path: "{{ ca_cert_path }}/oqsCA.cert"
-    csr_path: "{{ ca_csr_path }}/oqsCA.csr"
+    path: "{{ ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert"
+    csr_path: "{{ ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr"
     ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
     ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
     provider: ownca
 
 - name: add CA certificate to the local trust store
   file:
-    src: "{{ ca_cert_path }}/oqsCA.cert"
-    dest: "{{ ca_trust_path }}/oqsCA.cert"
+    src: "{{ ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert"
+    dest: "{{ ca_trust_path }}/oqsCA-{{ cluster_base_domain }}.cert"
     state: link
 #  notify:
 #    - update ca trust

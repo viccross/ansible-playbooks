@@ -1,0 +1,16 @@
+---
+- name: configure ICIC for LDAP authentication
+  hosts: s390x_ICIC_management_node
+  tasks:
+  - name: configure ICIC for our LDAP
+    block:
+    - name: copy the expect script
+      copy:
+        src: icic-ldap.exp
+        dest: /usr/local/bin/icic-ldap.exp
+        owner: root
+        group: root
+        mode: '0750'
+    - name: run the ICIC LDAP expect script
+      command:
+        cmd: /usr/local/bin/icic-ldap.exp

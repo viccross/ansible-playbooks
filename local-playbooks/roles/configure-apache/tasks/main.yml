@@ -1,0 +1,104 @@
+---
+- name: install apache httpd
+  yum:
+    name:
+      - httpd
+      - mod_ssl
+    state: present
+
+- name: generate httpd private key
+  openssl_privatekey:
+    path: /etc/pki/tls/private/httpd.pem
+
+- name: generate httpd CSR
+  openssl_csr:
+    path: /etc/pki/tls/misc/httpd.csr
+    privatekey_path: /etc/pki/tls/private/httpd.pem
+    common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+    organization_name: "{{ cert_organization }}"
+    organizational_unit_name: "Red Hat Openshift PoC"
+    country_name: "{{ cert_country }}"
+    keyUsage: ["digitalSignature","keyAgreement"]
+    extendedKeyUsage: ["clientAuth","serverAuth"]
+
+- name: generate Certificate
+  openssl_certificate:
+    path: /etc/pki/tls/certs/httpd.cert
+    csr_path: /etc/pki/tls/misc/httpd.csr
+    ownca_path: /etc/pki/tls/certs/oqsCA.cert
+    ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+    ownca_not_after: +397d
+    provider: ownca
+    force: yes
+
+- name: bind httpd to port 8080
+  lineinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    regexp: ^Listen 80
+    line: Listen 8080
+
+- name: switch Apache SSL port to 8443
+  lineinfile:
+    dest: /etc/httpd/conf.d/ssl.conf
+    regexp: "^Listen"
+    line: Listen *:8443
+
+- name: switch Apache SSL VirtualHost to 8443
+  lineinfile:
+    dest: /etc/httpd/conf.d/ssl.conf
+    regexp: "VirtualHost _default_:443"
+    line: <VirtualHost _default_:8443>
+
+- name: set ServerName and ServerAlias
+  lineinfile:
+    dest: /etc/httpd/conf/httpd.conf
+    regexp: ^#?ServerName
+    line: ServerName {{ guest_install_hostname }}.{{ cluster_domain_name }}
+
+- name: define CA details for apache, SSLCertificateFile
+  lineinfile:
+    dest: /etc/httpd/conf.d/ssl.conf
+    regexp: "^#?SSLCertificateFile"
+    line: SSLCertificateFile /etc/pki/tls/certs/httpd.cert
+
+- name: define CA details for apache, SSLCertificateKeyFile
+  lineinfile:
+    dest: /etc/httpd/conf.d/ssl.conf
+    regexp: "^#?SSLCertificateKeyFile"
+    line: SSLCertificateKeyFile /etc/pki/tls/private/httpd.pem
+
+- name: define CA details for apache, SSLCertificateChainFile
+  lineinfile:
+    dest: /etc/httpd/conf.d/ssl.conf
+    regexp: "^#?SSLCertificateChainFile"
+    line: SSLCertificateChainFile /etc/pki/tls/certs/oqsCA.cert
+
+- name: allow traffic at 8080 for apache
+  tags: firewall
+  firewalld:
+    port: 8080/tcp
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+  notify:
+    - restart firewalld
+    - restart httpd
+
+- name: allow traffic at 8443 for apache
+  tags: firewall
+  firewalld:
+    port: 8443/tcp
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+  notify:
+    - restart firewalld
+    - restart httpd

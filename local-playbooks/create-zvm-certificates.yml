@@ -3,3 +3,8 @@
   hosts: localhost
   roles:
   - "create-zvm-certificates"
+
+- name: Copy the certificate bundle into z/VM
+  hosts: s390x_bastion_workstation
+  roles:
+  - "copy-pkcs12-to-zvm"

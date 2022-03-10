@@ -1,0 +1,185 @@
+#!/bin/bash -e
+#
+# embiggen-elan.sh
+# Expand the ELAN guest into new disk space
+#
+# *********************************************************
+# *        W A R N I N G  --  D I S C A I M E R           *
+# *        -------------      -----------------           *
+# * This script is designed to run only after the initial *
+# * restore of a z/VM ESI system, and even then only the  *
+# * first time the restored ELAN is booted.  There is     *
+# * not much state-checking, due to the expected state of *
+# * the system and resources.  Using this script on pre-  *
+# * used DASD or on a system that has been running for a  *
+# * while may yield unpredicatble results!                *
+# *********************************************************
+
+# SMAPI credentials are the same each time so set once
+smapiauth='-H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }}'
+
+growguest() {
+  # Add extra disk space to the guest.
+  # We're going to grow into whatever space is present in the "ZVMU02"
+  # volume, up to the size of a 3390-54 (60102cyl total).
+
+  GUEST=LXOCPB01
+
+  # what type of disk are we using -> how much space to get
+  if [ "$(smcli ivsqd -T {{ ocp_smapi_user }} -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]; then
+    SPACE=31457280
+    CKD=no
+  else
+    SPACE=50085
+    CKD=yes
+  fi
+
+  # query what volume our existing disk is on
+  VOLUME=$(vmcp q v 200 | awk '{print $4}')
+  # list the space on volume
+  freespace=$(smcli ivsqd -T IBMAUTO -q 2 -e 1 ${smapiauth} -n ${VOLUME} | awk '{print $4}' )
+  # we're just going to use what's here, up to about a 3390-54
+  devnum=201
+  if [ "${freespace}" -ge "${SPACE}" ]; then
+    # This disk has more free space than we need, just grab what we need
+    alloc=${SPACE}
+    SPACE=0
+    # but, if it's CKD and there's only a little bit left we might as well take it
+    # this is meant to cater for the 65520cyl 3390-54ish volume
+    if [[ ${CKD} == "yes" && $((freespace-alloc)) -lt "6000" ]]; then
+      alloc=${freespace}
+    fi
+  else
+    # This disk is not a big'un, just grab it all
+    alloc=${freespace}
+    SPACE=0
+  fi
+  # issue an smcli idicrd for the dasd
+  echo "Allocating ${GUEST} mdisk ${devnum} with space ${alloc} onto volume ${VOLUME}..."
+  smcli idicrd -T ${GUEST} -a ${devnum} -d X -t AUTOV -n ${VOLUME} -u 1 -s ${alloc} -m MR -f 1 ${smapiauth}
+  sleep 1
+  vmcp link "*" 201 201 w
+}
+
+vmcp q v 201 || growguest
+
+# The rest of this script is exactly the same as the script that enlarges the CIC image.
+# In that scenario it has to handle (possibly) multiple added minidisks, but here we will
+# only handle one. So there is opportunity to optimise this, if desired.
+
+# Find out what (if any) DASDs have been added
+newlist=""
+for devno in $(vmcp q v da | grep "DASD 020" | awk '{print $2}' ); do
+  grep -q ${devno} <(lsdasd -s) || newlist="${newlist} ${devno}"
+done
+if [ -z "${newlist}" ]; then
+  echo "No DASD to be added."
+  exit
+fi
+
+# Still here? We have work to do then...
+echo "DASD to be added: ${newlist}"
+newcount=$(wc -w <<< "${newlist}")
+sleep 3
+
+# Vary those DASDs online, and format them if needed
+# Keep a track of how many we formatted
+remainder=${newlist}
+for dasd in ${newlist}; do
+  cio_ignore -r 0.0.${dasd}
+  chccwdev -e ${dasd}
+  sleep 1
+  if grep -q "n/f" <(lsdasd 0.0.${dasd}) ; then
+    echo "Commencing format for ${dasd}..."
+    dasdfmt -b 4096 -y /dev/disk/by-path/ccw-0.0.${dasd} &
+    remainder=${remainder/${dasd}/}
+  fi
+done
+
+# By now the unformatted ECKD DASD will be queued for formatting.
+# We now handle FBA DASDs and/or ECKDs that are already formatted.
+
+# How many DASDs are such?
+if [ $(wc -w <<< "${remainder}") -gt "0" ]; then
+  for dasd in $remainder; do
+    # find out if it's become (part of) an active VG
+    # (udev would have scanned and activated it when the DASD was attached)
+    echo -n "Checking if DASD ${dasd} is part of a VG... "
+    devnode=$(ls /sys/bus/ccw/devices/0.0.${dasd}/block)
+    vgname=$(pvs | grep ${devnode} | awk '{print $2}')
+    if [ -n "${vgname}" ]; then
+      echo "yes: disabling old LVM VG of DASD ${dasd}."
+      vgchange -an ${vgname}
+    else
+      echo "no."
+    fi
+    # we've either freed it from its VG, or its just a previously-used piece of disk.
+    # either way, we have to zap it to be certain it's fully-usable.
+    if [ $(lsdasd | grep ${dasd} | awk '{print $5}') == "ECKD" ]; then
+      echo "Commencing format for ${dasd}..."
+      dasdfmt -b 4096 -y /dev/${devnode} &
+    else
+      # FBA DASDs might just be already auto-partitioned.. but let's check.
+      # we don't need to do anything if the disk has no partition table ;)
+      partx -s /dev/${devnode} >/dev/null 2>&1
+      local rc=$?
+      if [ $rc -eq 0 ]; then
+        echo "Zeroising FBA ${dasd}..."
+        dd if=/dev/zero of=/dev/${devnode} oflag=direct bs=512 count=32
+        echo -n "Refreshing FBA ${dasd}..."
+        chccwdev -d ${dasd}
+        sleep 1
+        chccwdev -e ${dasd}
+        echo "done."
+      fi
+    fi
+  done
+fi
+
+# we have launched possibly a dasdfmt... pause here
+wait
+
+# before we update the VG, let's update the boot loader.
+# Going in this order will prevent a non-booting system
+# in the event the script aborts
+
+# build up the kernel parameter string
+bootcfg="/boot/loader/entries/$(cat /etc/machine-id)-$(uname -r).conf"
+kernelparm=""
+for dasd in ${newlist}; do
+  dasdparm="rd.dasd=0.0.${dasd}"
+  # is the device already in the config?
+  if ! grep -q ${dasdparm} ${bootcfg}; then
+    echo "Adding ${dasd} to kernel parameters..."
+    kernelparm="${kernelparm}${dasdparm} "
+  fi
+done
+# if we don't have any parms to add, don't do anything
+if [ -n "${kernelparm}" ]; then
+  echo "Updating bootloader config..."
+  sed -i.bak "/rd.dasd/s/0.0.0200/& ${kernelparm}/" ${bootcfg}
+  # run zipl
+  echo "Running zipl..."
+  zipl
+fi
+
+# bootloader is updated, let's go ahead and expand the VG.
+for dasd in ${newlist}; do
+  node=/dev/disk/by-path/ccw-0.0.${dasd}
+  if [ $(lsdasd | grep ${dasd} | awk '{print $5}') == "ECKD" ]; then
+    fdasd -a ${node}
+  fi
+  sleep 1
+  pvcreate ${node}-part1
+  vgextend rhel_lxocpb01 ${node}-part1
+  echo 0.0.${dasd} >> /etc/dasd.conf
+done
+
+# at this point the VG should be expanded
+# time to expand the LV, then the FS
+echo "Extending logical volume..."
+lvextend -l+100%FREE /dev/rhel_lxocpb01/root
+echo "Extending filesystem..."
+xfs_growfs /
+
+echo "Filesystem expansion completed."

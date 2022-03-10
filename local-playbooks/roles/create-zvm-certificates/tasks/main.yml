@@ -20,8 +20,9 @@
     csr_path: "{{ ca_csr_path }}/zVM.csr"
     ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
     ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
-    ownca_not_after: +365d
+    ownca_not_after: +397d
     provider: ownca
+    force: yes
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
@@ -53,7 +54,9 @@
     csr_path: "{{ ca_csr_path }}/zVMLDAP.csr"
     ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
     ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
+    ownca_not_after: +795d
     provider: ownca
+    force: yes
 
 - name: Generate PKCS12 file
   openssl_pkcs12:
@@ -65,4 +68,3 @@
     other_certificates: "{{ ca_cert_path }}/oqsRootCA.cert"
     passphrase: zvm4demo
     state: present
-

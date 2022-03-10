@@ -8,16 +8,17 @@
 //
 
 // NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
-// For FastVM:
+// For z/VM ESI:
 // Do not alter ths file on the source location WITHOUT ALSO updating
 // the Ansible scripting AND the /etc/named.conf.source file!
 // This file may be replaced at run-time at a client location!
 // NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
 
 acl internal_nets { {{ subnet_cidr }}; };
+acl alllocals { localnets; 127.0.0.1; };
 
 options {
-	listen-on port 53 { 127.0.0.1; {{ bastion_private_ip_address }};};
+	listen-on port 53 { any; };
 	listen-on-v6 port 53 { none; };
 	directory 	"/var/named";
 	dump-file 	"/var/named/data/cache_dump.db";
@@ -25,7 +26,7 @@ options {
 	memstatistics-file "/var/named/data/named_mem_stats.txt";
 	secroots-file	"/var/named/data/named.secroots";
 	recursing-file	"/var/named/data/named.recursing";
-	allow-query     { localhost; internal_nets; };
+	allow-query     { localhost; alllocals; };
 
 	recursion yes;
 	allow-recursion { localhost; internal_nets; };
@@ -80,4 +81,17 @@ zone "ibmpoc.internal" {
 	allow-query { any; };
 	allow-transfer { none; };
 	update-policy local;
+};
+
+// This is the "secret" domain for Finna persistence
+// The coordinator will (eventually?) be the SOA for the domain
+// but initially we need to assume that we are a solo node so
+// that finnad can start.
+
+zone "{% raw %}{{ esigroup }}{% endraw %}.zvmesi" IN {
+  type master;
+	file "{% raw %}{{ esigroup }}{% endraw %}.zvmesi.zone";
+	allow-update { alllocals; };
+	allow-transfer { alllocals; };
+	notify yes;
 };

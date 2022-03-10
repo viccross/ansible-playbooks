@@ -1,0 +1,21 @@
+---
+- name: copy the package to the ELAN
+  copy:
+    src: /etc/pki/tls/certs/zVM.p12
+    dest: /etc/pki/tls/certs/zVM.p12
+    mode: 0644
+    owner: root
+    group: root
+
+- name: start the FTP server on z/VM # noqa no-changed-when
+  shell: /usr/local/bin/smcli ia -T FTPSERVE -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} && sleep 2
+  register: ret
+  failed_when:
+    - ret.rc != 0
+    - '"Image already active" not in ret.stdout'
+
+- name: copy the package # noqa command-instead-of-module command-instead-of-shell no-changed-when
+  shell: curl -v -T /etc/pki/tls/certs/zVM.p12 -Q "CWD /../VMBFS:VMSYS:GSKSSLDB/" ftp://MAINT.BY.IBMVM1:ibmzvm720@{{ zvm_internal_ip_address }}/
+
+- name: stop the FTP server on z/VM # noqa command-instead-of-shell no-changed-when
+  shell: /usr/local/bin/smcli id -T FTPSERVE -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
