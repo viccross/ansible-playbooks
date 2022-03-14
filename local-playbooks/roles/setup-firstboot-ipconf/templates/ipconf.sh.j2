@@ -11,11 +11,11 @@ function changeIP {
   FN=$1
   echo "${FN} found, checking"
   source <(grep ^IPADDR ${FN})
-  echo IP Address is ${IPADDR}
+  echo "IP Address is ${IPADDR}"
   source <(grep ^NETMASK ${FN})
-  echo -n Net mask is ${NETMASK}
+  echo -n "Net mask is ${NETMASK}"
   PFX=`ipcalc -p ${IPADDR} ${NETMASK} | sed -n 's/^PREFIX=\(.*\)/\1/p'`
-  echo , prefix is ${PFX}
+  echo ", prefix is ${PFX}"
 
   # check if the address is the same as existing
   # **** This check may be removed if we decide change is mandatory
@@ -30,17 +30,17 @@ function changeIP {
   echo "Address change is required"
   # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
-  echo Gateway is ${GATEWAY}
+  echo "Gateway is ${GATEWAY}"
   source <(grep ^HOSTNM ${FN})
-  if [ -z "${HOSTNM}"]; then
+  if [ -z ${HOSTNM} ] || [ ${HOSTNM} == "lxocpb01" ]; then
     HOSTNM="{{ guest_install_hostname }}"
     HOSTSET="(default value)"
   fi
   HOSTNM=${HOSTNM,,}
-  echo Hostname is ${HOSTNM} ${HOSTSET}
+  echo "Hostname is ${HOSTNM} ${HOSTSET}"
   source <(grep ^DOMAIN ${FN})
   DOMAIN=${DOMAIN,,}
-  echo Domain is ${DOMAIN}
+  echo "Domain is ${DOMAIN}"
   source <(grep ^DNS ${FN})
   if [ -v DNS1 ]; then
     DNS="${DNS1}"
@@ -50,7 +50,12 @@ function changeIP {
     if [ -v DNS3 ]; then
       DNS="${DNS}; ${DNS3}"
     fi
-    echo DNS servers are: ${DNS}
+  fi
+  if [ ! -v DNS ]; then
+    DNS="9.9.9.9; 149.112.112.112"
+    echo "No DNS servers in configuration, using generic forwarders (Quad9)"
+  else
+    echo "DNS servers are: ${DNS}"
   fi
 
   # all the details retrieved, let's use nmcli to do the address work
