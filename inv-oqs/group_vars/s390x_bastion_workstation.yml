@@ -30,7 +30,7 @@ coreos_kargs_net:
   zvm: "ip={{ cluster_nodes[coreos_role][item].ip }}::{{ subnet_gateway }}:{{ subnet_netmask }}:::none nameserver={{ bastion_private_ip_address }}"
 
 coreos_kargs_extra:
-  zvm:  "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
+  zvm: "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
 
 dev_disk:
   zvm: dasda
