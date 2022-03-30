@@ -38,6 +38,7 @@ source <(grep ^PREFIX /etc/sysconfig/network-scripts/ifcfg-${extnetdev})
 source <(grep ^GATEWAY /mnt/znetboot/ZVMIP.CONF)
 source <(grep ^DOMAIN /mnt/znetboot/ZVMIP.CONF); DOMAIN=${DOMAIN,,}
 source <(grep ^DNS /mnt/znetboot/ZVMIP.CONF)
+source <(grep ^VLAN /mnt/znetboot/ZVMIP.CONF)
 
 nextip() {
   IP=$1
@@ -133,12 +134,18 @@ else
   cmpspace=${cmpspaceckd}
 fi
 
+# If VLAN is set, set up a VLAN parameter for the NICDEF statements
+if [ ! -z ${VLAN} ]; then
+  vlanparm="VLAN ${VLAN}"
+else
+  vlanparm=""
+fi
 # list the available volumes with sufficient free space
 mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=${mdsize} '{ if ($4 >= size) {print} }')
 # add the management guest
-smcli icd -T ${icicmgt} ${smapiauth} < /opt/ansible/files/${icicmgt}.direct
+smcli icd -T ${icicmgt} ${smapiauth} <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${icicmgt}.direct )
 # add the compute guest
-smcli icd -T ${iciccmp} ${smapiauth} < /opt/ansible/files/${iciccmp}.direct
+smcli icd -T ${iciccmp} ${smapiauth} <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${iciccmp}.direct )
 # grab the first DASD from the list
 IFS=" " read -r -a dasd <<< ${dasds[0]}
 # issue an smcli idicrd for the dasd
