@@ -6,9 +6,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Lint Ansible Playbooks
-      uses: iranzo/ansible-lint-action@v4.1.1
+      uses: ansible/ansible-lint-action@main
       with:
-        args: "-x 106"
+        args: "-x 106 -x yaml"
         override-deps: |
           ansible==2.9.17
         targets: |

@@ -7,13 +7,13 @@ openshift_version: "4.7"
 
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
-#rhcos_version: "4.5.4-s390x"
+# rhcos_version: "4.5.4-s390x"
 rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos"
 
 # The download URL of the openshift-install binary
 openshift_clients_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp"
-#openshift_install_binary_url: "{{ openshift_clients_url }}/openshift-install-linux.tar.gz"
-#openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable-{{ openshift_version }}/openshift-client-linux.tar.gz"
+# openshift_install_binary_url: "{{ openshift_clients_url }}/openshift-install-linux.tar.gz"
+# openshift_client_binary_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/stable-{{ openshift_version }}/openshift-client-linux.tar.gz"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
@@ -29,7 +29,7 @@ coreos_kargs_net:
   zvm: "ip={{ cluster_nodes[coreos_role][item].ip }}::{{ subnet_gateway }}:{{ subnet_netmask }}:::none nameserver={{ bastion_private_ip_address }}"
 
 coreos_kargs_extra:
-  zvm:  "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
+  zvm: "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
 
 dev_disk:
   zvm: dasda
