@@ -22,13 +22,21 @@ case "${mode}" in
     ;;
 esac
 
+smapiauth='-H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }}'
+
 # pause until SMAPI is active, then a little more
 until vmcp Q VSMREQIN >/dev/null 2>&1 ; do
   echo "Pausing to wait for SMAPI listener"
   sleep 10
 done
-echo "SMAPI listener active, continuing..."
 sleep 3
+smcli qafl -T IBMAUTO ${smapiauth}
+if [ $? -ne 0 ]; then
+  echo "SMAPI is not operating, cannot continue"
+  exit 5
+else
+  echo "SMAPI listener active, continuing..."
+fi
 
 # Obtain the list of guests
 allguests="{{ guestnames }}"
@@ -42,7 +50,7 @@ systemctl mask ocp-guests-${othersvc}.service
 # Do this for each guest:
 for guest in ${ocpguests} ; do
   # Act on the guest
-  smcli ${operands} -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  smcli ${operands} ${smapiauth}
   # Nap a moment
   sleep 2
 done
