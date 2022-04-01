@@ -95,6 +95,11 @@ growguest() {
     # grab an available space
     IFS=" " read -r -a dasd <<< ${dasds[$((dasdnum++))]}
     IFS=" " avail=${dasd[3]}
+    # if there is no more DASD, avail will not be a number
+    if [ ! -z "${avail}//[0-9]" ]; then
+      echo "No DASD volume available, we are ${SPACE} too short"
+      break
+    fi
     if [ "${avail}" -ge "${SPACE}" ]; then
       # This disk has more free space than we need, just grab it
       alloc=${SPACE}
@@ -116,7 +121,13 @@ until vmcp Q VSMREQIN 2>/dev/null ; do
   sleep 10
 done
 sleep 3
-echo "SMAPI listener active, continuing..."
+smcli qafl -T IBMAUTO ${smapiauth}
+if [ $? -ne 0 ]; then
+  echo "SMAPI is not operating, cannot continue"
+  exit 5
+else
+  echo "SMAPI listener active, continuing..."
+fi
 
 # fetch our current IP address, and strip the netmask off the end
 myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too

@@ -6,13 +6,21 @@
 # - Run when required to prepare for another build attempt
 #
 
+smapiauth='-H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }}'
+
 # pause until SMAPI is active, then a little more
 until vmcp Q VSMREQIN >/dev/null 2>&1 ; do
   echo "Pausing to wait for SMAPI listener"
   sleep 10
 done
-echo "SMAPI listener active, continuing..."
 sleep 3
+smcli qafl -T IBMAUTO ${smapiauth}
+if [ $? -ne 0 ]; then
+  echo "SMAPI is not operating, cannot continue"
+  exit 5
+else
+  echo "SMAPI listener active, continuing..."
+fi
 
 # Obtain the list of guests
 ocpguests="{{ guestnames }}"
@@ -25,11 +33,11 @@ systemctl stop incrond.service
 # Do this for each guest:
 for guest in ${ocpguests} ; do
   # Shut down the guest
-  smcli id -T ${guest} -t 'WITHIN 60' -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  smcli id -T ${guest} -t 'WITHIN 60' ${smapiauth}
   # Nap for a moment
   sleep 2
   # Set the boot device to CMS
-  smcli iisd -T ${guest} -n CMS -H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P '{{ ocp_smapi_password }}'
+  smcli iisd -T ${guest} -n CMS ${smapiauth}
 done
 
 # give some time to make sure the guests are down
