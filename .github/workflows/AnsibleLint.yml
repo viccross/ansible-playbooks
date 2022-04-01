@@ -8,7 +8,7 @@ jobs:
     - name: Lint Ansible Playbooks
       uses: ansible/ansible-lint-action@main
       with:
-        args: "-x 106"
+        args: "-x 106 -x yaml"
         override-deps: |
           ansible==2.9.17
         targets: |
