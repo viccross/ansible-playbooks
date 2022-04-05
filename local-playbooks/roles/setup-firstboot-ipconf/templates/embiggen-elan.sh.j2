@@ -15,6 +15,13 @@
 # * while may yield unpredicatble results!                *
 # *********************************************************
 
+# Test if we are running on a build system, abort if yes
+buildsys=$(vmcp q variable zvmesi.build)
+if [ ! -z ${buildsys} ]; then
+  echo "Script will not run on the build systems."
+  exit
+fi
+
 # SMAPI credentials are the same each time so set once
 smapiauth='-H {{ ocp_smapi_host }} -U {{ ocp_smapi_user }} -P {{ ocp_smapi_password }}'
 
@@ -61,6 +68,7 @@ growguest() {
   vmcp link "*" 201 201 w
 }
 
+# Check if we have a 201 disk already, define one if we do not
 vmcp q v 201 || growguest
 
 # The rest of this script is exactly the same as the script that enlarges the CIC image.
