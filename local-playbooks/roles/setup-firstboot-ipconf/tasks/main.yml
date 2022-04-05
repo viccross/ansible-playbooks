@@ -42,6 +42,7 @@
 - name: enable the systemd services but do not start them now
   systemd:
     name: "{{ item.servicename }}"
+    daemon_reload: true
     state: stopped
     enabled: yes
   loop:
