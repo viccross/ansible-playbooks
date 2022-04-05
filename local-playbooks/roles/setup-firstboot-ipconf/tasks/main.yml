@@ -1,40 +1,5 @@
 ---
-- name: install the ipconf and "embiggen" scripts to local executable path
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: root
-    group: root
-    mode: 0750
-  loop:
-  - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
-  - { src: "embiggen-elan.sh.j2", dest: "/usr/local/sbin/embiggen-elan.sh" }
-
-- name: create systemd service for interface reconfiguration
-  blockinfile:
-    dest: /etc/systemd/system/zvm-ipconf.service
-    mode: 0644
-    insertbefore: BOF
-    create: yes
-    block: |
-      [Unit]
-      Requires=network-online.target
-      After=network-online.target named-chroot.service
-      [Service]
-      Type=oneshot
-      ExecStart=/usr/local/sbin/ipconf.sh
-      RemainAfterExit=true
-      StandardOutput=journal
-      [Install]
-      WantedBy=default.target
-
-- name: enable the interface reconfiguration systemd service
-  systemd:
-    name: zvm-ipconf
-    state: stopped
-    enabled: yes
-
-- name: ensure the Ansible playbook directories exist on the host
+- name: ensure all required directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -44,6 +9,44 @@
     - "/opt/ansible/inventory/group_vars"
     - "/opt/ansible/templates/named"
     - "/opt/ansible/templates/haproxy"
+    - "/usr/local/lib/systemd/system"
+
+- name: install the ipconf and expandfs scripts to local executable path
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0750
+  loop:
+  - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
+  - { src: "embiggen-elan.sh.j2", dest: "/usr/local/sbin/expandfs.sh" }
+
+- name: create systemd services for scripts
+  template:
+    src: "systemd.service.j2"
+    dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
+    mode: 0644
+  loop:
+  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh" }
+  - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh" }
+
+- name: ensure old systemd service files don't exist
+  file:
+    path: "/etc/systemd/system/{{ item.servicename }}.service"
+    state: absent
+  loop:
+  - { servicename: "zvm-ipconf" }
+  - { servicename: "expandfs"}
+
+- name: enable the systemd services but do not start them now
+  systemd:
+    name: "{{ item.servicename }}"
+    state: stopped
+    enabled: yes
+  loop:
+  - { servicename: "zvm-ipconf" }
+  - { servicename: "expandfs"}
 
 - name: copy files for the playbook
   template:
