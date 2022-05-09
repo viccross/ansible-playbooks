@@ -1,9 +1,63 @@
 ---
-- name: configure the internal Hipersockets interface
-  nmcli:
-    conn_name: enc620
-    ifname: enc620
-    type: ethernet
-    ip4: "{{ bastion_private_ip_address }}"
-    state: present
+# Interface is already configured after Kickstart of an ELAN
+#
+#- name: configure the internal Hipersockets interface
+#  nmcli:
+#    conn_name: "{{ guest_internal_nicid }}"
+#    ifname: "{{ guest_internal_nicid }}"
+#    type: ethernet
+#    ip4: "{{ bastion_private_ip_address }}/24"
+#    state: present
+#  when: ocp_cluster_lan_name is defined
+
+- name: add zone to internal interface
+  lineinfile:
+    line: ZONE=internal
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ guest_internal_nicid }}
+    insertbefore: BOF
+    regexp: "^ZONE=.*"
+  when: ocp_cluster_lan_name is defined
+
+- name: add NFS firewall rule
+  firewalld:
+    permanent: true
+    service: nfs
+    state: enabled
+    zone: "{{ item }}"
+  with_items:
+    - internal
+    - public
+
+- name: add mountd firewall rule
+  firewalld:
+    permanent: true
+    service: mountd
+    state: enabled
+    zone: "{{ item }}"
+  with_items:
+    - internal
+    - public
+
+- name: add rpc-bind firewall rule
+  firewalld:
+    permanent: true
+    service: rpc-bind
+    state: enabled
+    zone: "{{ item }}"
+  with_items:
+    - internal
+    - public
+
+- name: restart NetworkManager to rezone internal interface
+  systemd:
+    name: NetworkManager
+    state: restarted
+  when: ocp_cluster_lan_name is defined
+
+- name: activate IP Masquerade
+  firewalld:
+    permanent: yes
+    masquerade: yes
+    state: enabled
+    zone: public
   when: ocp_cluster_lan_name is defined
