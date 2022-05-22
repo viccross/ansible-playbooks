@@ -96,7 +96,7 @@ growguest() {
     IFS=" " read -r -a dasd <<< ${dasds[$((dasdnum++))]}
     IFS=" " avail=${dasd[3]}
     # if there is no more DASD, avail will not be a number
-    if [ ! -z "${avail}//[0-9]" ]; then
+    if [ ! -z "${avail//[0-9]}" ]; then
       echo "No DASD volume available, we are ${SPACE} too short"
       break
     fi
@@ -154,9 +154,9 @@ fi
 # list the available volumes with sufficient free space
 mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=${mdsize} '{ if ($4 >= size) {print} }')
 # add the management guest
-smcli icd -T ${icicmgt} ${smapiauth} <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${icicmgt}.direct )
+smcli icd -T ${icicmgt} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${icicmgt}.direct )
 # add the compute guest
-smcli icd -T ${iciccmp} ${smapiauth} <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${iciccmp}.direct )
+smcli icd -T ${iciccmp} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${iciccmp}.direct )
 # grab the first DASD from the list
 IFS=" " read -r -a dasd <<< ${dasds[0]}
 # issue an smcli idicrd for the dasd
