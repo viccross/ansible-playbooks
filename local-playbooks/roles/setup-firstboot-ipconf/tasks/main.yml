@@ -29,9 +29,9 @@
     dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
     mode: 0644
   loop:
-  - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", after: "" }
-  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", after: "" }
-  - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh", after: "smapi.service" }
+  - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
+  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
+  - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh", requires: "smapi.service" }
 
 - name: ensure old systemd service files don't exist
   file:
