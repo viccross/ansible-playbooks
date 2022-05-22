@@ -1,6 +1,6 @@
 [Unit]
 Requires=network-online.target
-After=network-online.target named-chroot.service
+After=network-online.target named-chroot.service {{ item.after }}
 [Service]
 Type=oneshot
 ExecStart={{ item.cmdpath }}
