@@ -95,8 +95,8 @@ growguest() {
     # grab an available space
     IFS=" " read -r -a dasd <<< ${dasds[$((dasdnum++))]}
     IFS=" " avail=${dasd[3]}
-    # if there is no more DASD, avail will not be a number
-    if [ ! -z "${avail//[0-9]}" ]; then
+    # if there is no more DASD, avail will either not be a number or be blank
+    if [ -z "${avail}" ] || [ ! -z "${avail//[0-9]}" ]; then
       echo "No DASD volume available, we are ${SPACE} too short"
       break
     fi
