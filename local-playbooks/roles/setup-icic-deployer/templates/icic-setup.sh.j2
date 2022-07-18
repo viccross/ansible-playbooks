@@ -136,10 +136,12 @@ IFS=" ";
 
 # Look for what type of space we have: if we find no "3390-" then it's FBA.
 if [ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]; then
+  disktype=FBA
   mdsize=${mdsizefba}
   mgtspace=${mgtspacefba}
   cmpspace=${cmpspacefba}
 else
+  disktype=CKD
   mdsize=${mdsizeckd}
   mgtspace=${mgtspaceckd}
   cmpspace=${cmpspaceckd}
@@ -192,6 +194,9 @@ vmcp link ${iciccmp} 200 1201 w
 chccwdev --attribute raw_track_access=1 -e 1200,1201
 # Fetch the disk image file
 icicimg=$(curl ${fastvmurl}/ICICIMG.txt 2>/dev/null)
+if [ ${disktype} == "FBA" ]; then
+  icicimg=$(echo ${icicimg} | sed -e 's/-/-fba-/g')
+fi
 echo "Fetching ${icicimg%.*} for restoration..."
 curl ${fastvmurl}/${icicimg} | zcat | tee \
 	>(dd of=/dev/$(lsdasd | grep 0.0.1200 | awk '{print $3}') bs=64k iflag=fullblock oflag=direct) \
@@ -218,7 +223,12 @@ EOFYML
 chccwdev --attribute raw_track_access=0 -e 1200
 # give the VG a little time to settle before mounting
 sleep 3
-mount /dev/rhel_rhel8img/root /mnt/sysimage
+# sometimes it needs a little more help
+vgchange -ay
+# derive the name of the root LV in the image
+rootLV=$(lvs | grep root | awk '{print $1;}')
+# go ahead and mount
+mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 # change the interface details
 netconf ${icicmgt} ${mgtip}
 # Purge the old SSH host keys for regenertion at boot
@@ -242,7 +252,12 @@ done
 chccwdev --attribute raw_track_access=0 -e 1201
 # give the VG a little time to settle before mounting
 sleep 3
-mount /dev/rhel_rhel8img/root /mnt/sysimage
+# sometimes it needs a little more help
+vgchange -ay
+# derive the name of the root LV in the image
+rootLV=$(lvs | grep root | awk '{print $1;}')
+# go ahead and mount
+mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 # change the interface details
 netconf ${iciccmp} ${cmpip}
 # Update the address for the internal interface
