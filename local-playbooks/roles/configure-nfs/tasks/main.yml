@@ -61,3 +61,8 @@
     group: root
     mode: 0644
   notify: restart nfs
+
+- name: Enable nfs-server.service
+  service:
+    name: nfs-server.service
+    enabled: true
