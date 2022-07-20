@@ -90,6 +90,10 @@ guestmemory:
   bootstrap: 16
   masters: 16
   workers: 8
+guestvcpus:
+  bootstrap: 4
+  masters: 6
+  workers: 6
 
 # The following variables should generally not need to be edited
 
