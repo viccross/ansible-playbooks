@@ -20,3 +20,13 @@
       coreos_role: workers
     with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
     when: cluster_nodes.workers is defined
+
+  - name: delete the OCP profile
+    shell: /usr/local/bin/smcli pfdd -T OCPDFLT -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}  # noqa 204
+    args:
+      executable: /bin/bash
+    register: ret
+    failed_when:
+      ret.rc == 1 and "Image or profile definition not found" not in ret.stdout
+    changed_when:
+      ret.rc == 0
