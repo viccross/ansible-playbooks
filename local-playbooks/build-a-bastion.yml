@@ -20,6 +20,7 @@
   - setup-web-resources
   - setup-firstboot-ipconf
   - configure-dns
+  - configure-nfs
   - configure-apache
   - configure-haproxy
   - configure-cockpit
