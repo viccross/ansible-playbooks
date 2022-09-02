@@ -123,7 +123,7 @@
 
 - name: copy the smcli script
   copy:
-    src: /usr/local/bin/smcli
+    src: smcli.j2
     dest: /usr/local/bin/smcli
     mode: 0755
 
@@ -137,7 +137,7 @@
   - name: copy the DASD script systemd service file
     template:
       src: ocp-dasd.service.j2
-      dest: /etc/systemd/system/ocp-dasd.service
+      dest: /usr/local/lib/systemd/system/ocp-dasd.service
       mode: 0644
   - name: Do not enable the ocp-dasd service yet
     systemd:
@@ -155,7 +155,7 @@
   - name: copy the CSRs script systemd service file
     template:
       src: ocp-approve-csrs.service.j2
-      dest: /etc/systemd/system/ocp-approve-csrs.service
+      dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
       mode: 0644
   - name: Do not enable the ocp-approve-csrs service
     systemd:
@@ -173,7 +173,7 @@
   - name: copy the ocp-retry script systemd service file
     template:
       src: ocp-retry.service.j2
-      dest: /etc/systemd/system/ocp-retry.service
+      dest: /usr/local/lib/systemd/system/ocp-retry.service
       mode: 0644
   - name: Do not enable the ocp-retry service
     systemd:
@@ -191,12 +191,12 @@
   - name: copy the ocp-guests-start systemd service file
     template:
       src: ocp-guests-start.service.j2
-      dest: /etc/systemd/system/ocp-guests-start.service
+      dest: /usr/local/lib/systemd/system/ocp-guests-start.service
       mode: 0644
   - name: copy the ocp-guests-stop systemd service file
     template:
       src: ocp-guests-stop.service.j2
-      dest: /etc/systemd/system/ocp-guests-stop.service
+      dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
       mode: 0644
   - name: Do not enable the ocp-guests-start service
     systemd:

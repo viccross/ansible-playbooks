@@ -1,6 +1,8 @@
 ---
 # variables for all hosts
 #
+build_hostname: "lxwork01.wsclab.endicott.ibm.com"
+#
 rhcos_versions:
   "4.6":
     path: "4.6/4.6.1"
@@ -19,7 +21,7 @@ admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
-elan_web_version: "0.8"
+elan_web_version: "0.8.1"
 elan_web_pkgname: "elan-web-{{ elan_web_version }}"
 #
 # CA paramaters
@@ -58,3 +60,4 @@ ip_master_1: '172.24.26.4'
 ip_master_2: '172.24.26.5'
 ip_worker_0: '172.24.26.6'
 ip_worker_1: '172.24.26.7'
+ip_worker_2: '172.24.26.8'

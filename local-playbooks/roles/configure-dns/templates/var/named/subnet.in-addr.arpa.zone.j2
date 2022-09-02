@@ -1,11 +1,14 @@
 {% set bootstrap = cluster_nodes['bootstrap'] %}
 {% set masters = cluster_nodes['masters'] %}
 {% set workers = cluster_nodes['workers'] %}
+{% if cluster_nodes['bootworker'] is defined %}
+{% set bootworker = cluster_nodes['bootworker'] %}
+{% endif %}
 $TTL 900
 
 @ IN SOA bastion-int.{{ cluster_domain_name }} hostmaster.{{ cluster_domain_name }}. (
     2020083002 1D 1H 1W 3H
-  )      
+  )
   IN NS bastion-int.{{ cluster_domain_name }}.
 
 {{ zvm_internal_ip_address.split('.')[3] }} IN PTR zVM.ibmpoc.internal.
@@ -21,8 +24,12 @@ $TTL 900
 {{ workers[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}
 {% endif %}
+{% if bootworker is defined %}
+{% for item in bootworker.keys() %}
+{{ bootworker[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
+{% endfor %}
+{% endif %}
 
 {% for item in bootstrap.keys() %}
 {{ bootstrap[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}
-
