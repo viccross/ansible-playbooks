@@ -118,11 +118,11 @@ backend ocp4-router-https
 
 backend elan-http
    mode http
-      server {{ guest_install_hostname }} {{ guest_install_hostname }}.{{ cluster_domain_name }}:8080 check
+      server bastion bastion.{{ cluster_domain_name }}:8080 check
 
 backend elan-https
    mode tcp
-      server {{ guest_install_hostname }} {{ guest_install_hostname }}.{{ cluster_domain_name }}:8443 check
+      server bastion bastion.{{ cluster_domain_name }}:8443 check
 
 frontend stats
   bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
