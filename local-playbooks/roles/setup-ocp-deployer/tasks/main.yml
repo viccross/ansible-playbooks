@@ -106,6 +106,7 @@
   loop:
   - { src: "install-config.yaml.j2", dest: "/opt/ansible/roles/create-cluster/templates/install-config.yaml.j2" }
   - { src: "guest.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/guest.direct.j2" }
+  - { src: "ocpdflt.direct.j2", dest: "/opt/ansible/roles/create-cluster/templates/ocpdflt.direct.j2" }
   - { src: "create-guest-task.yml.j2", dest: "/opt/ansible/tasks/create-guest.yml" }
   - { src: "delete-guest-task.yml.j2", dest: "/opt/ansible/tasks/delete-guest.yml" }
   - { src: "boot-guest-task.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/boot-guest.yml" }
