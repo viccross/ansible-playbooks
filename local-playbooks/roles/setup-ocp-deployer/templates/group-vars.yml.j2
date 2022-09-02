@@ -1,6 +1,6 @@
 ---
 # Configure the internal domain name of the cluster here.
-cluster_domain_name: "{{ cluster_name }}.{% raw %}{{ cluster_base_domain }}{% endraw %}"
+cluster_domain_name: "{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}"
 
 # The IP address of the local network
 # gateway, and the netmask/cidr of
@@ -55,6 +55,15 @@ cluster_nodes:
       ip: '{{ ip_worker_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
+{% if ip_worker_2 is defined %}
+  bootworker:
+    worker-2:
+      guest_name: '{{ ocp_guest_pfx }}WRK2'
+      mac: '52:54:00:70:8b:76'
+      ip: '{{ ip_worker_2 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: worker.ign
+{% endif %}
 guestmemory:
   bootstrap: "{{ guestmemory['bootstrap'] }}"
   masters: "{{ guestmemory['masters'] }}"

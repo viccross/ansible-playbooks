@@ -1,6 +1,9 @@
 {% set bootstrap = cluster_nodes['bootstrap'] %}
 {% set masters = cluster_nodes['masters'] %}
 {% set workers = cluster_nodes['workers'] %}
+{% if cluster_nodes['bootworker'] is defined %}
+{% set bootworker = cluster_nodes['bootworker'] %}
+{% endif %}
 $TTL 900
 
 @                     IN SOA bastion-int.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
@@ -26,5 +29,10 @@ apps                  IN A {{ bastion_public_ip_address }}
 {% if workers is defined %}
 {% for item in workers.keys() %}
 {{ item }}              IN A {{ workers[item].ip }}
+{% endfor %}
+{% endif %}
+{% if bootworker is defined %}
+{% for item in bootworker.keys() %}
+{{ item }}              IN A {{ bootworker[item].ip }}
 {% endfor %}
 {% endif %}
