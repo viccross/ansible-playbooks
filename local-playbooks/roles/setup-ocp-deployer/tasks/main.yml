@@ -22,6 +22,7 @@
       - ansible
       - incron
       - nfs-utils
+      - openldap-clients
     state: present
 
 - name: add ntp to firewall

@@ -2,6 +2,12 @@
 - name: create ocp4 cluster guests
   hosts: s390x_bastion_workstation
   tasks:
+  - name: create the OCP profile
+    shell: /usr/local/bin/smcli pfcd -T OCPDFLT -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}  # noqa 204
+    args:
+      stdin: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/ocpdflt.direct.j2') }}{% endraw %}"
+      executable: /bin/bash
+
   - name: create the bootstrap node
     include_tasks: tasks/create-guest.yml
     vars:

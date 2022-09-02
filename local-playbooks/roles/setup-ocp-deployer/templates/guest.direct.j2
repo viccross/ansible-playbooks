@@ -1,12 +1,7 @@
 USER {% raw %}{{ cluster_nodes[coreos_role][item].guest_name }}{% endraw %} ZVM4DEMO {% raw %}{{ guestmemory[coreos_role] }}{% endraw %}G {% raw %}{{ (guestmemory[coreos_role] | int) * 2 }}{% endraw %}G  G
- INCLUDE IBMDFLT
+ INCLUDE OCPDFLT
+ COMMAND DEFINE CPU 01-{% raw %}{{ '%02X' % guestvcpus[coreos_role] }}{% endraw %} TYPE IFL
  CPU 00
- CPU 01
- CPU 02
- CPU 03
  IPL CMS
- SHARE RELATIVE 400
- MACHINE ESA 4
- CONSOLE 0009 3215 T OPMGRM1
+ SHARE RELATIVE {% raw %}{{ guestvcpus[coreos_role] }}{% endraw %}00
  NICDEF 0600 TYPE HIPERS LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3
- LINK {{ znetboot_cfg_disk }} 191 RR

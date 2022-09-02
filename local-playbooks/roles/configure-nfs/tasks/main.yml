@@ -1,0 +1,68 @@
+---
+- name: install NFS utilities
+  yum:
+    name:
+      - nfs-utils
+    state: latest
+
+- name: allow NFS traffic
+  tags: firewall
+  firewalld:
+    service: nfs
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+  notify: restart firewalld
+
+- name: allow RPC traffic
+  tags: firewall
+  firewalld:
+    service: rpc-bind
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+  notify: restart firewalld
+
+- name: allow mountd traffic
+  tags: firewall
+  firewalld:
+    service: mountd
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
+  notify: restart firewalld
+
+- name: create the export directory
+  file:
+    path: /srv/nfs
+    owner: root
+    group: root
+    mode: 0775
+    state: directory
+  notify: restart nfs
+
+- name: set up exports file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart nfs
+
+- name: Enable nfs-server.service
+  service:
+    name: nfs-server.service
+    enabled: true

@@ -19,6 +19,7 @@
     group: root
     mode: 0750
   loop:
+  - { src: "checksmapi.sh.j2", dest: "/usr/local/sbin/checksmapi.sh" }
   - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
   - { src: "embiggen-elan.sh.j2", dest: "/usr/local/sbin/expandfs.sh" }
 
@@ -28,8 +29,9 @@
     dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
     mode: 0644
   loop:
-  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh" }
-  - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh" }
+  - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
+  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
+  - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh", requires: "smapi.service" }
 
 - name: ensure old systemd service files don't exist
   file:
