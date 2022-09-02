@@ -96,11 +96,11 @@
       Wants=syslog.service
 
       [Service]
-      Restart=on-failure
+      # Restart=on-failure
       ExecStart=/usr/bin/podman run --rm --name ESIRegistry \
           --conmon-pidfile /%t/%n-pid --cidfile /%t/%n-cid \
           -p 5000:5000 --env-file /opt/registry/ESIRegistry.env \
-          -v /opt/registry/data:/var/lib/registry:z \
+          -v /opt/registry/data:/var/lib/registry:ro \
           -v /opt/registry/auth:/auth:z \
           -v /opt/registry/certs:/certs:z \
           -d docker.io/ibmcom/registry-s390x:2.6.2.5
@@ -111,3 +111,15 @@
 
       [Install]
       WantedBy=default.target
+
+- name: allow traffic at 5000 for registry
+  tags: firewall
+  firewalld:
+    port: 5000/tcp
+    zone: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items:
+  - internal
+  - public
