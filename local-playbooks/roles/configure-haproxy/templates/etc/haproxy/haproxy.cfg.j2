@@ -51,12 +51,17 @@ frontend ocp4-router-http
    mode tcp
    option tcplog
    bind apps.{{ cluster_domain_name }}:80
+   tcp-request inspect-delay 5s
+   acl elanweb hdr(host) -i lxocpb01.{{ cluster_domain_name }}
    default_backend ocp4-router-http
 
 frontend ocp4-router-https
    mode tcp
    option tcplog
    bind apps.{{ cluster_domain_name }}:443
+   tcp-request inspect-delay 5s
+   tcp-request content accept if { req_ssl_hello_type 1 }
+   acl elanweb req_ssl_sni -i lxocpb01.{{ cluster_domain_name }}
    default_backend ocp4-router-https
 
 backend ocp4-kubernetes-api-server
@@ -83,6 +88,11 @@ backend ocp4-router-http
    {% for item in workers.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
    {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+    {% endfor %}
+   {% endif %}
 {% else %}
     {% for item in masters.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
@@ -95,11 +105,24 @@ backend ocp4-router-https
    {% for item in workers.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+    {% endfor %}
+   {% endif %}
 {% else %}
     {% for item in masters.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
 {% endif %}
+
+backend elan-http
+   mode http
+      server lxocpb01 lxocpb01.{{ cluster_domain_name }}:8080 check
+
+backend elan-https
+   mode tcp
+      server lxocpb01 lxocpb01.{{ cluster_domain_name }}:8443 check
 
 frontend stats
   bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
