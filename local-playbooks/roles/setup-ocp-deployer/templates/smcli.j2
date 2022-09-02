@@ -109,7 +109,7 @@
 #
 # Requirements:
 #
-#   bash        built with support for "/dev/tcp" if using SMAPI TCP interface 
+#   bash        built with support for "/dev/tcp" if using SMAPI TCP interface
 #   dd          from "coreutils" package
 #   tr          from "coreutils" package
 #   getopt      from "util-linux" package
@@ -134,7 +134,7 @@
 #   retc        SMAPI return code from response
 #   reas        SMAPI reason code from response
 #   debug       Set to "yes" to enable debugging code
-# 
+#
 # Parsing related:
 #
 #   desc        Description of function
@@ -192,6 +192,7 @@ function showerror
         0_640_*) m="The API functional level is z/VM V6.4" ;;
         0_710_*) m="The API functional level is z/VM V7.1" ;;
         0_720_*) m="The API functional level is z/VM V7.2" ;;
+        0_730_*) m="The API functional level is z/VM V7.3" ;;
 
         # RC_WNG
         4_5_*) m="Unrestricted LAN" ;;
@@ -731,7 +732,7 @@ function getasciiz
         then
             # Grab the string and convert back to character
             eval ${1}='"$(echo -n ${resp:0:i} | xxd -r -p)"'
-    
+
             # Remove it (and the null terminator) from the response buffer
             resp="${resp:$(( i + 2 ))}"
             break
@@ -947,7 +948,7 @@ function execute_and_wait
         else
             opid=${reas}
         fi
- 
+
         # Go wait for it to complete
         waitforasync ${opid}
     fi
@@ -1074,7 +1075,7 @@ function usage
     # Give 'em a little helping hand
     echo
     echo "${desc}"
-    echo 
+    echo
     echo "Usage: $(basename ${0}) ${f} [OPTION]... [PARAMETER]..."
     echo
     echo "Required general options:"
@@ -1128,7 +1129,7 @@ function usage
 #   opts        Short options for passing to "getopt"
 #   optl        Long options for passing to "getopt"
 #   usesparms   Set to 1 to accept positional parms otherwise set to 0
-# 
+#
 # =============================================================================
 function parseopts
 {
@@ -1280,7 +1281,7 @@ function Asynchronous_Notification_Disable_DM
               "                           : 1 = ASCII" \
               "                           : 2 = EBCDIC" \
               "    -d | --data            subscriber data")
-              
+
     opts="c:p:i:t:e:d:"
     optl="comm:,port:,ip:,type:,encoding:,data:"
     usesparms=0
@@ -1546,21 +1547,21 @@ function Asynchronous_Notification_Query_DM
                 2) subscription_type="${subscription_type} (EXCLUDE)" ;;
                 *) subscription_type="${subscription_type} (??)" ;;
             esac
-        
+
             # Convert communication_type
             case "${communication_type}" in
                 1) communication_type="${communication_type} (TCP)" ;;
                 2) communication_type="${communication_type} (UDP)" ;;
                 *) communication_type="${communication_type} (??)" ;;
             esac
-        
+
             # Convert encoding
             case "${encoding}" in
                 1) encoding="${encoding} (ASCII)" ;;
                 2) encoding="${encoding} (EBCDIC)" ;;
                 *) encoding="${encoding} (??)" ;;
             esac
-        
+
             # Show it to the user
             echo "Subscription:"
             echo "  Userid: ${userid}"
@@ -1896,7 +1897,7 @@ function Directory_Manager_Local_Tag_Query_DM
 
     # Retrieve return values
     getstring tag_value
-    
+
     # Show them to the user
     echo "Tag ${tag_name} has a value of ${tag_value}"
 }
@@ -2069,7 +2070,7 @@ function Image_Activate
         # Show them to the user
         echo "Number of images activated: ${activated}"
         echo "Number of images not activated: ${not_activated}"
-    
+
         # Retrieve the length of the returned array
         get4 failing_array_length
 
@@ -2078,7 +2079,7 @@ function Image_Activate
         do
             # Retrieve the entry length
             get4 failing_structure_length
-    
+
             # Protect against empty entries
             if [ $failing_structure_length -gt 0 ]
             then
@@ -2092,7 +2093,7 @@ function Image_Activate
                 showerror
                 echo
             fi
-    
+
             # Calculate remaining length (+4 for the "failing_structure_length" itself)
             failing_array_length=$(( failing_array_length - 4 - failing_structure_length ))
         done
@@ -2352,7 +2353,7 @@ function Image_CPU_Define_DM
             $(string "${cpuid}") \
             $(int1 "${dedicate_cpu}") \
             $(int1 "0")
-               
+
     # Tell user it was successful
     echo "CPU ${cpu_address} added to ${smtarg}"
 }
@@ -2655,7 +2656,7 @@ function Image_Change_ID_DM
     done
 
     # Build and send the request
-    execute $(string "${new_name}") 
+    execute $(string "${new_name}")
 
     # Tell user it was successful
     echo "${smtarg} ID changed to ${new_name}"
@@ -2739,7 +2740,7 @@ function Image_Deactivate
               "                           : WITHIN seconds" \
               "                           : BY hh:mm" \
               "                           : BY hh:mm:ss")
-              
+
     opts="t:"
     optl="time:"
     usesparms=0
@@ -2774,7 +2775,7 @@ function Image_Deactivate
         # Show them to the user
         echo "Number of images deactivated: ${deactivated}"
         echo "Number of images not deactivated: ${not_deactivated}"
-    
+
         # Retrieve the length of the returned array
         get4 failing_array_length
 
@@ -2783,7 +2784,7 @@ function Image_Deactivate
         do
             # Retrieve the entry length
             get4 failing_structure_length
-    
+
             # Protect against empty entries
             if [ $failing_structure_length -gt 0 ]
             then
@@ -2797,7 +2798,7 @@ function Image_Deactivate
                 showerror
                 echo
             fi
-    
+
             # Calculate remaining length (+4 for the "failing_structure_length" itself)
             failing_array_length=$(( failing_array_length - 4 - failing_structure_length ))
         done
@@ -2865,7 +2866,7 @@ function Image_Device_Dedicate
 {
     # Define local variables
     local i image_device_number real_device_number readonly
-    
+
     # Define info for parser
     desc="Add a dedicated device to active image"
     required=("    -a | --addr            virtual address of device" \
@@ -2920,7 +2921,7 @@ function Image_Device_Dedicate_DM
 {
     # Define local variables
     local i image_device_number real_device_number readonly
-    
+
     # Define info for parser
     desc="Add a dedicated device to image"
     required=("    -a | --addr            virtual address of device" \
@@ -3768,7 +3769,7 @@ function Image_IPL_Query_DM
     getstring saved_system
     getstring load_parameter
     getstring parameter_string
-    
+
     # Show them to the user
     echo "System or address: ${saved_system}"
     echo "Load parameter: ${load_parameter}"
@@ -4048,7 +4049,7 @@ function Image_Recycle
         # Show them to the user
         echo "Number of images recycled: ${recycled}"
         echo "Number of images not recycled: ${not_recycled}"
-    
+
         # Retrieve the length of the returned array
         get4 failing_array_length
 
@@ -4057,7 +4058,7 @@ function Image_Recycle
         do
             # Retrieve the entry length
             get4 failing_structure_length
-    
+
             # Protect against empty entries
             if [ $failing_structure_length -gt 0 ]
             then
@@ -4071,7 +4072,7 @@ function Image_Recycle
                 showerror
                 echo
             fi
-    
+
             # Calculate remaining length (+4 for the "failing_structure_length" itself)
             failing_array_length=$(( failing_array_length - 4 - failing_structure_length ))
         done
@@ -4365,7 +4366,7 @@ function Image_Volume_Add
     alt_parm_disk_owner=""
     alt_parm_disk_number=""
     alt_parm_disk_password=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -4497,7 +4498,7 @@ function Image_Volume_Delete
     alt_parm_disk_owner=""
     alt_parm_disk_number=""
     alt_parm_disk_password=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -4624,7 +4625,7 @@ function Image_Volume_Space_Define_DM
     size="-1"
     group_name=""
     device_type="0"
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -4708,7 +4709,7 @@ function Image_Volume_Space_Query_DM
 
     # Initialize optional variables
     entry_names=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -4772,7 +4773,7 @@ function Image_Volume_Space_Remove_DM
     region_name=""
     image_vol_id=""
     group_name=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -5254,7 +5255,7 @@ function Query_API_Functional_Level
 
     # Build and send the request
     execute_no_check
-    
+
     # Show the level to the user
     showerror
 
@@ -5332,7 +5333,7 @@ function Query_Directory_Manager_Level_DM
 
     # Retrieve return values
     getstring directory_manager_level
-    
+
     # Tell user it was successful
     echo "${directory_manager_level}"
 }
@@ -5645,7 +5646,7 @@ function Shared_Memory_Query
             do
                 # Retrieve the entry length
                 get4 page_range_structure_length
-        
+
                 # Protect against empty entries
                 if [ ${page_range_structure_length} -gt 0 ]
                 then
@@ -5665,7 +5666,7 @@ function Shared_Memory_Query
                         7) page_access_descriptor="${page_access_descriptor} (SC)" ;;
                         *) page_access_descriptor="${page_access_descriptor} (??)" ;;
                     esac
-                
+
                     # Show it to the user
                     printf "Range:   %08x-%08x %s\n" "${begin_page}" "${end_page}" "${page_access_descriptor}"
                 fi
@@ -6517,7 +6518,7 @@ function Virtual_Network_Adapter_Query
                 2) adapter_status="${adapter_status} (coupled, active)" ;;
                 *) adapter_status="${adapter_status} (??)" ;;
             esac
-            
+
             # Show it to the user
             echo "Adapter:"
             echo "  Address: ${image_device_number}"
@@ -6776,7 +6777,7 @@ function Virtual_Network_LAN_Query
     local lan_array_length lan_structure_length
     local connected_adapter_array_length connected_adapter_structure_length
     local adapter_owner image_device_number
-                
+
     # Define info for parser
     desc="Query a virtual LAN"
     required=("    -n | --name            lan name" \
@@ -6847,7 +6848,7 @@ function Virtual_Network_LAN_Query
             do
                 # Retrieve the entry length
                 get4 connected_adapter_structure_length
-        
+
                 # Protect against empty entries
                 if [ ${connected_adapter_structure_length} -gt 0 ]
                 then
@@ -6967,7 +6968,7 @@ function Virtual_Network_Vswitch_Create
     alt_parm_disk_owner=""
     alt_parm_disk_number=""
     alt_parm_disk_password=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -7169,7 +7170,7 @@ function Virtual_Network_Vswitch_Delete
     alt_parm_disk_owner=""
     alt_parm_disk_number=""
     alt_parm_disk_password=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -7396,7 +7397,7 @@ function Virtual_Network_Vswitch_Query
 
             # Retrieve and process array entries
             if [ ${real_device_array_length} -gt 0 ]
-            then 
+            then
                 echo "  Devices:"
             fi
 
@@ -7404,7 +7405,7 @@ function Virtual_Network_Vswitch_Query
             do
                 # Retrieve the entry length
                 get4 real_device_structure_length
-        
+
                 # Protect against empty entries
                 if [ ${real_device_structure_length} -gt 0 ]
                 then
@@ -7414,7 +7415,7 @@ function Virtual_Network_Vswitch_Query
                     getstring port_name
                     get1 device_status
                     get1 device_error_status
-                    
+
                     # Convert device_status
                     case "${device_status}" in
                         0) device_status="${device_status} (Device is not active)" ;;
@@ -7422,7 +7423,7 @@ function Virtual_Network_Vswitch_Query
                         2) device_status="${device_status} (Device is a backup device)" ;;
                         *) device_status="${device_status} (??)" ;;
                     esac
-                    
+
                     # Convert device_error_status
                     case "${device_error_status}" in
                         0) device_error_status="${device_error_status} (No error)" ;;
@@ -7462,7 +7463,7 @@ function Virtual_Network_Vswitch_Query
 
             # Retrieve and process array entries
             if [ ${authorized_user_array_length} -gt 0 ]
-            then 
+            then
                 echo "  Authorized users:"
             fi
 
@@ -7470,7 +7471,7 @@ function Virtual_Network_Vswitch_Query
             do
                 # Retrieve the entry length
                 get4 authorized_user_structure_length
-        
+
                 # Protect against empty entries
                 if [ ${authorized_user_structure_length} -gt 0 ]
                 then
@@ -7479,24 +7480,24 @@ function Virtual_Network_Vswitch_Query
 
                     # Retrieve the array length
                     get4 vlan_array_length
-        
+
                     # Retrieve and process array entries
                     vlan_ids=""
                     while [ ${vlan_array_length} -gt 0 ]
                     do
                         # Retrieve the entry length
                         get4 vlan_structure_length
-                
+
                         # Protect against empty entries
                         if [ ${vlan_structure_length} -gt 0 ]
                         then
                             # Retrieve the entry fields
                             get4 user_vlan_id
-                            
+
                             # Remember it
                             vlan_ids="${vlan_ids} ${user_vlan_id}"
                         fi
-        
+
                         # Calculate remaining length (+4 for the "CPU_info_structure_length" itself)
                         vlan_array_length=$(( vlan_array_length - 4 - vlan_structure_length ))
                     done
@@ -7514,7 +7515,7 @@ function Virtual_Network_Vswitch_Query
 
             # Retrieve and process array entries
             if [ ${connected_adapter_array_length} -gt 0 ]
-            then 
+            then
                 echo "  Connections:"
             fi
 
@@ -7522,7 +7523,7 @@ function Virtual_Network_Vswitch_Query
             do
                 # Retrieve the entry length
                 get4 connected_adapter_structure_length
-        
+
                 # Protect against empty entries
                 if [ ${connected_adapter_structure_length} -gt 0 ]
                 then
@@ -7641,7 +7642,7 @@ function Virtual_Network_Vswitch_Set
     alt_parm_disk_owner=""
     alt_parm_disk_number=""
     alt_parm_disk_password=""
-    
+
     # Process options
     for (( i = 0; i < ${#argv[@]}; i++ ))
     do
@@ -8150,7 +8151,7 @@ main( int argc, char *argv[] )
         rc = 1;
         goto die;
     }
-                                                     
+
     /*
     || Connect to partner
     */
@@ -8242,7 +8243,7 @@ die:
     if( fd != -1 )
     {
         shutdown( fd, SHUT_RDWR );
-        close( fd );    
+        close( fd );
     }
 
     return rc;
@@ -8267,36 +8268,36 @@ function main
 {
     # Define local variables
     local i funcs
-    
+
     # Read the global config file
     [ -r /etc/smapi.conf ] && . /etc/smapi.conf
-    
+
     # Override or supplement with personal config
     [ -r ~/.smapi ] && . ~/.smapi
-    
+
     # Environment variables provide final override
     if [ ! -z "$SMHOST" ]
     then
         smhost="$SMHOST"
     fi
-    
+
     if [ ! -z "$SMUSER" ]
     then
         smuser="$SMUSER"
     fi
-    
+
     if [ ! -z "$SMPASS" ]
     then
         smpass="$SMPASS"
     fi
-    
+
     # Get SMAPI function name (may be the abbrev at this point) and remove
     smfunc="${1}"
     shift
 
     # Remember command arguments
     argv=("${@}")
-    
+
     # Define supported functions (long name MUST match SMAPI function name)
     funcs=("smiucv  Build_SMIUCV_Helper" \
            "andd    Asynchronous_Notification_Disable_DM" \
@@ -8305,7 +8306,7 @@ function main
            "ala     Authorization_List_Add" \
            "alq     Authorization_List_Query" \
            "alr     Authorization_List_Remove" \
-           #        Check_Authorization (does not follow API format) 
+           #        Check_Authorization (does not follow API format)
            "dmltdfd Directory_Manager_Local_Tag_Define_DM" \
            "dmltdld Directory_Manager_Local_Tag_Delete_DM" \
            "dmltqd  Directory_Manager_Local_Tag_Query_DM" \
@@ -8430,7 +8431,7 @@ function main
         then
             ${2}
             return
-        fi    
+        fi
     done
 
     # Complain about missing or invalid function
@@ -8453,7 +8454,7 @@ function main
     done
 
     exit 1
-} 
+}
 
 # Invoke main function
 main "${@}"
