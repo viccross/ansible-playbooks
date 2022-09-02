@@ -122,7 +122,7 @@
   - { src: "configure-cluster.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
 
 - name: copy the smcli script
-  copy:
+  template:
     src: smcli.j2
     dest: /usr/local/bin/smcli
     mode: 0755
