@@ -115,6 +115,7 @@
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
+        rm -rf {{ webroot }}/{{ elan_web_pkgname }}/{build,tests,.travis.yml} \
         && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
         && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
       removes: "{{ webroot }}/{{ elan_web_pkgname }}"

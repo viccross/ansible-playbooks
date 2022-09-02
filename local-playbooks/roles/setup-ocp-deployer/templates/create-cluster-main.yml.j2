@@ -237,7 +237,7 @@
   shell:
     cmd: |
       ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid=IBMAUTO,profiletype=user,o=ibmzvm -w 'jTghTGinJupD63yh' <<EOFLDIF
-      dn: profilename=LNXMAINT.200,profiletype=VMMDISK,o=ibmzvm
+      dn: profilename={{ znetboot_cfg_disk }},profiletype=VMMDISK,o=ibmzvm
       changetype: modify
       add: racfaccesscontrol
       racfaccesscontrol: ID({% raw %}{{ cluster_nodes['bootworker'][item].guest_name }}{% endraw %}) ACCESS(READ) COUNT(0)
@@ -250,7 +250,7 @@
   include_tasks: boot-guest.yml
   vars:
     coreos_role: bootworker
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
   when: cluster_nodes.bootworker is defined
 
 - name: wait for worker node accessibility
