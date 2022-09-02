@@ -1,5 +1,6 @@
 ---
 - name: Setup the container registry for restricted install
-  hosts: s390x_bastion_workstation
+  #  hosts: s390x_bastion_workstation
+  hosts: localhost
   roles:
   - "roles/setup-podman-and-registry"
