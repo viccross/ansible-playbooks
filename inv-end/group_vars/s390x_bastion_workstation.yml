@@ -3,7 +3,7 @@
 cluster_domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
 
 # The version of OpenShift (and CoreOS) to fetch
-openshift_version: "4.7"
+openshift_version: "4.8"
 
 # The URL of of the archive containing the
 # RHCOS kernel, initramfs, and disk images
@@ -89,9 +89,9 @@ guestnames: "{% for item in named_nodes.values() %}{{ item.guest_name  }} {% end
 guestmemory:
   bootstrap: 16
   masters: 16
-  workers: 8
+  workers: 16
 guestvcpus:
-  bootstrap: 4
+  bootstrap: 6
   masters: 6
   workers: 6
 
