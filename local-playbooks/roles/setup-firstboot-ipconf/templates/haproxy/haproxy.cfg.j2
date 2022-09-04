@@ -1,3 +1,7 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+{# ------------------------------------ CRITICAL -------------------------------------- #}
+{# This file must be synchronised between configure-haproxy and setup-firstboot-ipconf! #}
+{# ------------------------------------ CRITICAL -------------------------------------- #}
 {% set bootstrap  = cluster_nodes['bootstrap'] %}
 {% set masters    = cluster_nodes['masters'] %}
 {% set workers    = cluster_nodes['workers'] %}
@@ -30,32 +34,38 @@ defaults
     timeout server          30m
     timeout http-keep-alive 10s
     timeout check           10s
+    timeout tunnel          7500s
     maxconn                 3000
 
 frontend ocp4-kubernetes-api-server
    mode tcp
    option tcplog
-   bind api.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443
-   bind api-int.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443
+   bind api.{{ cluster_domain_name }}:6443
+   bind api-int.{{ cluster_domain_name }}:6443
    default_backend ocp4-kubernetes-api-server
 
 frontend ocp4-machine-config-server
    mode tcp
    option tcplog
-   bind api.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623
-   bind api-int.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623
+   bind api.{{ cluster_domain_name }}:22623
+   bind api-int.{{ cluster_domain_name }}:22623
    default_backend ocp4-machine-config-server
 
 frontend ocp4-router-http
    mode tcp
    option tcplog
-   bind apps.{% raw %}{{ cluster_domain_name }}{% endraw %}:80
+   bind apps.{{ cluster_domain_name }}:80
+   tcp-request inspect-delay 5s
+   acl elanweb hdr(host) -i {{ guest_install_hostname }}.{{ cluster_domain_name }}
    default_backend ocp4-router-http
 
 frontend ocp4-router-https
    mode tcp
    option tcplog
-   bind apps.{% raw %}{{ cluster_domain_name }}{% endraw %}:443
+   bind apps.{{ cluster_domain_name }}:443
+   tcp-request inspect-delay 5s
+   tcp-request content accept if { req_ssl_hello_type 1 }
+   acl elanweb req_ssl_sni -i {{ guest_install_hostname }}.{{ cluster_domain_name }}
    default_backend ocp4-router-https
 
 backend ocp4-kubernetes-api-server
@@ -63,28 +73,33 @@ backend ocp4-kubernetes-api-server
    option httpchk GET /readyz HTTP/1.0
    option log-health-checks
    balance roundrobin
-   server boostrap-0 bootstrap-0.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+   server boostrap-0 bootstrap-0.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
 {% for item in masters.keys() %}
-   server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
 {% endfor %}
 
 backend ocp4-machine-config-server
    mode tcp
    balance roundrobin
-   server bootstrap-0 bootstrap-0.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623 weight 1 check backup non-stick
+   server bootstrap-0 bootstrap-0.{{ cluster_domain_name }}:22623 weight 1 check backup non-stick
 {% for item in masters.keys() %}
-   server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:22623 weight 100 check
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:22623 weight 100 check
 {% endfor %}
 
 backend ocp4-router-http
    mode tcp
 {% if workers is defined %}
    {% for item in workers.keys() %}
-      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:80 check
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
    {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+    {% endfor %}
+   {% endif %}
 {% else %}
     {% for item in masters.keys() %}
-      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:80 check
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
    {% endfor %}
 {% endif %}
 
@@ -92,13 +107,26 @@ backend ocp4-router-https
    mode tcp
 {% if workers is defined %}
    {% for item in workers.keys() %}
-      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:443 check
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+    {% endfor %}
+   {% endif %}
 {% else %}
     {% for item in masters.keys() %}
-      server {{ item }} {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}:443 check
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
    {% endfor %}
 {% endif %}
+
+backend elan-http
+   mode http
+      server bastion bastion.{{ cluster_domain_name }}:8080 check
+
+backend elan-https
+   mode tcp
+      server bastion bastion.{{ cluster_domain_name }}:8443 check
 
 frontend stats
   bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem
