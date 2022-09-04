@@ -56,6 +56,7 @@ frontend ocp4-router-http
    bind apps.{{ cluster_domain_name }}:80
    tcp-request inspect-delay 5s
    acl elanweb hdr(host) -i {{ guest_install_hostname }}.{{ cluster_domain_name }}
+   use_backend elan-http if elanweb
    default_backend ocp4-router-http
 
 frontend ocp4-router-https
@@ -65,6 +66,7 @@ frontend ocp4-router-https
    tcp-request inspect-delay 5s
    tcp-request content accept if { req_ssl_hello_type 1 }
    acl elanweb req_ssl_sni -i {{ guest_install_hostname }}.{{ cluster_domain_name }}
+   use_backend elan-https if elanweb
    default_backend ocp4-router-https
 
 backend ocp4-kubernetes-api-server
