@@ -13,7 +13,7 @@ controlPlane:
   name: master
   replicas: {{ cluster_nodes['masters'].keys() | length }}
 metadata:
-  name: "{{ cluster_name }}"
+  name: "{% raw %}{{ cluster_name }}{% endraw %}"
 networking:
   clusterNetworks:
   - cidr: 10.128.0.0/14
