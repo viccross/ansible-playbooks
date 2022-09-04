@@ -57,6 +57,14 @@ function changeIP {
   else
     echo "DNS servers are: ${DNS}"
   fi
+  if [ "${DOMAIN}" == "nip.io" ]; then
+    CLUSTER_NAME=$(printf '%02x' ${IPADDR//./ }; echo)
+    echo -n "Activating nip.io configuration: updating cluster_name to ${CLUSTER_NAME}... "
+    sed -i.bak 's/ocp-z-poc/${CLUSTER_NAME}/g' /opt/ansible/inventory/group_vars/all/default.yml
+    echo "done."
+  else
+    CLUSTER_NAME="ocp-z-poc"
+  fi
 
   # all the details retrieved, let's use nmcli to do the address work
   # first, obtain the UUID of the interface
@@ -86,7 +94,7 @@ function changeIP {
 #EOF
 
   # Update the system hostname
-  FULLDOMAIN="{{ cluster_name }}.${DOMAIN}"
+  FULLDOMAIN="${CLUSTER_NAME}.${DOMAIN}"
   echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
   hostname -F /etc/hostname
   echo "System hostname updated to $(hostname)"
@@ -96,6 +104,7 @@ function changeIP {
   cat <<EOF >> /opt/ansible/inventory/group_vars/all/runtime.yml
 bastion_public_ip_address: "${IPADDR}"
 #
+cluster_name: "${CLUSTER_NAME}"
 cluster_base_domain: "${DOMAIN}"
 dns_nameserver: "${DNS}"
 elan_host_name: "${HOSTNM}"
@@ -121,6 +130,8 @@ EOF
 
   # update the file in the web server directory
   cat <<EOF > {{ webroot }}/etc.hosts
+##              Note that if you used nip.io as the top-level domain, you don't
+##                                  need to add these names to your hosts file!
 ${IPADDR} ${HOSTNM}.${FULLDOMAIN} api.${FULLDOMAIN}
 ${IPADDR} console-openshift-console.apps.${FULLDOMAIN} oauth-openshift.apps.${FULLDOMAIN}
 ## The following are used for direct access to the OCP monitoring components,
