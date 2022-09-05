@@ -228,22 +228,19 @@
   when: cluster_nodes.bootworker is defined
 
 - name: rename the bootstrap node for conversion # noqa 301
-  shell: smcli ichid -T {% raw %}{{ cluster_nodes['bootstrap'][item.old].guest_name }}{% endraw %} -n {% raw %}{{ cluster_nodes['bootstrap'][item.new].guest_name }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
-  loop:
-  - { old: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}", new: "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}" }
+  shell: smcli ichid -T {% raw %}{{ cluster_nodes["bootstrap"]['bootstrap-0']['guest_name'] }}{% endraw %} -n {% raw %}{{ cluster_nodes["bootworker"]['worker-2']['guest_name'] }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
   when: cluster_nodes.bootworker is defined
 
 - name: make sure converted node can access the config disk
   shell:
     cmd: |
       ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid=IBMAUTO,profiletype=user,o=ibmzvm -w 'jTghTGinJupD63yh' <<EOFLDIF
-      dn: profilename={{ znetboot_cfg_disk }},profiletype=VMMDISK,o=ibmzvm
+      dn: profilename={{ znetboot_cfg_disk | replace(' ','.') }},profiletype=VMMDISK,o=ibmzvm
       changetype: modify
       add: racfaccesscontrol
       racfaccesscontrol: ID({% raw %}{{ cluster_nodes['bootworker'][item].guest_name }}{% endraw %}) ACCESS(READ) COUNT(0)
       EOFLDIF
-  loop:
-  - { "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}" }
+  with_items: "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}"
   when: cluster_nodes.bootworker is defined
 
 - name: boot the converted worker node
@@ -276,11 +273,6 @@
   retries: 1
   delay: 0
 
-- name: stop the approve-csrs task
-  systemd:
-    name: ocp-approve-csrs
-    state: stopped
-
 - name: update boot device on the master nodes
   include_tasks: guest-IPLdev.yml
   vars:
@@ -309,3 +301,12 @@
     name: ocp-guests-start
     state: stopped
     enabled: yes
+
+- name: give the converted bootstrap node time to build
+  pause:
+    minutes: 10
+
+- name: stop the approve-csrs task
+  systemd:
+    name: ocp-approve-csrs
+    state: stopped
