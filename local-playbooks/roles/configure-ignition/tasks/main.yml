@@ -10,6 +10,7 @@
   include_tasks: download-coreos.yml
   loop:
     - "4.7"
+    - "4.8"
   loop_control:
     loop_var: rhcos_ver
 
@@ -48,3 +49,10 @@
     include_tasks: generate_pxelinux0.yml
     with_items: "{{ cluster_nodes[coreos_role] }}"
     when: cluster_nodes.workers is defined
+
+  - name: generate pxelinux0 entry (bootworker)
+    vars:
+      coreos_role: bootworker
+    include_tasks: generate_pxelinux0.yml
+    with_items: "{{ cluster_nodes[coreos_role] }}"
+    when: cluster_nodes.bootworker is defined

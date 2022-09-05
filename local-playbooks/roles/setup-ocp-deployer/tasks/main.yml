@@ -68,6 +68,7 @@
   include_tasks: download-clients.yml
   loop:
     - "stable-4.7"
+    - "stable-4.8"
 
 - name: create openshift workdir
   file:
