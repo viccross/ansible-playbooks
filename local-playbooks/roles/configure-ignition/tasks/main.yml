@@ -9,7 +9,6 @@
 - name: download images
   include_tasks: download-coreos.yml
   loop:
-    - "4.7"
     - "4.8"
   loop_control:
     loop_var: rhcos_ver
