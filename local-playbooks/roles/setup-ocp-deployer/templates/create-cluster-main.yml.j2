@@ -230,7 +230,7 @@
 - name: rename the bootstrap node for conversion # noqa 301
   shell: smcli ichid -T {% raw %}{{ cluster_nodes['bootstrap'][item.old].guest_name }}{% endraw %} -n {% raw %}{{ cluster_nodes['bootstrap'][item.new].guest_name }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
   loop:
-  - { old: {% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}, new: {% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %} }
+  - { old: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}", new: "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}" }
   when: cluster_nodes.bootworker is defined
 
 - name: make sure converted node can access the config disk
