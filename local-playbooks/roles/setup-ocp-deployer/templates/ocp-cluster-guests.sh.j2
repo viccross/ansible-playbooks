@@ -9,11 +9,11 @@
 mode=$1
 case "${mode}" in
   "start")
-    command="ia "
+    cmd="ia "
     othersvc="stop"
     ;;
   "stop")
-    command="id "
+    cmd="id "
     othersvc="start"
     ;;
   *)
@@ -50,7 +50,7 @@ systemctl mask ocp-guests-${othersvc}.service
 # Do this for each guest:
 for guest in ${ocpguests} ; do
   # Act on the guest
-  smcli ${command} -T ${guest} ${smapiauth}
+  smcli ${cmd} -T ${guest} ${smapiauth}
   # Nap a moment
   sleep 2
 done
