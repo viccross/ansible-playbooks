@@ -1,20 +1,20 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 {% set bootstrap = cluster_nodes['bootstrap'] %}
 {% set masters = cluster_nodes['masters'] %}
 {% set workers = cluster_nodes['workers'] %}
 {% set bootworker = cluster_nodes['bootworker'] %}
 $TTL 900
-
-@                     IN SOA bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
+@                     IN SOA bastion-int.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
                         2022090501 1D 1H 1W 3H
                       )
-                      IN NS bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+                      IN NS bastion-int.{{ cluster_domain_name }}.
 
-bastion               IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
-bastion-int           IN A {{ bastion_private_ip_address }}
-api                   IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
-api-int               IN A {{ bastion_private_ip_address }}
-apps                  IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
-*.apps                IN A {% raw %}{{ bastion_public_ip_address }}{% endraw %}{{''}}
+bastion               IN A {{ bastion_public_ip_address }}
+bastion-int           IN A [[ bastion_private_ip_address ]]
+api                   IN A {{ bastion_public_ip_address }}
+api-int               IN A [[ bastion_private_ip_address ]]
+apps                  IN A {{ bastion_public_ip_address }}
+*.apps                IN A {{ bastion_public_ip_address }}
 
 {% for item in bootstrap.keys() %}
 {{ item }}           IN A {{ bootstrap[item].ip }}

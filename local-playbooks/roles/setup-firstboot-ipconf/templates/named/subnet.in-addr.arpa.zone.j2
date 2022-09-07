@@ -1,33 +1,33 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 {% set bootstrap = cluster_nodes['bootstrap'] %}
 {% set masters = cluster_nodes['masters'] %}
 {% set workers = cluster_nodes['workers'] %}
 {% set bootworker = cluster_nodes['bootworker'] %}
 $TTL 900
+@          IN SOA bastion-int.{{ cluster_domain_name }} hostmaster.{{ cluster_domain_name }}. (
+             2022090501 1D 1H 1W 3H
+           )
+           IN NS bastion-int.{{ cluster_domain_name }}.
 
-@ IN SOA bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %} hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
-    2022090501 1D 1H 1W 3H
-  )
-  IN NS bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
-
-{{ zvm_internal_ip_address.split('.')[3] }} IN PTR zVM.ibmpoc.internal.
-{{ zvm_internal_ip_address.split('.')[3] }} IN PTR LDAPSRV.ibmpoc.internal.
-{{ bastion_private_ip_address.split('.')[3] }} IN PTR bastion-int.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+[[ zvm_internal_ip_address.split('.')[3] ]] IN PTR zVM.ibmpoc.internal.
+[[ zvm_internal_ip_address.split('.')[3] ]] IN PTR LDAPSRV.ibmpoc.internal.
+[[ bastion_private_ip_address.split('.')[3] ]] IN PTR bastion-int.{{ cluster_domain_name }}.
 
 {% for item in masters.keys() %}
-{{ masters[item].ip.split('.')[3] }} IN PTR {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+{{ masters[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}
 
 {% if workers is defined %}
 {% for item in workers.keys() %}
-{{ workers[item].ip.split('.')[3] }} IN PTR {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+{{ workers[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}
 {% endif %}
 {% if bootworker is defined %}
 {% for item in bootworker.keys() %}
-{{ bootworker[item].ip.split('.')[3] }} IN PTR {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+{{ bootworker[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}
 {% endif %}
 
 {% for item in bootstrap.keys() %}
-{{ bootstrap[item].ip.split('.')[3] }} IN PTR {{ item }}.{% raw %}{{ cluster_domain_name }}{% endraw %}.
+{{ bootstrap[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
 {% endfor %}

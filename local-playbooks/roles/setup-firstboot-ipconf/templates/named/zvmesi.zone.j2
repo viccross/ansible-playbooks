@@ -1,9 +1,10 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 $ORIGIN .
 $TTL 900
-{% raw %}{{ esigroup }}{% endraw %}.zvmesi.       IN SOA {% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}. hostmaster.{% raw %}{{ cluster_domain_name }}{% endraw %}. (
+{{ esigroup }}.zvmesi.       IN SOA {{ elan_host_name }}.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
                         1 1D 1H 1W 3H
                       )
-                      NS {% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}.
-$ORIGIN {% raw %}{{ esigroup }}{% endraw %}.zvmesi.
+                      NS {{ elan_host_name }}.{{ cluster_domain_name }}.
+$ORIGIN {{ esigroup }}.zvmesi.
 _finnad._udp          SRV 0 5 6000 finnad
 finnad                A   239.0.0.1
