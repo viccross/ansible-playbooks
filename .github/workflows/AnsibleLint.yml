@@ -8,7 +8,7 @@ jobs:
     - name: Lint Ansible Playbooks
       uses: ansible-community/ansible-lint-action@v4-eol
       with:
-        args: "-x 106 -x yaml"
+        args: "-x 106 -x yaml -x fqcn-builtins"
         override-deps: |
           ansible==2.9.17
         path: |
