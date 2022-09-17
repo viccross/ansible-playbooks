@@ -72,6 +72,9 @@
   blockinfile:
     path: /opt/ansible/inventory/inventory-CICmgt
     create: yes
+    owner: root
+    group: root
+    mode: 0644
     block: |
       [s390x_ICIC_management_node]
       172.24.26.11 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'

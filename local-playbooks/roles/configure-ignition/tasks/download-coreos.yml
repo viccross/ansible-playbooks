@@ -15,6 +15,9 @@
     url: "{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/{{ item }}"
     dest: "{{ bootfile_dest }}/{{ rhcos_ver }}/{{ item }}"
     checksum: "sha256:{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/sha256sum.txt"
+    owner: root
+    group: root
+    mode: 0644
   with_items: '{{ rhcos_download_files }}'
   environment: "{{ local_proxy_env | default(omit) }}"
 
