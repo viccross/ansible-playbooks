@@ -11,7 +11,7 @@ jobs:
         args: "-x 106 -x yaml -x fqcn-builtins"
         override-deps: |
           ansible==2.9.17
-        path: |
+        targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/configure-apache.yml
           local-playbooks/configure-cockpit.yml
