@@ -48,15 +48,13 @@
       provider: ownca
       force: yes
   - name: create the bundle for Registry
-    template:
-      src: registry_cert_bundle.j2
-      dest: /opt/registry/certs/registry.cert
-      owner: root
-      group: root
-      mode: "0644"
+    shell:
+      cmd: cat registry.cert oqsCA.cert oqsRootCA.cert > /opt/registry/certs/registry.cert
+      chdir: "{{ ca_cert_path }}"
   - name: copy the key to the Registry directory
     copy:
       src: /etc/pki/tls/private/registry.pem
+      remote_src: yes
       dest: /opt/registry/certs/registry.key
       owner: root
       group: root
