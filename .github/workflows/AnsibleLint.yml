@@ -19,7 +19,6 @@ jobs:
           local-playbooks/configure-haproxy.yml
           local-playbooks/configure-ignition.yml
           local-playbooks/configure-nfs.yml
-          local-playbooks/configure-ocp-cluster.yml
           local-playbooks/configure-squid.yml
           local-playbooks/create-guest-for-linux.yml
           local-playbooks/create-root-ca.yml
