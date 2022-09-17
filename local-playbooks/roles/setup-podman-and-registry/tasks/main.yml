@@ -75,9 +75,20 @@
       REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.cert
       REGISTRY_HTTP_TLS_KEY=/certs/registry.key
 
-- name: create the registry htpasswd file # noqa 302
-  command:
-    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
+#- name: create the registry htpasswd file # noqa 302
+#  command:
+#    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
+- name: create the registry htpasswd file
+  htpasswd:
+    path: /opt/registry/auth/htpasswd
+    create: yes
+    mode: 0644
+    owner: root
+    group: root
+    name: ESIreguser
+    password: secretESIpassword
+    crypt_scheme: bcrypt
+    state: present
 
 - name: pull the registry image
   podman_image:
