@@ -47,7 +47,7 @@
       ownca_not_after: +397d
       provider: ownca
       force: yes
-  - name: create the bundle for Registry
+  - name: create the bundle for Registry # noqa no-changed-when
     shell:
       cmd: cat registry.cert oqsCA.cert oqsRootCA.cert > /opt/registry/certs/registry.cert
       chdir: "{{ ca_cert_path }}"
