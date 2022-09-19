@@ -7,6 +7,7 @@
       - podman
       - cockpit-podman
       - jq
+      - python3-passlib
     state: present
 
 - name: set up registry directories
@@ -42,8 +43,8 @@
     openssl_certificate:
       path: "{{ ca_cert_path }}/registry.cert"
       csr_path: "{{ ca_csr_path }}/registry.csr"
-      ownca_path: "{{ ca_cert_path }}/oqsRootCA.cert"
-      ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
+      ownca_path: "{{ ca_cert_path }}/oqsCA.cert"
+      ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
       ownca_not_after: +397d
       provider: ownca
       force: yes
