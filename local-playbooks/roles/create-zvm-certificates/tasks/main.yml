@@ -34,6 +34,9 @@
     other_certificates: "{{ ca_cert_path }}/oqsRootCA.cert"
     passphrase: zvm4demo
     state: present
+    owner: root
+    group: root
+    mode: 0644
 
 - name: generate z/VM LDAP private key
   openssl_privatekey:
@@ -68,3 +71,6 @@
     other_certificates: "{{ ca_cert_path }}/oqsRootCA.cert"
     passphrase: zvm4demo
     state: present
+    owner: root
+    group: root
+    mode: 0644
