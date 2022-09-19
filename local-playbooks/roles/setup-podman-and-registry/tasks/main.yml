@@ -14,8 +14,8 @@
     path: "{{ item }}"
     state: directory
     owner: root
-    group: jenkins
-    mode: "0775"
+    group: root
+    mode: "0755"
   loop:
   - "/opt/registry/auth"
   - "/opt/registry/certs"
