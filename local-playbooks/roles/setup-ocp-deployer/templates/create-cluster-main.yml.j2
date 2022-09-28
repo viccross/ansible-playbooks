@@ -215,8 +215,10 @@
   shell: openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
   args:
     chdir: "{{ workdir }}"
-  retries: 1
+  register: result
+  retries: 2
   delay: 0
+  until: result is not failed
 
 - name: shut down the bootstrap node # noqa 301
   shell: smcli id -T {% raw %}{{ cluster_nodes['bootstrap'][item].guest_name }}{% endraw %} -t 'WITHIN 60' -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
@@ -270,8 +272,10 @@
   shell: openshift-install --dir=`pwd` wait-for install-complete
   args:
     chdir: "{{ workdir }}"
-  retries: 1
+  register: result
+  retries: 2
   delay: 0
+  until: result is not failed
 
 - name: update boot device on the master nodes
   include_tasks: guest-IPLdev.yml
