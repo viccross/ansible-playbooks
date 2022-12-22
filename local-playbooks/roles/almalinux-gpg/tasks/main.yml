@@ -1,0 +1,9 @@
+---
+- name: Set up AlmaLinux GPG key
+  rpm_key:
+    state: present
+    key: https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
+- name: Set up EPEL GPG key
+  rpm_key:
+    state: present
+    key: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8

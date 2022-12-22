@@ -1,0 +1,34 @@
+---
+# variables for host lxocpb01
+#
+# Bastion build variables
+guest_name: "LXOCPB01"
+guest_pwd: "LBYONLY"
+guest_dasd_grp_linux: "LINUX"
+guest_install_hostname: "lxocpb01"
+guest_temp_ipaddr: "9.60.86.74"
+guest_install_ipaddr: "9.60.86.74"
+guest_install_netmask: "255.255.254.0"
+guest_install_gateway: "9.60.86.1"
+guest_install_nameserver: "9.60.70.82"
+guest_install_znet: "qeth,0.0.0ad0,0.0.0ad1,0.0.0ad2,layer2=1,portname=none,portno=0"
+guest_install_dasd: "0.0.0200"
+guest_install_nicid: "encad0"
+guest_install_ksurl: "http://9.60.86.79/install/rhelks"
+znetboot_cfg_path: /mnt/znetboot
+znetboot_cfg_disk: "LNXMAINT 200"
+use_cmsfs_for_znetboot_cfg: true
+guest_install_baseurl: "http://9.60.86.79/install/alma86"
+guest_install_repo_baseos: "BaseOS"
+guest_install_repo_appstream: "AppStream"
+# upstream_proxy_ip: 10.2.55.220
+# upstream_proxy_port: 3128
+# local_proxy_env:
+#   http_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
+#   https_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
+#
+# smapi parameters
+smapi_host: "9.60.86.73"
+smapi_user: "IBMAUTO"
+smapi_password: "jTghTGinJupD63yh"
+#

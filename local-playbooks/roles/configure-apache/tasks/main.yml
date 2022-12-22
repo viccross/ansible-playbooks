@@ -4,6 +4,7 @@
     name:
       - httpd
       - mod_ssl
+      - python3-cryptography
     state: present
 
 - name: generate httpd private key

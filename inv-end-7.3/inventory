@@ -1,0 +1,8 @@
+[s390x_bastion_workstation]
+lxocpb01-7.3     ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+lxocpb01-fba-7.3 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[localhost]
+lxwork01     ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[zvm_hosts]
+ibmzvm-ckd-proxy  ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ibmzvm-fba-proxy  ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'

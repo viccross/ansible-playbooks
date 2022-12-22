@@ -16,12 +16,14 @@
 - name: Configure services on the ESI ELAN system
   hosts: s390x_bastion_workstation
   roles:
+  - configure-internal-net
+  - almalinux-gpg
   - configure-squid
-  - setup-web-resources
   - setup-firstboot-ipconf
   - configure-dns
   - configure-nfs
   - configure-apache
+  - setup-web-resources
   - configure-haproxy
   - configure-cockpit
   - configure-ignition

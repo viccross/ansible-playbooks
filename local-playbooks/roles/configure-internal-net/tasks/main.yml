@@ -1,14 +1,14 @@
 ---
 # Interface is already configured after Kickstart of an ELAN
 #
-#- name: configure the internal Hipersockets interface
-#  nmcli:
-#    conn_name: "{{ guest_internal_nicid }}"
-#    ifname: "{{ guest_internal_nicid }}"
-#    type: ethernet
-#    ip4: "{{ bastion_private_ip_address }}/24"
-#    state: present
-#  when: ocp_cluster_lan_name is defined
+- name: configure the internal Hipersockets interface
+  nmcli:
+    conn_name: "{{ guest_internal_nicid }}"
+    ifname: "{{ guest_internal_nicid }}"
+    type: ethernet
+    ip4: "{{ bastion_private_ip_address }}/24"
+    state: present
+  when: ocp_cluster_lan_name is defined
 
 - name: add zone to internal interface
   lineinfile:
