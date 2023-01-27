@@ -1,0 +1,37 @@
+---
+# Setup z/VM LDAP
+#
+- name: ensure dependencies present
+  yum:
+    name:
+      - python3-ldap
+    state: present
+
+- name: run ldapmodify to add the schema
+  shell:
+    cmd: |
+      ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' <<EOFLDIF
+      {{ lookup('file', item) }}
+      EOFLDIF
+  with_items:
+    - bits-of-core.ldif
+    - ibm-native.ldif
+    - rfc2307bis.ldif
+    - openssh-lpk.ldif
+
+- name: remove the root of our LDAP directory (if present)
+  shell:
+    cmd: |
+      ldapdelete -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' -r {{ item }}
+  with_items:
+    - ou=ibmzvm,o=ibm
+
+- name: run ldapadd to add the entries
+  shell:
+    cmd: |
+      ldapadd -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' <<EOFLDIF
+      {{ lookup('file', item) }}
+      EOFLDIF
+  with_items:
+    - ldaproot.ldif
+

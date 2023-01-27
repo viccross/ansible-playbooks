@@ -1,0 +1,171 @@
+# LDIF to create the root of our LDAP directory
+dn: ou=ibmzvm,o=ibm
+objectClass: top
+objectClass: organizationalUnit
+ou: ibmzvm
+description: Linux on Z and LinuxONE PoC
+
+dn: ou=people,ou=ibmzvm,o=ibm
+objectClass: top
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,ou=ibmzvm,o=ibm
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=admin01,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: admin01
+cn: Admin User 01
+sn: Admin
+uidNumber: 10001
+gidNumber: 10000
+homeDirectory: /home/admin01
+loginShell: /bin/bash
+ibm-nativeId: ADMIN01
+
+dn: uid=admin02,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: admin02
+cn: Admin User 02
+sn: Admin
+uidNumber: 10002
+gidNumber: 10000
+homeDirectory: /home/admin02
+loginShell: /bin/bash
+ibm-nativeId: ADMIN02
+
+dn: uid=admin03,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: admin03
+cn: Admin User 03
+sn: Admin
+uidNumber: 10003
+gidNumber: 10000
+homeDirectory: /home/admin03
+loginShell: /bin/bash
+ibm-nativeId: ADMIN03
+
+dn: uid=admin04,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: admin04
+cn: Admin User 04
+sn: Admin
+uidNumber: 10004
+gidNumber: 10000
+homeDirectory: /home/admin04
+loginShell: /bin/bash
+ibm-nativeId: ADMIN04
+
+dn: uid=admin05,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: admin05
+cn: Admin User 05
+sn: Admin
+uidNumber: 10005
+gidNumber: 10000
+homeDirectory: /home/admin05
+loginShell: /bin/bash
+ibm-nativeId: ADMIN05
+
+dn: cn=admins,ou=groups,ou=ibmzvm,o=ibm
+objectClass: posixGroup
+objectClass: groupOfNames
+cn: admins
+gidNumber: 10000
+member: uid=admin01,ou=people,ou=ibmzvm,o=ibm
+member: uid=admin02,ou=people,ou=ibmzvm,o=ibm
+member: uid=admin03,ou=people,ou=ibmzvm,o=ibm
+member: uid=admin04,ou=people,ou=ibmzvm,o=ibm
+member: uid=admin05,ou=people,ou=ibmzvm,o=ibm
+description: Admins of the System
+
+dn: uid=user01,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: user01
+cn: General User 01
+sn: User
+uidNumber: 11001
+gidNumber: 11000
+homeDirectory: /home/user01
+loginShell: /bin/bash
+ibm-nativeId: USER01
+
+dn: uid=user02,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: user02
+cn: General User 02
+sn: User
+uidNumber: 11002
+gidNumber: 11000
+homeDirectory: /home/user02
+loginShell: /bin/bash
+ibm-nativeId: USER02
+
+dn: uid=user03,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: user03
+cn: General User 03
+sn: User
+uidNumber: 11003
+gidNumber: 11000
+homeDirectory: /home/user03
+loginShell: /bin/bash
+ibm-nativeId: USER03
+
+dn: uid=user04,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: user04
+cn: General User 04
+sn: User
+uidNumber: 11004
+gidNumber: 11000
+homeDirectory: /home/user04
+loginShell: /bin/bash
+ibm-nativeId: USER04
+
+dn: uid=user05,ou=people,ou=ibmzvm,o=ibm
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectclass: ibm-NativeAuthentication
+uid: user05
+cn: General User 05
+sn: User
+uidNumber: 11005
+gidNumber: 11000
+homeDirectory: /home/user05
+loginShell: /bin/bash
+ibm-nativeId: USER05
+
+dn: cn=users,ou=groups,ou=ibmzvm,o=ibm
+objectClass: posixGroup
+objectClass: groupOfNames
+cn: users
+gidNumber: 11000
+member: uid=user01,ou=people,ou=ibmzvm,o=ibm
+member: uid=user02,ou=people,ou=ibmzvm,o=ibm
+member: uid=user03,ou=people,ou=ibmzvm,o=ibm
+member: uid=user04,ou=people,ou=ibmzvm,o=ibm
+member: uid=user05,ou=people,ou=ibmzvm,o=ibm
+description: Users of the System
+

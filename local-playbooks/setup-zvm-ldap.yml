@@ -1,0 +1,5 @@
+---
+- name: Add required LDAP resources (schema, entries) to z/VM LDAP
+  hosts: s390x_bastion_workstation
+  roles:
+  - setup-zvm-ldap
