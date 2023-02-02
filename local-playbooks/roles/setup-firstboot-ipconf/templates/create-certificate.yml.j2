@@ -25,7 +25,7 @@
     provider: ownca
     force: yes
 
-- name: Generate PKCS12 file
+- name: Generate PKCS12 file for non-z/VM
   openssl_pkcs12:
     action: export
     path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.p12"
@@ -36,3 +36,17 @@
     - "{{ ca_cert_path }}/oqsRootCA.cert"
     - "{{ ca_cert_path }}/oqsCA.cert"
     passphrase: zvm4demo
+  when: "{% raw %}{{ item.filename }}{% endraw %}" != "zVM"
+
+- name: Generate PKCS12 file for z/VM
+  openssl_pkcs12:
+    action: export
+    path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.p12"
+    friendly_name: "ZVMTLS"
+    privatekey_path: "{{ ca_key_path }}/{% raw %}{{ item.filename }}{% endraw %}.pem"
+    certificate_path: "{{ ca_cert_path }}/{% raw %}{{ item.filename }}{% endraw %}.cert"
+    other_certificates:
+    - "{{ ca_cert_path }}/oqsRootCA.cert"
+    - "{{ ca_cert_path }}/oqsCA.cert"
+    passphrase: zvm4demo
+  when: "{% raw %}{{ item.filename }}{% endraw %}" == "zVM"
