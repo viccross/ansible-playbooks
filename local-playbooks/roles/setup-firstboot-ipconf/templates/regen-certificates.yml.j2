@@ -9,6 +9,7 @@
     - { filename: "httpd", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
     - { filename: "haproxy", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
     - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
+    - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
 
   - name: create combined PEM file for Cockpit
     shell:
@@ -19,4 +20,38 @@
     shell:
       cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
       chdir: /etc/pki/tls/
-    
+
+  - name: start the FTP server on z/VM # noqa no-changed-when
+    shell: /usr/local/bin/smcli ia -T FTPSERVE -H {{ zvm_internal_ip_address|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} && sleep 2
+    register: ret
+    failed_when:
+      - ret.rc != 0
+      - '"Image already active" not in ret.stdout'
+
+  - name: copy the PKCS#12 files to z/VM # noqa command-instead-of-module command-instead-of-shell no-changed-when
+    shell:
+      cmd: curl -v -T {{ item }}.p12 -Q "CWD /../VMBFS:VMSYS:GSKSSLDB/" ftp://GSKADMIN.BY.{{ smapi_user }}:{{ smapi_password }}@{{ zvm_internal_ip_address }}/
+      chdir: /etc/pki/tls/certs
+    with_items:
+    - zVM
+    - zVMLDAP
+
+  - name: stop the FTP server on z/VM # noqa command-instead-of-shell no-changed-when
+    shell: /usr/local/bin/smcli id -T FTPSERVE -H {{ zvm_internal_ip_address|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
+    when:
+      - '"Image already active" not in ret.stdout'
+
+  - name: make sure GSKADMIN can be logged on by IBMAUTO
+    shell:
+      cmd: |
+        ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ smapi_user }},profiletype=user,o=ibmzvm -w '{{ smapi_password }}' <<EOFLDIF
+        dn: profilename=LOGONBY.GSKADMIN,profiletype=SURROGAT,o=ibmzvm
+        changetype: modify
+        add: racfaccesscontrol
+        racfaccesscontrol: ID(IBMAUTO) ACCESS(READ) COUNT(0)
+
+        EOFLDIF
+
+  - name: run the certificate import task # noqa command-instead-of-shell no-changed-when
+    shell:
+      cmd: LDAPSRVcert.expect Y:{{ zvm_internal_ip_address }} "GSKADMIN BY {{ smapi_user }}" {{ smapi_password }}
