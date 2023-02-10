@@ -13,7 +13,7 @@
     - "/usr/local/lib/systemd/system"
   register: ret
   failed_when:
-    - "Read-only file system" not in ret.module_stdout
+    - '"Read-only file system" not in ret.module_stdout'
 
 - name: add the cmsfs-fuse-a script
   copy:
