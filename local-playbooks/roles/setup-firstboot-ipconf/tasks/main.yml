@@ -13,7 +13,7 @@
     - "/usr/local/lib/systemd/system"
   register: ret
   failed_when:
-    - 'ret.rc exists'
+    - 'ret.rc is defined'
     - '"Read-only file system" not in ret.module_stdout'
 
 - name: add the cmsfs-fuse-a script
