@@ -50,6 +50,10 @@
     organization_name: "IBM"
     organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
     country_name: "US"
+    key_usage:
+      - digitalSignature
+      - keyAgreement
+      - keyEncipherment
 
 - name: generate Certificate
   openssl_certificate:
