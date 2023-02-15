@@ -35,6 +35,16 @@
     passno: "0"
     dump: "0"
 
+- name: make sure ELAN can access the config disk
+  shell:
+    cmd: |
+      ldapmodify -Zx -h {{ zvm_internal_ip_address }} -p 389 -D racfid={{ admin_uid }},profiletype=user,o=ibmzvm -w {{ admin_pwd | quote }} <<EOFLDIF
+      dn: profilename=LNXMAINT.200,profiletype=VMMDISK,o=ibmzvm
+      changetype: modify
+      add: racfaccesscontrol
+      racfaccesscontrol: ID(LXOCPB01) ACCESS(CONTROL) COUNT(0)
+      EOFLDIF
+
 - name: add the dasd.conf line for LNXMAINT.200
   lineinfile:
     dest: /etc/dasd.conf
