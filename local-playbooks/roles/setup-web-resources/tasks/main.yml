@@ -231,7 +231,7 @@
 
 - name: prime the ocp-version file with 'default' version
   copy:
-    content: "4.7"
+    content: "4.8"
     dest: "{{ webroot }}/ocp-version"
     owner: apache
     group: apache
