@@ -19,6 +19,7 @@ ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=IBMZVM
 admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
+ibmvm1_pass: "ibmzvm730"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
 elan_web_version: "0.8.1"
