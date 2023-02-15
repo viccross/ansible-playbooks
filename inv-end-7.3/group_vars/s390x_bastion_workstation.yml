@@ -81,6 +81,13 @@ cluster_nodes:
       ip: '{{ ip_worker_1 }}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
+  bootworker:
+    worker-2:
+      guest_name: "{{ ocp_guest_pfx }}WRK2"
+      mac: '52:54:00:70:8b:99'
+      ip: '{{ ip_worker_2 }}'
+      disk: "{{ dev_disk[install_mode] }}"
+      ign_profile: worker.ign
 named_nodes:
   <<: *bootnodes
   <<: *masternodes
