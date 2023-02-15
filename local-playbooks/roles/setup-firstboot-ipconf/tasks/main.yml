@@ -35,7 +35,7 @@
     passno: "0"
     dump: "0"
 
-- name: make sure ELAN can access the config disk
+- name: make sure ELAN can access the config disk # noqa no-changed-when
   shell:
     cmd: |
       ldapmodify -Zx -h {{ zvm_internal_ip_address }} -p 389 -D racfid={{ admin_uid }},profiletype=user,o=ibmzvm -w {{ admin_pwd | quote }} <<EOFLDIF
