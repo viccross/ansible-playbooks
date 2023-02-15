@@ -11,7 +11,10 @@
     organization_name: "IBM"
     organizational_unit_name: "IBM z/VM for Red Hat Openshift PoC"
     country_name: "US"
-    keyUsage: ["digitalSignature","keyAgreement"]
+    key_usage:
+      - digitalSignature
+      - keyAgreement
+      - keyEncipherment
     extendedKeyUsage: ["clientAuth","serverAuth"]
 
 - name: generate Certificate
