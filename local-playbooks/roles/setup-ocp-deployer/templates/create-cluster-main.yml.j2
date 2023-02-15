@@ -43,7 +43,7 @@
 # (and stubbornness of Ansible)
   - name: copy the files
     shell:
-      cmd: "cp {{ webroot }}/bootfiles/*.znetboot {{ znetboot_cfg_path }}/"
+      cmd: "rm -f {{ znetboot_cfg_path }}/OCP*.ZNETBOOT && cp {{ webroot }}/bootfiles/*.znetboot {{ znetboot_cfg_path }}/"
   - name: unmount the CMSFS
     command:
       cmd: fusermount -u {{ znetboot_cfg_path }}
