@@ -16,6 +16,14 @@
       mode: 0644
     when: local_proxy_env is defined
 
+- name: add the internal YUM repo
+  yum_repository:
+    name: zvmesi
+    description: z/VM ESI Support Code
+    baseurl: http://9.60.86.79/zvmesi
+    gpgcheck: no
+    sslverify: no
+
 - name: install Ansible, incron, and nfs-utils
   yum:
     name:
@@ -23,6 +31,10 @@
       - incron
       - nfs-utils
       - openldap-clients
+      - python36
+      - python3-magic
+      - elan-tools
+      - finna
     state: present
 
 - name: add ntp to firewall
