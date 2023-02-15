@@ -8,6 +8,7 @@
       - cockpit-podman
       - jq
       - python3-passlib
+      - python3-bcrypt
     state: present
 
 - name: set up registry directories

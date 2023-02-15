@@ -5,11 +5,56 @@
     state: directory
     mode: 0755
   loop:
+    - "/mnt/znetboot"
     - "/opt/ansible/tasks"
     - "/opt/ansible/inventory/group_vars"
     - "/opt/ansible/templates/named"
     - "/opt/ansible/templates/haproxy"
     - "/usr/local/lib/systemd/system"
+  register: ret
+  failed_when:
+    - 'ret.rc is defined'
+    - '"Read-only file system" not in ret.module_stdout'
+
+- name: add the cmsfs-fuse-a script
+  copy:
+    dest: /usr/local/bin/cmsfs-fuse-a
+    owner: root
+    mode: 0755
+    content: |
+      #!/bin/sh
+      cmsfs-fuse -a $@
+
+- name: add the fstab entry for LNXMAINT.200
+  mount:
+    state: present
+    src: /dev/disk/by-path/ccw-0.0.0191
+    path: /mnt/znetboot
+    fstype: fuse.cmsfs-fuse-a
+    opts: allow_other,uid=1000
+    passno: "0"
+    dump: "0"
+
+- name: make sure ELAN can access the config disk # noqa no-changed-when
+  shell:
+    cmd: |
+      ldapmodify -Zx -h {{ zvm_internal_ip_address }} -p 389 -D racfid={{ admin_uid }},profiletype=user,o=ibmzvm -w {{ admin_pwd | quote }} <<EOFLDIF
+      dn: profilename=LNXMAINT.200,profiletype=VMMDISK,o=ibmzvm
+      changetype: modify
+      add: racfaccesscontrol
+      racfaccesscontrol: ID(LXOCPB01) ACCESS(CONTROL) COUNT(0)
+      EOFLDIF
+
+- name: add the dasd.conf line for LNXMAINT.200
+  lineinfile:
+    dest: /etc/dasd.conf
+    insertbefore: EOF
+    line: 0.0.0191
+
+- name: install ipcalc tool (ipconf.sh dependency)
+  yum:
+    name: ipcalc
+    state: present
 
 - name: install the ipconf and expandfs scripts to local executable path
   template:
@@ -30,7 +75,7 @@
     mode: 0644
   loop:
   - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
-  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
+  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "smapi.service" }
   - { servicename: "expandfs", cmdpath: "/usr/local/sbin/expandfs.sh", requires: "smapi.service" }
 
 - name: ensure old systemd service files don't exist
