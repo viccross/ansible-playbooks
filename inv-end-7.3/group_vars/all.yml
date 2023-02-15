@@ -4,13 +4,9 @@
 build_hostname: "lxwork01.wsclab.endicott.ibm.com"
 #
 rhcos_versions:
-  "4.7":
-    path: "4.7/4.7.33"
   "4.8":
     path: "4.8/4.8.14"
 openshift_versions:
-  "4.7":
-    path: "stable-4.7"
   "4.8":
     path: "stable-4.8"
 #
@@ -21,7 +17,7 @@ admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
 webroot: "/var/www/html"
 meta_header_file: "s_header.html"
-elan_web_version: "0.8.1"
+elan_web_version: "0.8.3"
 elan_web_pkgname: "elan-web-{{ elan_web_version }}"
 #
 # CA paramaters
