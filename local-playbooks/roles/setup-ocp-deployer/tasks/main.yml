@@ -37,17 +37,24 @@
       - finna
     state: present
 
+- name: open firewall port for finnad
+  firewalld:
+    port: "6000/udp"
+    state: enabled
+    permanent: yes
+    immediate: yes
+    zone: public
+
 - name: add ntp to firewall
   firewalld:
     permanent: true
+    immediate: true
     service: ntp
     state: enabled
     zone: "{{ item }}"
   with_items:
     - internal
     - public
-  notify:
-  - restart firewalld
 
 - name: patch chrony.conf to allow connections
   lineinfile:
