@@ -51,10 +51,13 @@
     insertbefore: EOF
     line: 0.0.0191
 
-- name: install ipcalc tool (ipconf.sh dependency)
+- name: install tools (dependencies of ipconf.sh and LDAPSRVcert)
   yum:
-    name: ipcalc
+    name: {{ item }}
     state: present
+  loop:
+  - ipcalc
+  - x3270-text
 
 - name: install the ipconf and expandfs scripts to local executable path
   template:
