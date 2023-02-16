@@ -53,7 +53,7 @@
 
 - name: install tools (dependencies of ipconf.sh and LDAPSRVcert)
   yum:
-    name: {{ item }}
+    name: "{{ item }}"
     state: present
   loop:
   - ipcalc
