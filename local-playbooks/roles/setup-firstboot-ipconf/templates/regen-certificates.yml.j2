@@ -30,7 +30,7 @@
 
   - name: copy the PKCS#12 files to z/VM # noqa command-instead-of-module command-instead-of-shell no-changed-when
     shell:
-      cmd: curl -v -T {{ item }}.p12 -Q "CWD /../VMBFS:VMSYS:GSKSSLDB/" ftp://GSKADMIN.BY.{{ smapi_user }}:{{ smapi_password }}@{{ zvm_internal_ip_address }}/
+      cmd: curl -v -T {% raw %}{{ item }}{% endraw %}.p12 -Q "CWD /../VMBFS:VMSYS:GSKSSLDB/" ftp://GSKADMIN.BY.{{ smapi_user }}:{{ smapi_password }}@{{ zvm_internal_ip_address }}/
       chdir: /etc/pki/tls/certs
     with_items:
     - zVM
