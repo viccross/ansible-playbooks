@@ -39,7 +39,7 @@
     - "{{ ca_cert_path }}/oqsRootCA.cert"
     - "{{ ca_cert_path }}/oqsCA.cert"
     passphrase: zvm4demo
-  when: "{% raw %}{{ item.filename }}{% endraw %}" != "zVM"
+  when: 'item.filename is not match("zVM*")'
 
 - name: Generate PKCS12 file for z/VM
   openssl_pkcs12:
@@ -52,7 +52,7 @@
     - "{{ ca_cert_path }}/oqsRootCA.cert"
     - "{{ ca_cert_path }}/oqsCA.cert"
     passphrase: zvm4demo
-  when: "{% raw %}{{ item.filename }}{% endraw %}" == "zVM"
+  when: item.filename == "zVM"
 
 - name: Generate PKCS12 file for z/VM LDAP
   openssl_pkcs12:
@@ -65,4 +65,4 @@
     - "{{ ca_cert_path }}/oqsRootCA.cert"
     - "{{ ca_cert_path }}/oqsCA.cert"
     passphrase: zvm4demo
-  when: "{% raw %}{{ item.filename }}{% endraw %}" == "zVMLDAP"
+  when: item.filename == "zVMLDAP"
