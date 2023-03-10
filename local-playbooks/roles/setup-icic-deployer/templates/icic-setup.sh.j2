@@ -226,7 +226,7 @@ sleep 3
 # sometimes it needs a little more help
 vgchange -ay
 # derive the name of the root LV in the image
-rootLV=$(lvs | grep root | awk '{print $1;}')
+rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
 # go ahead and mount
 mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 # change the interface details
@@ -255,7 +255,7 @@ sleep 3
 # sometimes it needs a little more help
 vgchange -ay
 # derive the name of the root LV in the image
-rootLV=$(lvs | grep root | awk '{print $1;}')
+rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
 # go ahead and mount
 mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 # change the interface details
