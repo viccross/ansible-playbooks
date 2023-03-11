@@ -1,11 +1,14 @@
 ---
 - name: copy the package to the ELAN
   copy:
-    src: /etc/pki/tls/certs/zVM.p12
-    dest: /etc/pki/tls/certs/zVM.p12
+    src: /etc/pki/tls/certs/{{ item }}.p12
+    dest: /etc/pki/tls/certs/{{ item }}.p12
     mode: 0644
     owner: root
     group: root
+  loop:
+    - "zVM"
+    - "zVMLDAP"
 
 - name: start the FTP server on z/VM # noqa no-changed-when
   shell: /usr/local/bin/smcli ia -T FTPSERVE -H {{ smapi_host|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} && sleep 2
