@@ -141,7 +141,7 @@ if [ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | w
   mgtspace=${mgtspacefba}
   cmpspace=${cmpspacefba}
 else
-  disktype=CKD
+  disktype=ECKD
   mdsize=${mdsizeckd}
   mgtspace=${mgtspaceckd}
   cmpspace=${cmpspaceckd}
@@ -212,11 +212,12 @@ done
 
 mgtip=$(nextip ${tmpip})
 cmpip=$(nextip ${mgtip})
-echo "Telling Ansible about our IP addresses..."
+echo "Telling Ansible about our IP addresses and disk type..."
 cat >> /opt/ansible/inventory/group_vars/all/runtime.yml <<EOFYML
 #
 icic_management_ip_address: ${mgtip}
 icic_compute_ip_address: ${cmpip}
+diskpool_type: ${disktype}
 EOFYML
 
 # One at a time, we'll update the configuration of the imaged systems.  First, the management:
