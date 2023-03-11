@@ -1,4 +1,5 @@
-compute_disk_pool=ECKD:LINUX
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+compute_disk_pool={{ diskpool_type }}:LINUX
 network_vswitch=icicvsw1
 compute_instance_template=ins%05x
 compute_user_profile=icicdflt
