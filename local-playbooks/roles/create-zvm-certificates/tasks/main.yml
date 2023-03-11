@@ -16,6 +16,7 @@
       - keyAgreement
       - keyEncipherment
     extendedKeyUsage: ["clientAuth","serverAuth"]
+    subject_alt_name: "DNS:zVM.ibmpoc.internal,IP:{{ zvm_internal_ip_address }}"
 
 - name: generate Certificate
   openssl_certificate:
@@ -57,6 +58,7 @@
       - digitalSignature
       - keyAgreement
       - keyEncipherment
+    subject_alt_name: "DNS:LDAPSRV.ibmpoc.internal,IP:{{ zvm_internal_ip_address }}"
 
 - name: generate Certificate
   openssl_certificate:
