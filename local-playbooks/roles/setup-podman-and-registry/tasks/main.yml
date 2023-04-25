@@ -126,7 +126,7 @@
 - name: allow traffic for registry
   tags: firewall
   firewalld:
-    port: "{{ registry_port | default("5000", true) }}/tcp"
+    port: "{{ registry_port | default('5000', true) }}/tcp"
     zone: "{{ item }}"
     state: enabled
     immediate: true
