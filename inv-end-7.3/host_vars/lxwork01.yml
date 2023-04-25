@@ -1,2 +1,2 @@
-registry_mode: "rw"
+registry_mode: "z"
 registry_port: "5999"
