@@ -1,3 +1,4 @@
 **/*.DS_Store
 **/*.log
 multiarch-ci-playbooks/
+.vscode/settings.json
