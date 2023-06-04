@@ -10,6 +10,7 @@
     - { filename: "haproxy", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
     - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
     - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
+    - { filename: "registry", common_name: "registry.{% raw %}{{ cluster_base_domain }}{% endraw %}" }
 
   - name: create combined PEM file for Cockpit
     shell:
@@ -20,6 +21,11 @@
     shell:
       cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
       chdir: /etc/pki/tls/
+
+  - name: create the bundle for registry
+    shell:
+      cmd: cat certs/registry.cert certs/oqsCA.cert private/cockpit.pem > /opt/registry/certs/registry.cert
+      chdir: /etc/pki/tls
 
   - name: start the FTP server on z/VM # noqa no-changed-when
     shell: /usr/local/bin/smcli ia -T FTPSERVE -H {{ zvm_internal_ip_address|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }} && sleep 2
