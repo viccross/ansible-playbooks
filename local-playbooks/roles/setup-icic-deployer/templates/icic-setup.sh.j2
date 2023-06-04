@@ -195,7 +195,9 @@ cio_ignore -r 1200,1201
 vmcp link ${icicmgt} 200 1200 w
 vmcp link ${iciccmp} 200 1201 w
 # echo 1 > /sys/bus/ccw/devices/0.0.1200/raw_track_access
-chccwdev --attribute raw_track_access=1 -e 1200,1201
+if [ ${disktype} == "ECKD" ]; then
+  chccwdev --attribute raw_track_access=1 -e 1200,1201
+fi
 # Fetch the disk image file
 icicimg=$(curl ${fastvmurl}/ICICIMG.txt 2>/dev/null)
 if [ ${disktype} == "FBA" ]; then
@@ -225,7 +227,9 @@ diskpool_type: ${disktype}
 EOFYML
 
 # One at a time, we'll update the configuration of the imaged systems.  First, the management:
-chccwdev --attribute raw_track_access=0 -e 1200
+if [ ${disktype} == "ECKD" ]; then
+  chccwdev --attribute raw_track_access=0 -e 1200
+fi
 # give the VG a little time to settle before mounting
 sleep 3
 # sometimes it needs a little more help
@@ -254,7 +258,9 @@ until chccwdev -s 1200 ; do
 done
 
 # Second, the compute:
-chccwdev --attribute raw_track_access=0 -e 1201
+if [ ${disktype} == "ECKD" ]; then
+  chccwdev --attribute raw_track_access=0 -e 1201
+fi
 # give the VG a little time to settle before mounting
 sleep 3
 # sometimes it needs a little more help
