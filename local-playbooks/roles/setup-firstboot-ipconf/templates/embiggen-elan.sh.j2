@@ -179,14 +179,14 @@ for dasd in ${newlist}; do
   fi
   sleep 1
   pvcreate ${node}-part1
-  vgextend rhel_lxocpb01 ${node}-part1
+  vgextend almalinux_lxocpb01 ${node}-part1
   echo 0.0.${dasd} >> /etc/dasd.conf
 done
 
 # at this point the VG should be expanded
 # time to expand the LV, then the FS
 echo "Extending logical volume..."
-lvextend -l+100%FREE /dev/rhel_lxocpb01/root
+lvextend -l+100%FREE /dev/almalinux_lxocpb01/root
 echo "Extending filesystem..."
 xfs_growfs /
 
