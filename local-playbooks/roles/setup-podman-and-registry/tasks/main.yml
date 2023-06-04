@@ -110,8 +110,8 @@
       # Restart=on-failure
       ExecStart=/usr/bin/podman run --rm --name ESIRegistry \
           --conmon-pidfile /%t/%n-pid --cidfile /%t/%n-cid \
-          -p 5000:5000 --env-file /opt/registry/ESIRegistry.env \
-          -v /opt/registry/data:/var/lib/registry:ro \
+          -p {{ registry_port | default("5000", true) }}:5000 --env-file /opt/registry/ESIRegistry.env \
+          -v /opt/registry/data:/var/lib/registry:{{ registry_mode | default("ro",true) }} \
           -v /opt/registry/auth:/auth:z \
           -v /opt/registry/certs:/certs:z \
           -d docker.io/ibmcom/registry-s390x:2.6.2.5
@@ -123,10 +123,10 @@
       [Install]
       WantedBy=default.target
 
-- name: allow traffic at 5000 for registry
+- name: allow traffic for registry
   tags: firewall
   firewalld:
-    port: 5000/tcp
+    port: "{{ registry_port | default('5000', true) }}/tcp"
     zone: "{{ item }}"
     state: enabled
     immediate: true
