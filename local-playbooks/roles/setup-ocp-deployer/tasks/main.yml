@@ -27,7 +27,10 @@
 - name: install Ansible, incron, and nfs-utils
   yum:
     name:
-      - ansible
+      - ansible-core
+      - ansible-collection-community-general
+      - ansible-collection-ansible-utils
+      - ansible-collection-ansible-posix
       - incron
       - nfs-utils
       - openldap-clients
