@@ -120,7 +120,7 @@ until vmcp Q VSMREQIN 2>/dev/null ; do
   echo "Pausing to wait for SMAPI listener"
   sleep 10
 done
-sleep 3
+sleep 10
 smcli qafl -T IBMAUTO ${smapiauth}
 if [ $? -ne 0 ]; then
   echo "SMAPI is not operating, cannot continue"
@@ -159,6 +159,10 @@ mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | aw
 smcli icd -T ${icicmgt} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${icicmgt}.direct )
 # add the compute guest
 smcli icd -T ${iciccmp} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${iciccmp}.direct )
+# recreate the profile
+smcli dcd -T icicdflt ${smapiauth} || true
+smcli icd -T icicdflt ${smapiauth} < /opt/ansible/files/icicdflt.direct
+
 # grab the first DASD from the list
 IFS=" " read -r -a dasd <<< ${dasds[0]}
 # issue an smcli idicrd for the dasd
