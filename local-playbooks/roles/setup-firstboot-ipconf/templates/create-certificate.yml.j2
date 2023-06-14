@@ -16,7 +16,7 @@
       - keyAgreement
       - keyEncipherment
     extendedKeyUsage: ["clientAuth","serverAuth"]
-    subject_alt_name: "DNS:{% raw %}{{ item.common_name }}{{ item.subject_alt_name | default(omit) }}{% endraw %}"
+    subject_alt_name: "DNS:{% raw %}{{ item.common_name }}{{ item.subject_alt_name | default('') }}{% endraw %}"
 
 - name: generate Certificate
   openssl_certificate:
