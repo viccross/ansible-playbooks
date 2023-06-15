@@ -2,4 +2,4 @@
 - name: update the elan-tools RPM
   yum:
     name: elan-tools
-    state: present
+    state: latest
