@@ -3,3 +3,4 @@
   yum:
     name: elan-tools
     state: latest
+    update_cache: yes
