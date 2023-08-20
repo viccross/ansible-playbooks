@@ -140,6 +140,7 @@ EOF
   systemctl restart httpd.service
   echo "Apache httpd restarted"
   # restart HA-Proxy
+  systemctl enable haproxy.service
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
   ### This is the old DNS change, comment this before removal
