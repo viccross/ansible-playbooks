@@ -38,6 +38,9 @@ function changeIP {
   fi
   HOSTNM=${HOSTNM,,}
   echo "Hostname is ${HOSTNM} ${HOSTSET}"
+  source <(grep ^ZVMHOSTNM ${FN})
+  ZVMHOSTNM=${ZVMHOSTNM,,}
+  echo "z/VM Hostname is ${ZVMHOSTNM}"
   source <(grep ^DOMAIN ${FN})
   DOMAIN=${DOMAIN,,}
   echo "Domain is ${DOMAIN}"
@@ -78,21 +81,6 @@ function changeIP {
   nmcli con mod ${UUID} ipv4.gateway "${GATEWAY}"
   nmcli con up ${UUID}
 
-  # **** Commenting out the DDNS method right now :|
-  # next, do the dynamic DNS update to fix BIND
-#  nsupdate -l -v <<EOF
-#zone {{ cluster_domain_name }}
-#update delete bastion.{{ cluster_domain_name }}. A
-#update add bastion.{{ cluster_domain_name }}. 900 A ${IPADDR}
-#update delete api.{{ cluster_domain_name }}. A
-#update add api.{{ cluster_domain_name }}. 900 A ${IPADDR}
-#update delete apps.{{ cluster_domain_name }}. A
-#update add apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
-#update delete *.apps.{{ cluster_domain_name }}. A
-#update add *.apps.{{ cluster_domain_name }}. 900 A ${IPADDR}
-#send
-#EOF
-
   # Update the system hostname
   FULLDOMAIN="${CLUSTER_NAME}.${DOMAIN}"
   echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
@@ -108,6 +96,7 @@ cluster_name: "${CLUSTER_NAME}"
 cluster_base_domain: "${DOMAIN}"
 dns_nameserver: "${DNS}"
 elan_host_name: "${HOSTNM}"
+zvm_host_name: "${ZVMHOSTNM}"
 esigroup: "${ESIGROUP}"
 EOF
 
