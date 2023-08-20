@@ -38,6 +38,9 @@ function changeIP {
   fi
   HOSTNM=${HOSTNM,,}
   echo "Hostname is ${HOSTNM} ${HOSTSET}"
+  source <(grep ^ZVMIPADDR ${FN})
+  ZVMIPADDR=${ZVMIPADDR,,}
+  echo "z/VM IP Address is ${ZVMIPADDR}"
   source <(grep ^ZVMHOSTNM ${FN})
   ZVMHOSTNM=${ZVMHOSTNM,,}
   echo "z/VM Hostname is ${ZVMHOSTNM}"
@@ -96,6 +99,7 @@ cluster_name: "${CLUSTER_NAME}"
 cluster_base_domain: "${DOMAIN}"
 dns_nameserver: "${DNS}"
 elan_host_name: "${HOSTNM}"
+zvm_ip_address: "${ZVMIPADDR}"
 zvm_host_name: "${ZVMHOSTNM}"
 esigroup: "${ESIGROUP}"
 EOF
