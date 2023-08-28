@@ -92,7 +92,7 @@
 
 - name: pull the registry image
   podman_image:
-    name: docker.io/ibmcom/registry-s390x:2.6.2.5
+    name: docker.io/library/registry:2.8
 
 - name: create systemd service for interface reconfiguration
   blockinfile:
@@ -114,7 +114,7 @@
           -v /opt/registry/data:/var/lib/registry:{{ registry_mode | default("ro",true) }} \
           -v /opt/registry/auth:/auth:z \
           -v /opt/registry/certs:/certs:z \
-          -d docker.io/ibmcom/registry-s390x:2.6.2.5
+          -d docker.io/library/registry:2.8
       ExecStop=/usr/bin/sh -c "/usr/bin/podman rm -f `cat /%t/%n-cid` && rm -f /%t/%n-cid"
       KillMode=none
       Type=forking
