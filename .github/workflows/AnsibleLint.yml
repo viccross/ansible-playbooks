@@ -10,7 +10,7 @@ jobs:
       with:
         args: "-x 106 -x yaml -x fqcn-builtins"
         override-deps: |
-          ansible==2.9.17
+          ansible==2.14.2
         targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/configure-apache.yml
