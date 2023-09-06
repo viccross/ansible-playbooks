@@ -17,6 +17,11 @@
     - 'ret.rc is defined'
     - '"Read-only file system" not in ret.module_stdout'
 
+- name: install required Ansible collections
+  ansible_galaxy_install:
+    type: collection
+    name: community.crypto
+
 - name: add the cmsfs-fuse-a script
   copy:
     dest: /usr/local/bin/cmsfs-fuse-a
