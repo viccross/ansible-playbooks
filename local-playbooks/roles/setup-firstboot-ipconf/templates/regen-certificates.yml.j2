@@ -8,8 +8,8 @@
     - { filename: "cockpit", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
     - { filename: "httpd", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
     - { filename: "haproxy", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
-    - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
-    - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }},IP:{{ zvm_internal_ip_address }}{% endraw %}" }
+    - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
+    - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
     - { filename: "registry", common_name: "registry.{% raw %}{{ cluster_base_domain }}{% endraw %}" }
 
   - name: create combined PEM file for Cockpit
