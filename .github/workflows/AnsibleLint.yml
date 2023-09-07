@@ -6,11 +6,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Lint Ansible Playbooks
-      uses: ansible-community/ansible-lint-action@v4-eol
+      uses: ansible/ansible-lint
       with:
         args: "-x 106 -x yaml -x fqcn-builtins"
-        override-deps: |
-          ansible==2.14.2
+#        override-deps: |
+#          ansible==2.14.2
         targets: |
           local-playbooks/build-a-bastion.yml
           local-playbooks/configure-apache.yml
