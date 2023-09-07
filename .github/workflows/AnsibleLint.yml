@@ -6,7 +6,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Lint Ansible Playbooks
-      uses: ansible/ansible-lint
+      uses: ansible/ansible-lint@main
       with:
         args: "-x 106 -x yaml -x fqcn-builtins"
 #        override-deps: |
