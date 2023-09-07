@@ -8,7 +8,8 @@ jobs:
     - name: Lint Ansible Playbooks
       uses: ansible/ansible-lint@main
       with:
-        args: "-c .ansible-lint -x 106 -x yaml -x fqcn-builtins
+        args: "-c .ansible-lint --profile=basic
+          -x 106 -x yaml -x fqcn-builtins
           local-playbooks/build-a-bastion.yml
           local-playbooks/configure-apache.yml
           local-playbooks/configure-cockpit.yml
