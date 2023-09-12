@@ -4,13 +4,13 @@
 # The web resources are expected to stash this value in a file so that the
 # incron job can pick it up
 #
-- name: create destination directory if needed
+- name: Create destination directory if needed
   file:
     path: "{{ bootfile_dest }}/{{ rhcos_ver }}"
     state: directory
     mode: 0755
 
-- name: download images
+- name: Download images
   get_url:
     url: "{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/{{ item }}"
     dest: "{{ bootfile_dest }}/{{ rhcos_ver }}/{{ item }}"
@@ -21,7 +21,7 @@
   with_items: '{{ rhcos_download_files }}'
   environment: "{{ local_proxy_env | default(omit) }}"
 
-- name: define alternatives for the version downloaded # noqa no-changed-when
+- name: Define alternatives for the version downloaded # noqa no-changed-when
   command: "alternatives --install /var/www/html/bootfiles/rhcos-live-kernel-s390x rhcos-kernel \
                                    /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-kernel-s390x {{ rhcos_ver.split('.')[1] }} \
                          --slave /var/www/html/bootfiles/rhcos-live-rootfs.s390x.img rhcos-rootfs \
@@ -29,5 +29,5 @@
                          --slave /var/www/html/bootfiles/rhcos-live-initramfs.s390x.img rhcos-initramfs \
                                  /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-initramfs.s390x.img "
 
-- name: set alternative to auto mode # noqa no-changed-when
+- name: Set alternative to auto mode # noqa no-changed-when
   command: "alternatives --auto rhcos-kernel "

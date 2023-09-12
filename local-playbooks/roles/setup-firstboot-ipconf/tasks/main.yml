@@ -31,7 +31,7 @@
       #!/bin/sh
       cmsfs-fuse -a $@
 
-- name: add the fstab entry for LNXMAINT.200
+- name: Add the fstab entry for LNXMAINT.200
   mount:
     state: present
     src: /dev/disk/by-path/ccw-0.0.0191
@@ -41,7 +41,7 @@
     passno: "0"
     dump: "0"
 
-- name: make sure ELAN can access the config disk # noqa no-changed-when
+- name: Make sure ELAN can access the config disk # noqa no-changed-when
   shell:
     cmd: |
       ldapmodify -Zx -h {{ zvm_internal_ip_address }} -p 389 -D racfid={{ admin_uid }},profiletype=user,o=ibmzvm -w {{ admin_pwd | quote }} <<EOFLDIF
@@ -51,13 +51,13 @@
       racfaccesscontrol: ID(LXOCPB01) ACCESS(CONTROL) COUNT(0)
       EOFLDIF
 
-- name: add the dasd.conf line for LNXMAINT.200
+- name: Add the dasd.conf line for LNXMAINT.200
   lineinfile:
     dest: /etc/dasd.conf
     insertbefore: EOF
     line: 0.0.0191
 
-- name: install tools (dependencies of ipconf.sh and LDAPSRVcert)
+- name: Install tools (dependencies of ipconf.sh and LDAPSRVcert)
   yum:
     name: "{{ item }}"
     state: present
@@ -65,7 +65,7 @@
   - ipcalc
   - x3270-text
 
-- name: install the checksmapi and ipconf scripts to local executable path
+- name: Install the checksmapi and ipconf scripts to local executable path
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -76,7 +76,7 @@
   - { src: "checksmapi.sh.j2", dest: "/usr/local/sbin/checksmapi.sh" }
   - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
 
-- name: create systemd services for scripts
+- name: Create systemd services for scripts
   template:
     src: "systemd.service.j2"
     dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
@@ -85,7 +85,7 @@
   - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
   - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "smapi.service" }
 
-- name: ensure old systemd service files don't exist
+- name: Ensure old systemd service files don't exist
   file:
     path: "/etc/systemd/system/{{ item.servicename }}.service"
     state: absent
@@ -93,7 +93,7 @@
   - { servicename: "zvm-ipconf" }
   - { servicename: "expandfs" }
 
-- name: enable the systemd services but do not start them now
+- name: Enable the systemd services but do not start them now
   systemd:
     name: "{{ item.servicename }}"
     daemon_reload: true
@@ -103,7 +103,7 @@
   - { servicename: "zvm-ipconf" }
   - { servicename: "expandfs" }
 
-- name: copy files for the playbook
+- name: Copy files for the playbook
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"

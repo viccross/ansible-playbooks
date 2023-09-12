@@ -1,8 +1,8 @@
 ---
-- name: reconfigure BIND DNS for the new domain name
+- name: Reconfigure BIND DNS for the new domain name
   hosts: s390x_bastion_workstation
   tasks:
-  - name: recreate DNS Forward zone
+  - name: Recreate DNS Forward zone
     template:
       src: named/cluster_domain_name.zone.j2
       dest: /var/named/{% raw %}{{ cluster_domain_name }}{% endraw %}.zone
@@ -10,7 +10,7 @@
       group: named
       mode: 0640
 
-  - name: recreate DNS Forward zone (internal)
+  - name: Recreate DNS Forward zone (internal)
     template:
       src: named/ibmpoc_internal.zone.j2
       dest: /var/named/ibmpoc_internal.zone
@@ -18,7 +18,7 @@
       group: named
       mode: 0640
 
-  - name: recreate DNS Reverse zone
+  - name: Recreate DNS Reverse zone
     template:
       src: named/subnet.in-addr.arpa.zone.j2
       dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
@@ -26,7 +26,7 @@
       group: named
       mode: 0640
 
-  - name: create new finnad forward zone
+  - name: Create new finnad forward zone
     template:
       src: named/zvmesi.zone.j2
       dest: /var/named/{% raw %}{{ esigroup }}{% endraw %}.zvmesi.zone
@@ -34,29 +34,29 @@
       group: named
       mode: 0640
 
-  - name: recreate /etc/named.conf
+  - name: Recreate /etc/named.conf
     template:
       src: named/named.conf.j2
       dest: /etc/named.conf
       group: named
       mode: 0640
 
-  - name: recreate resolv.conf
+  - name: Recreate resolv.conf
     lineinfile:
       line: search {% raw %}{{ cluster_domain_name }}{% endraw %}{{''}}
       dest: /etc/resolv.conf
       regexp: "^search .*"
 
-  - name: patch HAProxy service script
+  - name: Patch HAProxy service script
     lineinfile:
       dest: /usr/lib/systemd/system/haproxy.service
       regex: ^ExecStartPre=
       line: ExecStartPre=/bin/bash -c 'until host api.{% raw %}{{ cluster_domain_name }}{% endraw %}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
 
-  - name: signal systemd to reload
+  - name: Signal systemd to reload
     systemd: daemon_reload=yes
 
-  - name: recreate haproxy.cfg
+  - name: Recreate haproxy.cfg
     template:
       src: haproxy/haproxy.cfg.j2
       dest: /etc/haproxy/haproxy.cfg

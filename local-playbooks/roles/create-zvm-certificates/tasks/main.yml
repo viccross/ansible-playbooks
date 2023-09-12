@@ -1,9 +1,9 @@
 ---
-- name: generate z/VM private key
+- name: Generate z/VM private key
   openssl_privatekey:
     path: "{{ ca_key_path }}/zVM.pem"
 
-- name: generate z/VM CSR
+- name: Generate z/VM CSR
   openssl_csr:
     path: "{{ ca_csr_path }}/zVM.csr"
     privatekey_path: "{{ ca_key_path }}/zVM.pem"
@@ -18,7 +18,7 @@
     extendedKeyUsage: ["clientAuth","serverAuth"]
     subject_alt_name: "DNS:zVM.ibmpoc.internal,IP:{{ zvm_internal_ip_address }}"
 
-- name: generate Certificate
+- name: Generate Certificate
   openssl_certificate:
     path: "{{ ca_cert_path }}/zVM.cert"
     csr_path: "{{ ca_csr_path }}/zVM.csr"
@@ -42,11 +42,11 @@
     group: root
     mode: 0644
 
-- name: generate z/VM LDAP private key
+- name: Generate z/VM LDAP private key
   openssl_privatekey:
     path: "{{ ca_key_path }}/zVMLDAP.pem"
 
-- name: generate z/VM LDAP CSR
+- name: Generate z/VM LDAP CSR
   openssl_csr:
     path: "{{ ca_csr_path }}/zVMLDAP.csr"
     privatekey_path: "{{ ca_key_path }}/zVMLDAP.pem"
@@ -60,7 +60,7 @@
       - keyEncipherment
     subject_alt_name: "DNS:LDAPSRV.ibmpoc.internal,IP:{{ zvm_internal_ip_address }}"
 
-- name: generate Certificate
+- name: Generate Certificate
   openssl_certificate:
     path: "{{ ca_cert_path }}/zVMLDAP.cert"
     csr_path: "{{ ca_csr_path }}/zVMLDAP.csr"
