@@ -110,7 +110,7 @@
     register: bastion_pubkey
   - name: drop public key into authorized_keys
     lineinfile:
-      line: "{{ bastion_pubkey['content']|b64decode }}"
+      line: "{{ bastion_pubkey['content'] | b64decode }}"
       dest: ~/.ssh/authorized_keys
       state: present
 
