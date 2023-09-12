@@ -1,14 +1,14 @@
 ---
 # handlers file for configure-squid
-- name: restart squid
+- name: Restart squid
   service:
     name: squid.service
     state: restarted
-  listen: "restart squid"
+  listen: "Restart squid"
 
 - name: Restart firewalld.service
   service:
     name: firewalld.service
     state: restarted
-  listen: "restart firewalld"
+  listen: "Restart firewalld"
 

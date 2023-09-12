@@ -4,11 +4,11 @@
   service:
     name: firewalld.service
     state: restarted
-  listen: "restart firewalld"
+  listen: "Restart firewalld"
 
-- name: restart nfs-server
+- name: Restart nfs-server
   service:
     name: nfs-server.service
     state: restarted
     enabled: yes
-  listen: "restart nfs"
+  listen: "Restart nfs"

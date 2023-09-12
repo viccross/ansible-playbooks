@@ -1,5 +1,5 @@
 ---
 # handlers file for create-local-ca
-- name: update ca trust
+- name: Update ca trust
   command:
     cmd: update-ca-trust

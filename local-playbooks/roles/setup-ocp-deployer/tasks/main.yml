@@ -1,12 +1,12 @@
 ---
-- name: install EPEL repository
+- name: Install EPEL repository
   block:
-  - name: install EPEL RPM
+  - name: Install EPEL RPM
     yum:
       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
       state: present
     environment: "{{ local_proxy_env | default(omit) }}"
-  - name: patch YUM/DNF for the proxy, if set
+  - name: Patch YUM/DNF for the proxy, if set
     ini_file:
       path: /etc/dnf/dnf.conf
       section: main
@@ -16,7 +16,7 @@
       mode: 0644
     when: local_proxy_env is defined
 
-- name: add the internal YUM repo
+- name: Add the internal YUM repo
   yum_repository:
     name: zvmesi
     description: z/VM ESI Support Code
@@ -24,7 +24,7 @@
     gpgcheck: no
     sslverify: no
 
-- name: install Ansible, incron, and nfs-utils
+- name: Install Ansible, incron, and nfs-utils
   yum:
     name:
       - ansible-core
@@ -40,7 +40,7 @@
       - finna
     state: present
 
-- name: open firewall port for finnad
+- name: Open firewall port for finnad
   firewalld:
     port: "6000/udp"
     state: enabled
@@ -48,7 +48,7 @@
     immediate: yes
     zone: public
 
-- name: add ntp to firewall
+- name: Add ntp to firewall
   firewalld:
     permanent: true
     immediate: true
@@ -59,21 +59,21 @@
     - internal
     - public
 
-- name: patch chrony.conf to allow connections
+- name: Patch chrony.conf to allow connections
   lineinfile:
     path: /etc/chrony.conf
     regexp: '^#?allow '
     line: 'allow {{ subnet_cidr }}'
-  notify: restart chronyd
+  notify: Restart chronyd
 
-- name: fetch the filetranspile tool
+- name: Fetch the filetranspile tool
   get_url:
     url: https://raw.githubusercontent.com/ashcrow/filetranspiler/master/filetranspile
     dest: /usr/local/bin/filetranspile
     mode: 0755
   environment: "{{ local_proxy_env | default(omit) }}"
 
-- name: ensure the Ansible playbook directories exist on the host
+- name: Ensure the Ansible playbook directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -86,41 +86,41 @@
     - "/opt/ansible/inventory/group_vars"
     - "/opt/ansible/inventory/group_vars/all"
 
-- name: download and set permissions for openshift-install and oc
+- name: Download and set permissions for openshift-install and oc
   include_tasks: download-clients.yml
   loop:
     - "stable-4.8"
 
-- name: create openshift workdir
+- name: Create openshift workdir
   file:
     path: "{{ workdir }}"
     state: "directory"
     mode: 0755
 
-- name: set up SSH for Ansible
+- name: Set up SSH for Ansible
   block:
-  - name: create ssh keypair
+  - name: Create ssh keypair
     command: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
     args:
       creates: ~/.ssh/id_rsa
-  - name: slurp ssh pubkey
+  - name: Slurp ssh pubkey
     tags: config
     slurp:
       src: ~/.ssh/id_rsa.pub
     register: bastion_pubkey
-  - name: drop public key into authorized_keys
+  - name: Drop public key into authorized_keys
     lineinfile:
-      line: "{{ bastion_pubkey['content']|b64decode }}"
+      line: "{{ bastion_pubkey['content'] | b64decode }}"
       dest: ~/.ssh/authorized_keys
       state: present
 
-- name: mkdir ~/.kube
+- name: Make ~/.kube directory
   file:
     path: ~/.kube
     state: directory
     mode: 0750
 
-- name: copy files for the playbook
+- name: Copy files for the playbook
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -144,14 +144,14 @@
   - { src: "create-certificate.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/create-certificate.yml" }
   - { src: "configure-cluster.yml.j2", dest: "/opt/ansible/roles/create-cluster/tasks/configure-cluster.yml" }
 
-- name: set up configuring-the-DASD script
+- name: Set up configuring-the-DASD script
   block:
-  - name: copy the DASD script
+  - name: Copy the DASD script
     template:
       src: ocp-dasd.sh.j2
       dest: /usr/local/bin/ocp-dasd.sh
       mode: 0750
-  - name: copy the DASD script systemd service file
+  - name: Copy the DASD script systemd service file
     template:
       src: ocp-dasd.service.j2
       dest: /usr/local/lib/systemd/system/ocp-dasd.service
@@ -162,14 +162,14 @@
       state: stopped
       enabled: no
 
-- name: set up approve-the-CSRs script
+- name: Set up approve-the-CSRs script
   block:
-  - name: copy the CSRs script
+  - name: Copy the CSRs script
     template:
       src: ocp-approve-csrs.sh.j2
       dest: /usr/local/bin/ocp-approve-csrs.sh
       mode: 0750
-  - name: copy the CSRs script systemd service file
+  - name: Copy the CSRs script systemd service file
     template:
       src: ocp-approve-csrs.service.j2
       dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
@@ -180,14 +180,14 @@
       state: stopped
       enabled: no
 
-- name: set up ocp-retry script
+- name: Set up ocp-retry script
   block:
-  - name: copy the retry script
+  - name: Copy the retry script
     template:
       src: ocp-retry.sh.j2
       dest: /usr/local/bin/ocp-retry.sh
       mode: 0750
-  - name: copy the ocp-retry script systemd service file
+  - name: Copy the ocp-retry script systemd service file
     template:
       src: ocp-retry.service.j2
       dest: /usr/local/lib/systemd/system/ocp-retry.service
@@ -198,19 +198,19 @@
       state: stopped
       enabled: no
 
-- name: set up ocp-cluster-guests script and start/stop services
+- name: Set up ocp-cluster-guests script and start/stop services
   block:
-  - name: copy the action script
+  - name: Copy the action script
     template:
       src: ocp-cluster-guests.sh.j2
       dest: /usr/local/bin/ocp-cluster-guests.sh
       mode: 0750
-  - name: copy the ocp-guests-start systemd service file
+  - name: Copy the ocp-guests-start systemd service file
     template:
       src: ocp-guests-start.service.j2
       dest: /usr/local/lib/systemd/system/ocp-guests-start.service
       mode: 0644
-  - name: copy the ocp-guests-stop systemd service file
+  - name: Copy the ocp-guests-stop systemd service file
     template:
       src: ocp-guests-stop.service.j2
       dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
@@ -226,47 +226,47 @@
       state: stopped
       enabled: no
 
-- name: set up the kick-off-the-build incron stuff
+- name: Set up the kick-off-the-build incron stuff
   block:
-  - name: copy the kicker script
+  - name: Copy the kicker script
     template:
       src: ocp-ansible.sh.j2
       dest: /usr/local/bin/ocp-ansible.sh
       mode: 0750
-  - name: copy the incrontab file
+  - name: Copy the incrontab file
     template:
       src: incrontab-ocp-build.j2
       dest: /etc/incron.d/ocp-build
       mode: 0644
-    notify: "enable incrond"
+    notify: "Enable incrond"
 
-- name: set up the OCP version setup incron stuff
+- name: Set up the OCP version setup incron stuff
   block:
-  - name: copy the kicker script
+  - name: Copy the kicker script
     template:
       src: ocp-version.sh.j2
       dest: /usr/local/bin/ocp-version.sh
       mode: 0750
-  - name: copy the incrontab file
+  - name: Copy the incrontab file
     template:
       src: incrontab-ocp-version.j2
       dest: /etc/incron.d/ocp-version
       mode: 0644
-    notify: "enable incrond"
+    notify: "Enable incrond"
 
-- name: create the group_vars
+- name: Create the group_vars
   template:
     src: group-vars.yml.j2
     dest: /opt/ansible/inventory/group_vars/all/default.yml
     mode: 0644
 
-- name: create the inventory host file
+- name: Create the inventory host file
   template:
     src: inventory.j2
     dest: /opt/ansible/inventory/inventory
     mode: 0644
 
-- name: display a message
+- name: Display a message
   debug:
     msg:
       - '        The new OCP Bastion is now completed!              '

@@ -1,13 +1,13 @@
 ---
 # handlers file for configure-haproxy
-- name: restart haproxy
+- name: Restart haproxy
   service:
     name: haproxy.service
     state: restarted
-  listen: "restart haproxy"
+  listen: "Restart haproxy"
 
 - name: Restart firewalld.service
   service:
     name: firewalld.service
     state: restarted
-  listen: "restart firewalld"
+  listen: "Restart firewalld"

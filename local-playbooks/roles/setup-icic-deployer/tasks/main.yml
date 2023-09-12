@@ -1,5 +1,5 @@
 ---
-- name: ensure directories exist on the host
+- name: Ensure directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -10,7 +10,7 @@
     - "/mnt/sysimage"
     - "/usr/local/lib/systemd/system"
 
-- name: copy files for the playbooks and scripts
+- name: Copy files for the playbooks and scripts
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -27,33 +27,33 @@
   - { src: "setup-icic-ldap.yml.j2", dest: "/opt/ansible/setup-icic-ldap.yml" }
   - { src: "setup-icic-management.yml.j2", dest: "/opt/ansible/setup-icic-management.yml" }
 
-- name: set up the build script and incron stuff
+- name: Set up the build script and incron stuff
   block:
-  - name: copy the script
+  - name: Copy the script
     template:
       src: icic-setup.sh.j2
       dest: /usr/local/bin/icic-setup.sh
       mode: 0750
-  - name: copy the incrontab file
+  - name: Copy the incrontab file
     template:
       src: incrontab-icic-build.j2
       dest: /etc/incron.d/icic-build
       mode: 0644
-    notify: "enable incrond"
+    notify: "Enable incrond"
 
-- name: set up icic-guests script and start/stop services
+- name: Set up icic-guests script and start/stop services
   block:
-  - name: copy the action script
+  - name: Copy the action script
     template:
       src: icic-guests.sh.j2
       dest: /usr/local/bin/icic-guests.sh
       mode: 0750
-  - name: copy the icic-guests-start systemd service file
+  - name: Copy the icic-guests-start systemd service file
     template:
       src: icic-guests-start.service.j2
       dest: /usr/local/lib/systemd/system/icic-guests-start.service
       mode: 0644
-  - name: copy the icic-guests-stop systemd service file
+  - name: Copy the icic-guests-stop systemd service file
     template:
       src: icic-guests-stop.service.j2
       dest: /usr/local/lib/systemd/system/icic-guests-stop.service
@@ -69,7 +69,7 @@
       state: stopped
       enabled: no
 
-- name: update the inventory host file
+- name: Update the inventory host file
   blockinfile:
     path: /opt/ansible/inventory/inventory-CICmgt
     create: yes
@@ -80,7 +80,7 @@
       [s390x_ICIC_management_node]
       172.24.26.11 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
-- name: display a message
+- name: Display a message
   debug:
     msg:
       - '        The ICIC build deployer is now completed!          '

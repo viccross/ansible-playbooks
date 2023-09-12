@@ -1,19 +1,19 @@
 ---
 # tasks file for configure-dns
 
-- name: install bind-chroot for dns
+- name: Install bind-chroot for dns
   dnf:
     name: bind-chroot
     state: present
 
-- name: create /var/named directory
+- name: Create /var/named directory
   file:
     path: /var/named
     state: directory
     mode: 01770
     group: named
 
-- name: create DNS Forward zone
+- name: Create DNS Forward zone
   template:
     src: var/named/cluster_domain_name.zone.j2
     dest: /var/named/{{ cluster_domain_name }}.zone
@@ -21,9 +21,9 @@
     group: named
     mode: 0640
   notify:
-  - restart dns
+  - Restart dns
 
-- name: create DNS Forward zone (internal)
+- name: Create DNS Forward zone (internal)
   template:
     src: var/named/ibmpoc_internal.zone.j2
     dest: /var/named/ibmpoc_internal.zone
@@ -31,16 +31,16 @@
     group: named
     mode: 0640
   notify:
-  - restart dns
+  - Restart dns
 
-- name: unmanage resolve.conf in NetworkManager
+- name: Unmanage resolve.conf in NetworkManager
   lineinfile:
     line: dns=none
     dest: /etc/NetworkManager/NetworkManager.conf
     insertafter: "\\[main\\].*"
     regexp: "^dns=.*"
 
-- name: use local dns in resolv.conf
+- name: Use local dns in resolv.conf
   blockinfile:
     dest: /etc/resolv.conf
     insertbefore: BOF
@@ -48,7 +48,7 @@
       search {{ cluster_domain_name }}
       nameserver {{ bastion_private_ip_address }}
 
-- name: create DNS Reverse zone
+- name: Create DNS Reverse zone
   template:
     src: var/named/subnet.in-addr.arpa.zone.j2
     dest: /var/named/{{ subnet_in_addr_name }}.in-addr.arpa.zone
@@ -56,31 +56,31 @@
     group: named
     mode: 0640
   notify:
-  - restart dns
+  - Restart dns
 
-- name: create /etc/named.conf
+- name: Create /etc/named.conf
   template:
     src: etc/named.conf.j2
     dest: /etc/named.conf
     group: named
     mode: 0640
   notify:
-  - restart dns
+  - Restart dns
 
-- name: create /etc/named.conf.source
+- name: Create /etc/named.conf.source
   template:
     src: etc/named.conf.j2
     dest: /etc/named.conf.source
     group: named
     mode: 0640
   vars:
-  - dns_nameserver: "XXX.XXX.XXX.XXX"
+    dns_nameserver: "XXX.XXX.XXX.XXX"
 
-- name: set up rndc for dynamic DNS # noqa 301
+- name: Set up rndc for dynamic DNS # noqa no-changed-when
   command:
     cmd: rndc-confgen -a
 
-- name: add dns to firewall
+- name: Add dns to firewall
   firewalld:
     permanent: true
     service: dns
@@ -90,7 +90,7 @@
     - internal
     - public
   notify:
-  - restart firewalld
+  - Restart firewalld
 
 - name: Restart named-chroot.service
   service:

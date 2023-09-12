@@ -4,14 +4,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+#    - uses: actions/checkout@v2
     - name: Lint Ansible Playbooks
-      uses: ansible-community/ansible-lint-action@v4-eol
+      uses: ansible/ansible-lint@main
       with:
-        args: "-x 106 -x yaml -x fqcn-builtins"
-        override-deps: |
-          ansible==2.9.17
-        targets: |
+        args: "--profile basic 
+          -x 106 -x yaml -x fqcn-builtins
           local-playbooks/build-a-bastion.yml
           local-playbooks/configure-apache.yml
           local-playbooks/configure-cockpit.yml
@@ -27,4 +25,4 @@ jobs:
           local-playbooks/setup-podman-and-registry.yml
           local-playbooks/setup-icic-deployer.yml
           local-playbooks/setup-ocp-deployer.yml
-          local-playbooks/setup-web-resources.yml
+          local-playbooks/setup-web-resources.yml"

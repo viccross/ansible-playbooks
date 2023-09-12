@@ -1,11 +1,11 @@
 ---
-- name: create SSL for Stats page
+- name: Create SSL for Stats page
   block:
-  - name: generate haproxy private key
+  - name: Generate haproxy private key
     openssl_privatekey:
       path: /etc/pki/tls/private/haproxy.pem
 
-  - name: generate httpd CSR
+  - name: Generate httpd CSR
     openssl_csr:
       path: /etc/pki/tls/misc/haproxy.csr
       privatekey_path: /etc/pki/tls/private/haproxy.pem
@@ -17,7 +17,7 @@
       organizational_unit_name: "Red Hat Openshift PoC"
       country_name: "{{ cert_country }}"
 
-  - name: generate Certificate
+  - name: Generate Certificate
     openssl_certificate:
       path: /etc/pki/tls/certs/haproxy.cert
       csr_path: /etc/pki/tls/misc/haproxy.csr
@@ -27,19 +27,19 @@
       provider: ownca
       force: yes
 
-  - name: create combined PEM file for HAProxy
+  - name: Create combined PEM file for HAProxy
     shell:
       cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
       chdir: /etc/pki/tls/
 
-  - name: set permissions on certificate
+  - name: Set permissions on certificate
     file:
       path: /etc/haproxy/haproxy-combined.pem
       owner: root
       group: haproxy
       mode: 0640
 
-- name: add the HA-Proxy configuration for the statistics interface
+- name: Add the HA-Proxy configuration for the statistics interface
   blockinfile:
     dest: /etc/haproxy/haproxy.cfg
     block: |
@@ -51,7 +51,7 @@
         stats admin if LOCALHOST
   notify: "Restart haproxy.service"
 
-- name: allow traffic at 8404 for haproxy
+- name: Allow traffic at 8404 for haproxy
   tags: firewall
   firewalld:
     port: 8404/tcp
