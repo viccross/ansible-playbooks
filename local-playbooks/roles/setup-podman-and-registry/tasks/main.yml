@@ -75,7 +75,7 @@
       REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.cert
       REGISTRY_HTTP_TLS_KEY=/certs/registry.key
 
-#- name: create the registry htpasswd file # noqa deprecated-command-syntax
+#- name: create the registry htpasswd file # noqa no-free-form
 #  command:
 #    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
 - name: create the registry htpasswd file

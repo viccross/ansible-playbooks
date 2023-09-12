@@ -1,5 +1,5 @@
 ---
-- name: install php and requisites
+- name: Install php and requisites
   yum:
     name:
       - php
@@ -7,7 +7,7 @@
       - php-mbstring
     state: present
 
-- name: create configuration for our external non-SSL VirtualHost
+- name: Create configuration for our external non-SSL VirtualHost
   blockinfile:
     dest: /etc/httpd/conf.d/nonssl.conf
     create: yes
@@ -31,7 +31,7 @@
         </Directory>
       </VirtualHost>
 
-- name: add the Apache configuration for the tools
+- name: Add the Apache configuration for the tools
   blockinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
@@ -69,9 +69,9 @@
       # Reverse-proxy configuration for cross-system stats
       ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
 
-- name: download and unwind LDAP tools
+- name: Download and unwind LDAP tools
   block:
-  - name: download and unzip Smarty PHP template engine
+  - name: Download and unzip Smarty PHP template engine
     unarchive:
       src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
       dest: "/usr/local/bin/"
@@ -79,39 +79,39 @@
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
-  - name: download and unzip self-service-password
+  - name: Download and unzip self-service-password
     unarchive:
       src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
       dest: "{{ webroot }}/"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
-  - name: download and unzip service-desk
+  - name: Download and unzip service-desk
     unarchive:
       src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
       dest: "{{ webroot }}/"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
 
-  - name: make w3ds directory
+  - name: Make w3ds directory
     file:
       path: "{{ webroot }}/w3ds"
       state: directory
       mode: 0755
 
-  - name: download and unzip w3DS
+  - name: Download and unzip w3DS
     unarchive:
       src: "/opt/resources/w3ds-6.2.4.zip"
       dest: "{{ webroot }}/w3ds"
       creates: "{{ webroot }}/w3ds/w3ds.js"
 
-  - name: download and unzip site structure
+  - name: Download and unzip site structure
     unarchive:
       src: "/opt/resources/{{ elan_web_pkgname }}.zip"
       dest: "{{ webroot }}/"
       creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
 
-  - name: move downloaded site directory # noqa 302
+  - name: Move downloaded site directory # noqa no-free-form
     shell:
       cmd: |
         rm -rf {{ webroot }}/{scripts,justgage} \
@@ -140,25 +140,25 @@
       - starticic.html
       - startocp.html
 
-  - name: symlink to the CA certificates
+  - name: Symlink to the CA certificates
     block:
-    - name: symlink to the bundle
+    - name: Symlink to the bundle
       file:
         src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
         dest: "{{ webroot }}/ESICABundle.pem"
         state: link
-    - name: symlink to the Root CA cert
+    - name: Symlink to the Root CA cert
       file:
         src: "/etc/pki/tls/certs/oqsRootCA.cert"
         dest: "{{ webroot }}/ESIRootCA.pem"
         state: link
-    - name: symlink to the Intermediate CA cert
+    - name: Symlink to the Intermediate CA cert
       file:
         src: "/etc/pki/tls/certs/oqsCA.cert"
         dest: "{{ webroot }}/ESICA.pem"
         state: link
 
-  - name: install the basic stats script to local executable path
+  - name: Install the basic stats script to local executable path
     shell:
       cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
       removes: "{{ webroot }}/scripts"
@@ -176,13 +176,13 @@
       job: "/usr/local/sbin/metrics.pl"
       cron_file: metrics
 
-  - name: set PATH variable for metrics crontab
+  - name: Set PATH variable for metrics crontab
     cronvar:
       cron_file: metrics
       name: PATH
       value: /usr/sbin:/usr/bin
 
-  - name: set MAILTO variable for metrics crontab
+  - name: Set MAILTO variable for metrics crontab
     cronvar:
       cron_file: metrics
       name: MAILTO
@@ -217,19 +217,19 @@
 #      regexp: "SMARTY"
 #      line: define("SMARTY", "/usr/share/php/Smarty/Smarty.class.php");
 
-  - name: create config.inc.local.php for self-service-password
+  - name: Create config.inc.local.php for self-service-password
     template:
       src: self-service-password/config.inc.local.php.j2
       dest: "{{ webroot }}/self-service-password-racf-master/conf/config.inc.local.php"
       mode: 0644
 
-  - name: create config.inc.local.php for service-desk-racf
+  - name: Create config.inc.local.php for service-desk-racf
     template:
       src: service-desk-racf/config.inc.local.php.j2
       dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
       mode: 0644
 
-- name: prime the ocp-version file with 'default' version
+- name: Prime the ocp-version file with 'default' version
   copy:
     content: "4.8"
     dest: "{{ webroot }}/ocp-version"
@@ -238,19 +238,19 @@
     setype: httpd_sys_rw_content_t
     mode: 0644
 
-- name: permit SELinux access to network from Apache (for reverse proxy)
+- name: Permit SELinux access to network from Apache (for reverse proxy)
   seboolean:
     name: httpd_can_network_connect
     state: yes
     persistent: yes
 
-- name: permit SELinux access to LDAP from Apache
+- name: Permit SELinux access to LDAP from Apache
   seboolean:
     name: httpd_can_connect_ldap
     state: yes
     persistent: yes
 
-- name: restart httpd
+- name: Restart httpd
   service:
     name: httpd.service
     state: restarted

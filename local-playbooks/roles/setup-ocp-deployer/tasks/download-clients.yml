@@ -4,35 +4,35 @@
 # The web resources are expected to stash this value in a file so that the
 # incron job can pick it up
 #
-- name: create destination directory if needed
+- name: Create destination directory if needed
   file:
     path: "/usr/local/bin/{{ item }}"
     state: directory
     mode: 0755
 
-- name: download release.txt
+- name: Download release.txt
   get_url:
     url: "{{ openshift_clients_url }}/{{ item }}/release.txt"
     dest: "/usr/local/bin/{{ item }}/"
     mode: 0644
   environment: "{{ local_proxy_env | default(omit) }}"
 
-- name: download and set permissions for openshift-install
+- name: Download and set permissions for openshift-install
   block:
-  - name: download and unzip openshift-install
+  - name: Download and unzip openshift-install
     unarchive:
       src: "{{ openshift_clients_url }}/{{ item }}/openshift-install-linux.tar.gz"
       dest: "/usr/local/bin/{{ item }}/"
       remote_src: yes
     environment: "{{ local_proxy_env | default(omit) }}"
-  - name: set permissions for ocp installer
+  - name: Set permissions for ocp installer
     file:
       path: "/usr/local/bin/{{ item }}/openshift-install"
       mode: 0755
 
-- name: download and set permissions for openshift-client
+- name: Download and set permissions for openshift-client
   block:
-  - name: download and unzip openshift-client
+  - name: Download and unzip openshift-client
     unarchive:
       src: "{{ openshift_clients_url }}/{{ item }}/openshift-client-linux.tar.gz"
       dest: "/usr/local/bin/{{ item }}/"
@@ -45,9 +45,9 @@
 
 # using command because the community 'alternatives' module does not
 # support slave definitions
-- name: define alternatives for the version downloaded # noqa 301
+- name: Define alternatives for the version downloaded # noqa no-changed-when
   command: "alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
             --slave /usr/local/bin/oc oc /usr/local/bin/{{ item }}/oc --slave /usr/local/bin/kubectl kubectl /usr/local/bin/{{ item }}/kubectl"
 
-- name: set alternative to auto mode # noqa 301
+- name: Set alternative to auto mode # noqa no-changed-when
   command: "alternatives --auto openshift-install "

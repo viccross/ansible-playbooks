@@ -1,7 +1,7 @@
 ---
 - name: Configure and enable Cockpit
   block:
-  - name: generate cockpit private key
+  - name: Generate cockpit private key
     openssl_privatekey:
       path: /etc/pki/tls/private/cockpit.pem
 
