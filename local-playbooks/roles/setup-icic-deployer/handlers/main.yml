@@ -5,4 +5,4 @@
     name: incrond
     state: stopped
     enabled: yes
-  listen: "enable incrond"
+  listen: "Enable incrond"

@@ -76,7 +76,7 @@
   vars:
     dns_nameserver: "XXX.XXX.XXX.XXX"
 
-- name: Set up rndc for dynamic DNS # noqa 301
+- name: Set up rndc for dynamic DNS # noqa no-changed-when
   command:
     cmd: rndc-confgen -a
 

@@ -1,5 +1,5 @@
 ---
-- name: ensure all required directories exist on the host
+- name: Ensure all required directories exist on the host
   file:
     path: "{{ item }}"
     state: directory
@@ -17,12 +17,12 @@
     - 'ret.rc is defined'
     - '"Read-only file system" not in ret.module_stdout'
 
-- name: install required Ansible collections
+- name: Install required Ansible collections
   community.general.ansible_galaxy_install:
     type: collection
     name: community.crypto
 
-- name: add the cmsfs-fuse-a script
+- name: Add the cmsfs-fuse-a script
   copy:
     dest: /usr/local/bin/cmsfs-fuse-a
     owner: root
