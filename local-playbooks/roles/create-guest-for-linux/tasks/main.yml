@@ -1,6 +1,6 @@
 ---
 # tasks file for create-guest-for-linux
-- name: create a new directory entry for a Linux guest # noqa 301 command-instead-of-shell
+- name: create a new directory entry for a Linux guest # noqa no-changed-when command-instead-of-shell
   shell: /usr/local/bin/smcli icd -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     stdin: "{{ directory_entry }}"
@@ -18,13 +18,13 @@
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
     mode: 0644
 
-- name: write the parmfile to the reader # noqa 301 command-instead-of-shell 
+- name: write the parmfile to the reader # noqa no-changed-when command-instead-of-shell 
   shell: curl -Q "SITE FIX 132" -T {{ znetboot_cfg_path }}/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user | quote }}:{{ smapi_password | quote }}@{{ smapi_host | quote }}/MAINT.200/  # noqa 204
   args:
     warn: false
   when: use_cmsfs_for_znetboot_cfg is false
 
-- name: IPL a Linux guest # noqa 301 command-instead-of-shell
+- name: IPL a Linux guest # noqa no-changed-when command-instead-of-shell
   shell: /usr/local/bin/smcli ia -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     executable: /bin/bash
@@ -42,7 +42,7 @@
     search_regex: OpenSSH
     delay: 20
 
-- name: set the real IPL device for a Linux guest # noqa 301 305
+- name: set the real IPL device for a Linux guest # noqa no-changed-when command-instead-of-shell
   shell: /usr/local/bin/smcli iisd -T {{ guest_name | quote }} -n 200 -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     executable: /bin/bash

@@ -75,7 +75,7 @@
       REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.cert
       REGISTRY_HTTP_TLS_KEY=/certs/registry.key
 
-#- name: create the registry htpasswd file # noqa 302
+#- name: create the registry htpasswd file # noqa deprecated-command-syntax
 #  command:
 #    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
 - name: create the registry htpasswd file
@@ -94,7 +94,7 @@
   podman_image:
     name: docker.io/library/registry:2.8
 
-- name: create systemd service for interface reconfiguration
+- name: create systemd service for interface reconfiguration # noqa jinja[spacing]
   blockinfile:
     dest: /usr/local/lib/systemd/system/podman-registry.service
     mode: 0644

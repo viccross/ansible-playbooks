@@ -7,7 +7,7 @@
       - python3-cryptography
     state: present
 
-- name: generate httpd private key
+- name: Generate httpd private key
   openssl_privatekey:
     path: /etc/pki/tls/private/httpd.pem
 
