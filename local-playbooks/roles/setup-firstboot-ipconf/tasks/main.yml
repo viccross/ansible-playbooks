@@ -18,7 +18,7 @@
     - '"Read-only file system" not in ret.module_stdout'
 
 - name: install required Ansible collections
-  ansible_galaxy_install:
+  community.general.ansible_galaxy_install:
     type: collection
     name: community.crypto
 
