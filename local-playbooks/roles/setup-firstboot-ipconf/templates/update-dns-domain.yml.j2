@@ -41,11 +41,12 @@
       group: named
       mode: 0640
 
-  - name: Recreate resolv.conf
+  - name: Update resolv.conf
     lineinfile:
-      line: search {% raw %}{{ cluster_domain_name }}{% endraw %}{{''}}
+      line: nameserver {% raw %}{{ bastion_private_ip_address }}{% endraw %}{{''}}
       dest: /etc/resolv.conf
-      regexp: "^search .*"
+      insertbefore: "^nameserver .*"
+      firstmatch: true
 
   - name: Patch HAProxy service script
     lineinfile:
