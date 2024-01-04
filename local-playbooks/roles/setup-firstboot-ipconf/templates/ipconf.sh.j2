@@ -72,6 +72,26 @@ function changeIP {
     CLUSTER_NAME="ocp-z-poc"
   fi
 
+  # Update the /etc/resolv.conf file
+  # This relies on NetworkManager being told to disregard resolver config!
+  cat <<EOF > /etc/resolv.conf
+# /etc/resolv.conf
+# Created by zvm-ipconf service
+search ${DOMAIN} ${CLUSTER_NAME}.${DOMAIN}
+EOF
+  if [ -v DNS1 ]; then
+    echo "nameserver ${DNS1}" >> /etc/resolv.conf
+    if [ -v DNS2 ]; then
+      echo "nameserver ${DNS2}" >> /etc/resolv.conf
+    fi
+    if [ -v DNS3 ]; then
+      echo "nameserver ${DNS3}" >> /etc/resolv.conf
+    fi
+  else
+    echo "nameserver 9.9.9.9" >> /etc/resolv.conf
+    echo "nameserver 149.112.112.112" >> /etc/resolv.conf
+  fi
+
   # all the details retrieved, let's use nmcli to do the address work
   # first, obtain the UUID of the interface
   source <(grep ^UUID /etc/sysconfig/network-scripts/ifcfg-${IFN})
