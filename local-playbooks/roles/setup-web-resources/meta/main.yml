@@ -1,3 +1,3 @@
 ---
 dependencies:
-  - elanhandlers
+  - role: elanhandlers

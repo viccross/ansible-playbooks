@@ -31,6 +31,7 @@
     state: present
 
 - name: Set up local NFS in Vic's testlab
+  when: ansible_architecture != "s390x"
   block:
   - name: Create the directory for mounting the repodir
     file:
@@ -43,7 +44,6 @@
       opts: rw,sync,hard
       state: mounted
       fstype: nfs
-  when: ansible_architecture != "s390x"
     
 #- name: Install and configure dnf-local-plugin
 #  block:
