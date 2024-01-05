@@ -18,6 +18,7 @@
   roles:
   - configure-internal-net
   - almalinux-gpg
+  - install-base-packages
   - configure-squid
   - setup-firstboot-ipconf
   - configure-dns
@@ -29,3 +30,4 @@
   - configure-ignition
   - setup-ocp-deployer
   - setup-icic-deployer
+  - setup-finna-response

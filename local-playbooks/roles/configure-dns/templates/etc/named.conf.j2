@@ -58,14 +58,6 @@ zone "." IN {
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 
-zone "{{ cluster_domain_name }}" {
-	type master;
-	file "{{ cluster_domain_name }}.zone";
-	allow-query { any; };
-	allow-transfer { none; };
-	update-policy local;
-};
-
 zone "{{ subnet_in_addr_name }}.in-addr.arpa" {
 	type master;
 	file "{{ subnet_in_addr_name }}.in-addr.arpa.zone";

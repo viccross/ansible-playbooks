@@ -1,0 +1,58 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+{% set bootstrap  = cluster_nodes['bootstrap'] %}
+{% set masters    = cluster_nodes['masters'] %}
+{% set workers    = cluster_nodes['workers'] %}
+{% set bootworker = cluster_nodes['bootworker'] %}
+
+backend {{ cluster_name }}-k8s-api-server
+   mode tcp
+   option httpchk GET /readyz HTTP/1.0
+   option log-health-checks
+   balance roundrobin
+   server boostrap-0 bootstrap-0.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+{% for item in masters.keys() %}
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:6443 weight 1 verify none check check-ssl inter 1s fall 2 rise 3
+{% endfor %}
+
+backend {{ cluster_name }}-machine-config-server
+   mode tcp
+   balance roundrobin
+   server bootstrap-0 bootstrap-0.{{ cluster_domain_name }}:22623 weight 1 check backup non-stick
+{% for item in masters.keys() %}
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:22623 weight 100 check
+{% endfor %}
+
+backend {{ cluster_name }}-http
+   mode http
+{% if workers is defined %}
+   {% for item in workers.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+   {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+    {% endfor %}
+   {% endif %}
+{% else %}
+    {% for item in masters.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+   {% endfor %}
+{% endif %}
+
+backend {{ cluster_name }}-router-https
+   mode tcp
+{% if workers is defined %}
+   {% for item in workers.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+   {% endfor %}
+   {% if bootworker is defined %}
+    {% for item in bootworker.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+    {% endfor %}
+   {% endif %}
+{% else %}
+    {% for item in masters.keys() %}
+      server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+   {% endfor %}
+{% endif %}
+

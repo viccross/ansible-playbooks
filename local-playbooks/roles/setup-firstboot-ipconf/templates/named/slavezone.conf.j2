@@ -1,0 +1,8 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+zone "{{ domain_name }}" {
+        type slave;
+        file "{{ domain_name }}.zone";
+        masters { {{ masterip }}; };
+        allow-query { any; };
+        allow-transfer { alllocals; };
+};

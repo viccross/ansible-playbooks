@@ -1,0 +1,389 @@
+#!/bin/bash
+
+# vmcp
+# This script simulates the output of the real vmcp
+# program for testing without access to z/VM.
+
+usage() {
+echo "vmcp: z/VM CP command interface."
+echo "Usage:"
+echo "vmcp [-k] [-b <size>] command"
+echo "vmcp [-h|-v]"
+echo ""
+echo "Options:"
+echo "-h or --help     :Print usage information, then exit"
+echo "-v or --version  :Print version information, then exit"
+echo "-k or --keepcase :Using this option, vmcp does not convert the command"
+echo "                  to uppercase. The default is to translate the command"
+echo "                  string."
+echo "-b <size> or     :defines the buffer size for the response"
+echo "--buffer=<size>   valid values are from 4096 to 1048576 bytes"
+echo "                  the k and M suffixes are also supported"
+}
+
+plusminus() {
+  echo -n $(( ((RANDOM%3) - 1 ) + $1 ))
+}
+
+CMD=${1^^}
+OPT=${2^^}
+P1=${3^^}
+case $CMD in
+  "Q" | "QUERY" )
+    case $OPT in
+      "VDISK" )
+        echo "VDISKS NOT FOUND"
+      ;;
+      "USERID" )
+        hn=$(hostname -s)
+        echo "LXOCPB01 AT ZVMESI${hn:0-1}"
+      ;;
+      "ALLOC" )
+        case $P1 in
+          "PAGE" )
+            echo "                EXTENT     EXTENT  TOTAL  PAGES   HIGH    %"
+            echo "VOLID  RDEV      START        END  PAGES IN USE   PAGE USED"
+            echo "------ ---- ---------- ---------- ------ ------ ------ ----"
+            echo "V11P04 130A          1      10016  1761K      0      0   0%"
+            echo "V11P03 120A          1      10016  1761K      0      0   0%"
+            echo "V11P02 130D          1      10016  1761K      0      0   0%"
+            echo "V11P01 1208          1      10016  1761K      0      0   0%"
+            echo "                                  ------ ------        ----"
+            echo "SUMMARY                            7043K      0          0%"
+            echo "USABLE                             7043K      0          0%"
+          ;;
+        esac
+      ;;
+      "N" | "NAMES" )
+        echo "VSMREQIN - DSC , VSMGUARD - DSC , TCPIP    - DSC , FTPSERVE - DSC"
+        echo "VSMEVSRV - DSC , VSMREQIN - DSC , VSMREQI6 - DSC , VSMREQIU - DSC"
+        echo "LOHCOST  - DSC , PERSMAPI - DSC , PERFSVM  - DSC , LXOCPB01 - DSC"
+        echo "DTCVSW1  - DSC , VSMWORK1 - DSC , DTCVSW2  - DSC , VSMWORK2 - DSC"
+        echo "DTCVSW3  - DSC , VSMWORK3 - DSC , DTCVSW4  - DSC , DTCSMAPI - DSC"
+        echo "RACFVM   - DSC , VMSERVS  - DSC , VMSERVR  - DSC , VMSERVP  - DSC"
+        echo "VMSERVU  - DSC , DIRMAINT - DSC , DATAMOVE - DSC , OPERSYMP - DSC"
+        echo "OPERATOR - SYSC, MAINT    -L0003"
+        echo "VSM     - TCPIP"
+      ;;
+      "DA" | "DASD" )
+        echo "DASD  1000 CP OWNED  ZVMCM1   41"
+        echo "DASD  1001 CP OWNED  ZVMRES   278"
+        echo "DASD  1002 CP OWNED  ZVMS01   1"
+        echo "DASD  1003 CP OWNED  ZVMP01   0"
+        echo "DASD  1004 CP OWNED  ZVMS02   1"
+        echo "DASD  1005 CP OWNED  ZVMP02   0"
+        echo "DASD  1010 CP SYSTEM ZVMU01   2"
+        echo "DASD  1011 CP SYSTEM ZVMU02   1"
+        echo "DASD  1020 CP SYSTEM ZVMC01   0"
+        echo "DASD  1021 CP SYSTEM ZVMC02   0"
+        echo "DASD  1022 CP SYSTEM ZVMC03   0"
+        echo "DASD  1023 CP SYSTEM ZVMC04   0"
+        echo "DASD  1024 CP SYSTEM ZVMC05   0"
+        echo "DASD  1025 CP SYSTEM ZVMC06   0"
+      ;;
+      "STOR" | "STORAGE" | "STORE" )
+        echo "STORAGE = 1536G CONFIGURED = 1024G INC = 1G STANDBY = 512G RESERVED = 0"
+        echo "Permanent = 1024G Reconfigurable = 512G Maximum STORAGE = 2048G"
+      ;;
+      "VAR" | "VARIABLE" )
+        case $P1 in
+          "ZVMESI.INSTALLATION" )
+            echo "7304v-ECKD-Vic-Dev"
+        ;;
+          "ZVMESI.SYSGROUP" )
+            cat /mnt/znetboot/var.esi.sysgroup
+        ;;
+          "" )
+            echo "SYSTEM ZVMESI.SYSGROUP $(cat /mnt/znetboot/var.esi.sysgroup)"
+            echo "SYSTEM ZVMESI.INSTALLATION 7304v-ECKD-Vic-Dev"
+        ;;
+          * )
+            echo ""
+        ;;
+      esac
+      ;;
+      * )
+        echo "HCPCQV003E Invalid option - $OPT"
+        echo "Error: non-zero CP response for command '$CMD $OPT': #3"
+        exit 1
+      ;;
+    esac
+  ;;
+  "IND" | "INDICATE" )
+    case $OPT in
+      "LOAD" | "" )
+        cpu=$(( RANDOM % 100 ))
+        page=$(( RANDOM % 1000 ))
+        printf "AVGPROC-%03d%% 0006\n" $cpu
+        echo "MDC READS-000013/SEC WRITES-000001/SEC HIT RATIO-100%"
+        printf "PAGING-%d/SEC\n" $page
+        echo "Q0-00001(00000)                           DORMANT-00023"
+        echo "Q1-00005(00000)           E1-00000(00000)"
+        echo "Q2-00000(00000) EXPAN-000 E2-00000(00000)"
+        echo "Q3-00001(00000) EXPAN-001 E3-00000(00000)"
+        echo ""
+        echo -n "PROC 0000-"
+        printf "%03d" $(plusminus $cpu)
+        echo -n "% IFL  VM     PROC 0001-"
+        printf "%03d" $(plusminus $cpu)
+        echo "% IFL  VM"
+        echo -n "PROC 0002-"
+        printf "%03d" $(plusminus $cpu)
+        echo -n "% IFL  VL     PROC 0003-"
+        printf "%03d" $(plusminus $cpu)
+        echo "% IFL  VL"
+        echo -n "PROC 0004-"
+        printf "%03d" $(plusminus $cpu)
+        echo -n "% IFL  VL     PROC 0005-"
+        printf "%03d" $(plusminus $cpu)
+        echo "% IFL  VL"
+        echo ""
+        echo "LIMITED-00000"
+      ;;
+      "USER" )
+        case $P1 in
+          OCPZMAS* | OCPZWRK* )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV 0200 DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 00: CTIME=57:28 VTIME=934:42 TTIME=313:32 IO=322426"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 01: CTIME=57:28 VTIME=008:32 TTIME=547:00 IO=068316"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 02: CTIME=57:28 VTIME=943:15 TTIME=468:16 IO=370312"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 03: CTIME=57:28 VTIME=999:01 TTIME=514:04 IO=294510"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 04: CTIME=57:28 VTIME=115:45 TTIME=619:57 IO=551776"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=16G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00013"
+            echo "PAGES: RES=4192563  WS=4192505  LOCKEDREAL=58  RESVD=0"
+            echo "       INSTAN=4192563"
+            echo "NPREF=0  PREF=0  READS=49822  WRITES=52942"
+            echo "CPU 05: CTIME=57:28 VTIME=389:48 TTIME=884:39 IO=153367"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+          ;;
+          TCPIP | DTCVSW* | VSM* | DIRMAINT | DIRMSAT*)
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=128M VIRT=V XSTORE=---"
+            echo "IPLSYS=CMS      DEVNUM=00020"
+            echo "PAGES: RES=4024  WS=3965  LOCKEDREAL=59  RESVD=0"
+            echo "       INSTAN=4024"
+            echo "NPREF=0  PREF=0  READS=5  WRITES=38"
+            echo "CPU 00: CTIME=22:02 VTIME=000:22 TTIME=000:29 IO=000028"
+            echo "        RDR=000000 PRT=000023 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          PERFSVM | PERSMAPI )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=2560M VIRT=V XSTORE=---"
+            echo "IPLSYS=ZCMS     DEVNUM=00010                   "
+            echo "PAGES: RES=36077  WS=36076  LOCKEDREAL=1  RESVD=0 "
+            echo "       INSTAN=36077                            "
+            echo "NPREF=0  PREF=0  READS=449  WRITES=3904521     "
+            echo "CPU 00: CTIME=23:22 VTIME=467:59 TTIME=473:58 IO=012276"
+            echo "        RDR=000000 PRT=999999 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          FTPSERVE )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=XC  STOR=32M  VIRT=V XSTORE=---"
+            echo "IPLSYS=CMS      DEVNUM=00014                   "
+            echo "PAGES: RES=1612  WS=1611  LOCKEDREAL=1  RESVD=0 "
+            echo "       INSTAN=1612                             "
+            echo "NPREF=0  PREF=0  READS=0  WRITES=40            "
+            echo "CPU 00: CTIME=01:22 VTIME=000:05 TTIME=000:10 IO=000026"
+            echo "        RDR=000000 PRT=000591 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          VMSERV* )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=XC  STOR=64M  VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV 0190 DEVNUM=00014                   "
+            echo "PAGES: RES=5112  WS=5110  LOCKEDREAL=1  RESVD=0 "
+            echo "       INSTAN=5112                             "
+            echo "NPREF=0  PREF=0  READS=1  WRITES=2             "
+            echo "CPU 00: CTIME=22:16 VTIME=034:20 TTIME=065:09 IO=098765"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          DATAMOV* )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=32M  VIRT=V XSTORE=---"
+            echo "IPLSYS=CMS      DEVNUM=00014                   "
+            echo "PAGES: RES=517  WS=516  LOCKEDREAL=1  RESVD=0 "
+            echo "       INSTAN=517                             "
+            echo "NPREF=0  PREF=0  READS=905  WRITES=41632      "
+            echo "CPU 00: CTIME=22:10 VTIME=016:19 TTIME=017:27 IO=082939"
+            echo "        RDR=001362 PRT=243156 PCH=005343 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          RACFVM | RACMAINT )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=XA  STOR=20M VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV 0490 DEVNUM=00015"
+            echo "PAGES: RES=1980  WS=1948  LOCKEDREAL=0  RESVD=0"
+            echo "       INSTAN=1980"
+            echo "NPREF=0  PREF=0  READS=0  WRITES=51"
+            echo "CPU 00: CTIME=22:20 VTIME=011:46 TTIME=011:49 IO=014492"
+            echo "        RDR=000000 PRT=000650 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          OPERATOR )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=32M VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00010"
+            echo "PAGES: RES=0  WS=1  LOCKEDREAL=0  RESVD=0"
+            echo "       INSTAN=0"
+            echo "NPREF=0  PREF=0  READS=2802  WRITES=711"
+            echo "CPU 00: CTIME=22:22 VTIME=000:00 TTIME=000:01 IO=000000"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+          LXOCPB01 | "")
+            if [ -z "$P1" ]; then P1="LXOCPB01"; fi
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=2G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV 0200 DEVNUM=00014"
+            echo "PAGES: RES=489989  WS=489886  LOCKEDREAL=103  RESVD=0"
+            echo "       INSTAN=489989"
+            echo "NPREF=0  PREF=0  READS=0  WRITES=0"
+            echo "CPU 00: CTIME=53:42 VTIME=843:40 TTIME=255:15 IO=760857"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+            echo "USERID=$P1 MACH=ESA STOR=2G VIRT=V XSTORE=---"
+            echo "IPLSYS=DEV NONE DEVNUM=00014"
+            echo "PAGES: RES=489989  WS=489886  LOCKEDREAL=103  RESVD=0"
+            echo "       INSTAN=489989"
+            echo "NPREF=0  PREF=0  READS=0  WRITES=0"
+            echo "CPU 01: CTIME=53:42 VTIME=177:19 TTIME=373:25 IO=856644"
+            echo "        RDR=000000 PRT=000000 PCH=000000 TYPE=IFL  CPUAFFIN=ON"
+          ;;
+          MAINT | MAINT730 | TCPMAINT | * )
+            P1=$(printf "%-8s" $P1)
+            echo "USERID=$P1 MACH=ESA STOR=256M VIRT=V XSTORE=---"
+            echo "IPLSYS=ZCMS     DEVNUM=00033                   "
+            echo "PAGES: RES=526  WS=505  LOCKEDREAL=1  RESVD=0  "
+            echo "       INSTAN=526                              "
+            echo "NPREF=0  PREF=0  READS=0  WRITES=0             "
+            echo "CPU 00: CTIME=00:22 VTIME=000:00 TTIME=000:00 IO=000401"
+            echo "        RDR=000000 PRT=000049 PCH=000000 TYPE=CP   CPUAFFIN=ON"
+          ;;
+        esac
+      ;;
+      "NSS" )
+        echo ""
+        echo "Filename=ZCMS  Filetype=NSS  Class=A  Spoolid=0015 "
+        echo "Time loaded=450 23:00   Size=6M "
+        echo "Pages:  Main=1213  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=1213  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=1213       Writes=0"
+        echo " "
+        echo "Filename=CMS  Filetype=NSS  Class=A  Spoolid=0014 "
+        echo "Time loaded=450 23:00   Size=6M "
+        echo "Pages:  Main=1176  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=1176  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=1176       Writes=0"
+        echo " "
+        echo "Filename=SMAPIOUT  Filetype=DCSS  Class=A  Spoolid=0039 "
+        echo "Time loaded=450 23:00   Size=6M "
+        echo "Pages:  Main=1536  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=1536  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=0          Writes=0"
+        echo " "
+        echo "Filename=VSMDCSS  Filetype=DCSS  Class=R  Spoolid=0001 "
+        echo "Time loaded=450 23:00   Size=512M "
+        echo "Pages:  Main=131071  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=131071  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=0          Writes=0"
+        echo " "
+        echo "Filename=MONDCSS  Filetype=CPDCSS  Class=R  Spoolid=0034 "
+        echo "Time loaded=450 23:00   Size=64M "
+        echo "Pages:  Main=26  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=26  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=0          Writes=0"
+        echo "   "
+        echo "Filename=SCEEX  Filetype=DCSS  Class=A  Spoolid=0006 "
+        echo "Time loaded=450 23:00   Size=9M "
+        echo "Pages:  Main=2026  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=2026  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=2026       Writes=0"
+        echo " "
+        echo "Filename=SCEE  Filetype=DCSS  Class=A  Spoolid=0005 "
+        echo "Time loaded=450 23:00   Size=1M "
+        echo "Pages:  Main=128  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=128  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=128        Writes=0"
+        echo " "
+        echo "Filename=CMSFILES  Filetype=DCSS  Class=A  Spoolid=0029 "
+        echo "Time loaded=450 23:00   Size=3M "
+        echo "Pages:  Main=639  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=639  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=639        Writes=0"
+        echo " "
+        echo "Filename=CMSVMLIB  Filetype=DCSS  Class=A  Spoolid=0031 "
+        echo "Time loaded=450 23:01   Size=1M "
+        echo "Pages:  Main=248  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=248  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=248        Writes=0"
+        echo " "
+        echo "Filename=CMSPIPES  Filetype=DCSS  Class=A  Spoolid=0030 "
+        echo "Time loaded=450 23:01   Size=2M "
+        echo "Pages:  Main=482  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=482  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=482        Writes=0"
+        echo ""
+        echo "Filename=INSTSEG  Filetype=DCSS  Class=A  Spoolid=0033 "
+        echo "Time loaded=450 23:01   Size=3M "
+        echo "Pages:  Main=638  Xstore=---  Dasd=0  Locked=--- "
+        echo "        Instan=638  Reserved=0 "
+        echo "Paging: "
+        echo "  Xstore:  Reads=---        Writes=---        Migrates=---"
+        echo "  Dasd:    Reads=638        Writes=0"
+    ;; 
+    esac
+  ;;
+  "" )
+    usage
+  ;;
+  * )
+    echo "Error: non-zero CP response for command '$CMD': #1"
+  ;;
+esac
+

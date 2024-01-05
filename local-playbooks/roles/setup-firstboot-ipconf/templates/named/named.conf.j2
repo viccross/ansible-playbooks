@@ -57,16 +57,10 @@ zone "." IN {
 	file "named.ca";
 };
 
+include "/etc/named/{{ esigroup | lower }}.key";
+
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
-
-zone "{{ cluster_domain_name }}" {
-	type master;
-	file "{{ cluster_domain_name }}.zone";
-	allow-query { any; };
-	allow-transfer { none; };
-	update-policy local;
-};
 
 zone "{{ subnet_in_addr_name }}.in-addr.arpa" {
 	type master;
@@ -84,15 +78,6 @@ zone "ibmpoc.internal" {
 	update-policy local;
 };
 
-// This is the "secret" domain for Finna persistence
-// The coordinator will (eventually?) be the SOA for the domain
-// but initially we need to assume that we are a solo node so
-// that finnad can start.
+// z/VM ESI zones
 
-zone "{{ esigroup }}.zvmesi" IN {
-  type master;
-	file "{{ esigroup }}.zvmesi.zone";
-	allow-update { alllocals; };
-	allow-transfer { alllocals; };
-	notify yes;
-};
+// RHOCP zones
