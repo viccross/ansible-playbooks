@@ -3,6 +3,7 @@
   yum:
     name:
       - php
+      - php-json
       - php-ldap
       - php-mbstring
     state: present
@@ -157,6 +158,13 @@
         src: "/etc/pki/tls/certs/oqsCA.cert"
         dest: "{{ webroot }}/ESICA.pem"
         state: link
+
+  - name: Patch the basic stats script, if needed
+    lineinfile:
+      line: my $vmcpCmd="/usr/local/bin/vmcp";              # the vmcp command
+      dest: "{{ webroot }}/scripts/metrics.pl"
+      regexp: "^my \\$vmcpCmd.*"
+    when: ansible_architecture != "s390x"
 
   - name: Install the basic stats script to local executable path
     shell:
