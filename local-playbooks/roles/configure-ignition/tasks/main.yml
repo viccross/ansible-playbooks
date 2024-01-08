@@ -12,6 +12,7 @@
     - "4.8"
   loop_control:
     loop_var: rhcos_ver
+  when: ansible_architecture == "s390x"
 
 - name: Create pxelinux files
   block:

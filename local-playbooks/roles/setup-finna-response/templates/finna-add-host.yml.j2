@@ -1,0 +1,118 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+---
+- name: Create configuration to update DNS for finna host
+  hosts: s390x_bastion_workstation
+  vars:
+    zvmesi_domain: "{{zvmesi_domain_name }}."
+    group_domain: "{{ esigroup | lower }}.{{cluster_base_domain }}."
+    ns_zvmesi: "{{ query('community.dns.lookup', lookup('vars', 'zvmesi_domain'), type='NS') }}" 
+    ns_group: "{{ query('community.dns.lookup', lookup('vars', 'group_domain'), type='NS') }}"
+    ns_hostname: "{{ sys['hostname'] }}." 
+
+  tasks:
+  - name: Read in the variable file
+    include_vars:
+      file: /var/spool/finnad/{{ sysname }}
+      name: sys
+
+  - name: Add or modify TXT for system release
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup }}.zvmesi"
+      record: "{{ sysname | lower }}"
+      type: TXT
+      value: "{{ sys['relver'] }}"
+
+  - name: Add or modify CNAME for system release
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup }}.zvmesi"
+      record: "{{ sysname | lower }}"
+      type: CNAME
+      value: "{{ sys['hostname'] | lower }}."
+
+  - name: Add or modify PTR for sequence
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup }}.zvmesi"
+      record: "{{ sysname | lower }}"
+      type: PTR
+      value: "{{ sys['seq'] }}"
+
+  - name: Add or modify TXT for seq and sysname
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup }}.{{ cluster_base_domain }}"
+      record: "{{ sys['hostname'].split('.')[0] }}"
+      type: TXT
+      value: "{{ sys['seq'] }}:{{ sysname | upper }}"
+
+  - name: Add records for non-master host
+    block:
+
+    - name: Add or modify A for ELAN
+      nsupdate:
+        key_name: "{{ esigroup | lower }}-key"
+        key_secret: "{{ tsigkey }}"
+        key_algorithm: "hmac-sha256"
+        server: "172.24.26.1"
+        zone: "{{ esigroup }}.{{ cluster_base_domain }}"
+        record: "{{ sys['hostname'].split('.')[0] }}"
+        type: A
+        value: "{{ sys['ipaddr'] }}"
+
+    - name: Update the list for the zvmesi domain NS
+      set_fact:
+        ns_zvmesi:  "{{ ns_zvmesi + query('vars', 'ns_hostname') }}"
+        ns_group:  "{{ ns_group + query('vars', 'ns_hostname') }}"
+
+    - name: Modify NS for zvmesi domain
+      nsupdate:
+        key_name: "{{ esigroup | lower }}-key"
+        key_secret: "{{ tsigkey }}"
+        key_algorithm: "hmac-sha256"
+        server: "172.24.26.1"
+        record: "{{ esigroup }}.zvmesi."
+        type: NS
+        value: "{{ ns_zvmesi }}"
+
+    - name: Modify NS for esigroup domain
+      nsupdate:
+        key_name: "{{ esigroup | lower }}-key"
+        key_secret: "{{ tsigkey }}"
+        key_algorithm: "hmac-sha256"
+        server: "172.24.26.1"
+        record: "{{ esigroup }}.{{ cluster_base_domain }}."
+        type: NS
+        value: "{{ ns_group }}"
+    
+    - name: Make sure the inventory file for the remote ELANs exists
+      lineinfile:
+        path: /opt/ansible/inventory/remote_elans
+        create: true
+        state: present
+        insertafter: BOF
+        line: "[s390x_remote_elans]"
+
+    - name: Add the line for the remote ELAN to the inventory file
+      lineinfile:
+        path: /opt/ansible/inventory/remote_elans
+        create: true
+        state: present
+        insertbefore: EOF
+        line: "{{ sys['hostname'].split('.')[0] }} ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+
+    when: zvm_host_name != sys['sysname'] | lower
+

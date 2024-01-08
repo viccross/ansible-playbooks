@@ -1,0 +1,16 @@
+#!/bin/bash
+# finna-host-add.sh -- Response script for a newly-discovered ELAN
+# Triggered by incrond, by finnad writing an action file
+
+# get the system name
+SYSNAME=$1;
+
+# Run the playbook to add DNS records for host
+pushd /opt/ansible && ansible-playbook -i inventory -e sysname=${SYSNAME} finna-add-host.yml && popd
+
+# Is this a remote ELAN?  Push BIND updates if yes
+LOCALSYS=$(finna self name)
+if [ ${SYSNAME} != ${LOCALSYS} ]; then
+  MYIP=$(finna self ip)
+  pushd /opt/ansible && ansible-playbook -i inventory -e masterip=${MYIP} finna-remote-dns.yml && popd
+fi

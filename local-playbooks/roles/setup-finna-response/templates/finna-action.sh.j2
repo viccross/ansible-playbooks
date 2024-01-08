@@ -1,0 +1,16 @@
+#!/bin/bash
+# finna-action.sh
+# Kicker script for actions to be driven by finna changes
+# initially it's just an "add host" action but may be more
+
+# system name should be passed by incrond
+if [ -z $1 ]; then
+  echo "Abort - no file/system name passed by incrond"
+  exit 1
+fi
+
+# Schedule the action
+( 
+  flock 9
+  /usr/local/sbin/finna-host-add.sh $1
+) 9>/var/run/finnad-action.lock

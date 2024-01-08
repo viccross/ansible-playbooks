@@ -1,0 +1,28 @@
+---
+- name: Copy files for the playbook
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+  - { src: "finna-add-host.yml.j2", dest: "/opt/ansible/finna-add-host.yml" }
+  - { src: "finna-remote-dns.yml.j2", dest: "/opt/ansible/finna-remote-dns.yml" }
+
+- name: Set up the incron stuff
+  block:
+  - name: Copy the kicker script
+    template:
+      src: finna-action.sh.j2
+      dest: /usr/local/sbin/finna-action.sh
+      mode: 0750
+  - name: Copy the worker script
+    template:
+      src: finna-host-add.sh.j2
+      dest: /usr/local/sbin/finna-host-add.sh
+      mode: 0750
+  - name: Copy the incrontab file
+    template:
+      src: incrontab-finna-action.j2
+      dest: /etc/incron.d/finna-action
+      mode: 0644
+    notify: "Enable incrond"

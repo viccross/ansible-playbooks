@@ -83,7 +83,7 @@
     mode: 0644
   loop:
   - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
-  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "smapi.service" }
+  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
 
 - name: Ensure old systemd service files don't exist
   file:
@@ -113,8 +113,11 @@
   - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml" }
   - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml" }
   - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2" }
+  - { src: "named/zvmesi_domain_name.zone.j2", dest: "/opt/ansible/templates/named/zvmesi_domain_name.zone.j2" }
   - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2" }
   - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2" }
+  - { src: "named/masterzone.conf.j2", dest: "/opt/ansible/templates/named/masterzone.conf.j2" }
+  - { src: "named/slavezone.conf.j2", dest: "/opt/ansible/templates/named/slavezone.conf.j2" }
   - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2" }
   - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2" }
   - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2" }

@@ -5,11 +5,11 @@
   - name: generate the certificates
     include_tasks: tasks/create-certificate.yml
     with_items:
-    - { filename: "cockpit", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
-    - { filename: "httpd", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
-    - { filename: "haproxy", common_name: "{% raw %}{{ elan_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
-    - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
-    - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
+    - { filename: "cockpit", common_name: "{% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
+    - { filename: "httpd", common_name: "{% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
+    - { filename: "haproxy", common_name: "{% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
+    - { filename: "zVM", common_name: "{% raw %}{{ zvm_host_name }}.{{ zvmesi_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
+    - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ zvmesi_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
     - { filename: "registry", common_name: "registry.{% raw %}{{ cluster_base_domain }}{% endraw %}" }
 
   - name: create combined PEM file for Cockpit
@@ -33,6 +33,7 @@
     failed_when:
       - ret.rc != 0
       - '"Image already active" not in ret.stdout'
+    when: ansible_architecture == "s390x"
 
   - name: copy the PKCS#12 files to z/VM # noqa command-instead-of-module command-instead-of-shell no-changed-when
     shell:
@@ -41,10 +42,12 @@
     with_items:
     - zVM
     - zVMLDAP
+    when: ansible_architecture == "s390x"
 
   - name: stop the FTP server on z/VM # noqa command-instead-of-shell no-changed-when
     shell: /usr/local/bin/smcli id -T FTPSERVE -H {{ zvm_internal_ip_address|quote }}/44444 -U {{ smapi_user|quote }} -P {{ smapi_password|quote }}
     when:
+      - ansible_architecture == "s390x"
       - '"Image already active" not in ret.stdout'
 
   - name: make sure GSKADMIN can be logged on by IBMAUTO
@@ -57,7 +60,10 @@
         racfaccesscontrol: ID(IBMAUTO) ACCESS(READ) COUNT(0)
 
         EOFLDIF
+    when: ansible_architecture == "s390x"
 
   - name: run the certificate import task # noqa command-instead-of-shell no-changed-when
     shell:
       cmd: LDAPSRVcert.expect Y:{{ zvm_internal_ip_address }} "GSKADMIN BY {{ smapi_user }}" {{ smapi_password }}
+    when: ansible_architecture == "s390x"
+
