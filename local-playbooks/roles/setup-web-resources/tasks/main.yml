@@ -210,7 +210,7 @@
       name: MAILTO
       value: root
 
-  - name: Create/set permission on directories: secrets, Smarty template cache, content, and install
+  - name: Create/set permission on directories - secrets, Smarty template cache, content, and install
     file:
       path: "{{ item }}"
       owner: apache
