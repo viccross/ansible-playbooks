@@ -20,16 +20,30 @@
         <Directory "/var/www/html/install">
           Options +Indexes +FollowSymLinks -SymlinksIfOwnerMatch
           Require all granted
+          SetEnvIf Request_URI "^/(?:(.+)/)?$" DIRECTORY_NAME=/$1
           <FilesMatch "index.php">
             Require all granted
           </FilesMatch>
+          IndexOptions IgnoreCase FancyIndexing FoldersFirst NameWidth=* DescriptionWidth=* SuppressHTMLPreamble
+          IndexOrderDefault Descending Name
+          HeaderName /indexhdr.html
+          ReadmeName /indexftr.html
+          AddDescription "<span class='ds-label'>CoreOS Installation root filesystem</span>" rhcos-live-rootfs.*
+          AddDescription "<span class='ds-label'>CoreOS Installation Linux kernel</span>" rhcos-live-kernel-*
+          AddDescription "<span class='ds-label'>CoreOS Installation initramfs</span>" rhcos-live-initramfs.*
         </Directory>
         <Directory "/var/www/html/bootfiles">
           Options +Indexes +FollowSymLinks 
           Require all granted
+          SetEnvIf Request_URI "^/(?:(.+)/)?$" DIRECTORY_NAME=/$1
           <FilesMatch "index.php">
             Require all granted
           </FilesMatch>
+          IndexOptions IgnoreCase FancyIndexing FoldersFirst NameWidth=* DescriptionWidth=* SuppressHTMLPreamble
+          IndexOrderDefault Descending Name
+          HeaderName /indexhdr.html
+          ReadmeName /indexftr.html
+          AddDescription "<span class='ds-label'>Config file for the ZNETBOOT loader</span>" .znetboot
         </Directory>
         <Directory "/var/www/html">
           Options Indexes FollowSymLinks Includes
@@ -61,6 +75,15 @@
         ErrorDocument 403 /error.html
         AllowOverride None
         Require all granted
+        SetEnvIf Request_URI "^/(?:(.+)/)?$" DIRECTORY_NAME=/$1
+        IndexOptions IgnoreCase FancyIndexing FoldersFirst NameWidth=* DescriptionWidth=* SuppressHTMLPreamble
+        IndexOrderDefault Descending Name
+        HeaderName /indexhdr.html
+        ReadmeName /indexftr.html
+        AddDescription "<span class='ds-label'>CoreOS Installation root filesystem</span>" rhcos-live-rootfs.*
+        AddDescription "<span class='ds-label'>CoreOS Installation Linux kernel</span>" rhcos-live-kernel-*
+        AddDescription "<span class='ds-label'>CoreOS Installation initramfs</span>" rhcos-live-initramfs.*
+        AddDescription "<span class='ds-label'>Config file for the ZNETBOOT loader</span>" .znetboot
       </Directory>
       <Directory "{{ webroot }}/self-service-password-racf-master">
         AllowOverride None
