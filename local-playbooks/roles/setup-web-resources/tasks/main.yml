@@ -17,6 +17,20 @@
     group: root
     block: |
       <VirtualHost *:8080>
+        <Directory "/var/www/html/install">
+          Options +Indexes +FollowSymLinks -SymlinksIfOwnerMatch
+          Require all granted
+          <FilesMatch "index.php">
+            Require all granted
+          </FilesMatch>
+        </Directory>
+        <Directory "/var/www/html/bootfiles">
+          Options +Indexes +FollowSymLinks 
+          Require all granted
+          <FilesMatch "index.php">
+            Require all granted
+          </FilesMatch>
+        </Directory>
         <Directory "/var/www/html">
           Options Indexes FollowSymLinks Includes
           XBitHack On
@@ -196,7 +210,7 @@
       name: MAILTO
       value: root
 
-  - name: Create/set permission on secret directory and Smarty template cache
+  - name: Create/set permission on directories
     file:
       path: "{{ webroot }}/{{ item }}"
       owner: apache
@@ -206,6 +220,7 @@
     loop:
       - ".secret"
       - "service-desk-racf-master/templates_c"
+      - "install"
 
   - name: Create and set perms on incrond trigger files
     file:
