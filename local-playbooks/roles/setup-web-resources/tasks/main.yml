@@ -16,7 +16,7 @@
     owner: root
     group: root
     block: |
-      <VirtualHost {{ guest_install_hostname }}.{{ cluster_domain_name }}:8080>
+      <VirtualHost *:8080>
         <Directory "/var/www/html">
           Options Indexes FollowSymLinks Includes
           XBitHack On
