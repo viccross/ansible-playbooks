@@ -54,28 +54,28 @@
     - "/opt/ansible/inventory/group_vars/all"
     - "/opt/registry/certs"
 
-- name: Download and set permissions for openshift-install and oc
-  include_tasks: download-clients.yml
-  loop:
-    - "stable-4.8"
-  when: ansible_architecture == "s390x"
+#- name: Download and set permissions for openshift-install and oc
+#  include_tasks: download-clients.yml
+#  loop:
+#    - "stable-4.8"
+#  when: ansible_architecture == "s390x"
 
-- name: Create openshift workdir
-  file:
-    path: "{{ workdir }}"
-    state: "directory"
-    mode: 0755
+#- name: Create openshift workdir
+#  file:
+#    path: "{{ workdir }}"
+#    state: "directory"
+#    mode: 0755
 
 - name: Set up SSH for Ansible
   block:
   - name: Create ssh keypair
-    command: ssh-keygen -t rsa -b 2048 -N '' -C 'OCP-4-Admin' -f /root/.ssh/id_rsa
+    command: ssh-keygen -t ed25519 -N '' -C 'ELAN-Admin' -f /root/.ssh/id_ed25519
     args:
-      creates: ~/.ssh/id_rsa
+      creates: ~/.ssh/id_ed25519
   - name: Slurp ssh pubkey
     tags: config
     slurp:
-      src: ~/.ssh/id_rsa.pub
+      src: ~/.ssh/id_ed25519.pub
     register: bastion_pubkey
   - name: Drop public key into authorized_keys
     lineinfile:

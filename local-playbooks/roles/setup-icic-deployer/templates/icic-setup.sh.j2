@@ -240,10 +240,10 @@ rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
 mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 # change the interface details
 netconf ${icicmgt} ${mgtip}
-# Purge the old SSH host keys for regenertion at boot
+# Purge the old SSH host keys for regeneration at boot
 rm -f /mnt/sysimage/etc/ssh/ssh_host_*
 # Add the  SSH key from here to the management node
-cat /root/.ssh/id_rsa.pub >> /mnt/sysimage/root/.ssh/authorized_keys
+cat /root/.ssh/id_ed25519.pub >> /mnt/sysimage/root/.ssh/authorized_keys
 # Rewrite the URL for the ICICdeps, jic
 sed -i.bak "/baseurl/s/^baseurl=.*$/baseurl=http:\/\/172.24.26.1:8080\/ICICdeps/" /mnt/sysimage/etc/yum.repos.d/ICICdeps.repo
 
@@ -273,10 +273,10 @@ mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 netconf ${iciccmp} ${cmpip}
 # Update the address for the internal interface
 sed -i.bak '/IPADDR/s/11/12/' /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-encad8
-# Purge the old SSH host keys for regenertion at boot
+# Purge the old SSH host keys for regeneration at boot
 rm -f /mnt/sysimage/etc/ssh/ssh_host_*
 # Add the  SSH key from here to the management node
-cat /root/.ssh/id_rsa.pub >> /mnt/sysimage/root/.ssh/authorized_keys
+cat /root/.ssh/id_ed25519.pub >> /mnt/sysimage/root/.ssh/authorized_keys
 # Rewrite the URL for the ICICdeps
 sed -i.bak "/baseurl/s/^baseurl=.*$/baseurl=http:\/\/172.24.26.1:8080\/ICICdeps/" /mnt/sysimage/etc/yum.repos.d/ICICdeps.repo
 
