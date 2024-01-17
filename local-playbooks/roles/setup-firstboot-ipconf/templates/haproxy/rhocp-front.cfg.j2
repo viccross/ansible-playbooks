@@ -5,6 +5,7 @@ frontend ocp4-kubernetes-api-server
    option tcplog
    bind {{ bastion_public_ip_address }}:6443
    bind [[ bastion_private_ip_address ]]:6443
+   tcp-request inspect-delay 1s
 #--RHOCP-API-FRONT--here
 #   default_backend {{ cluster_name }}-k8s-api-server
 
@@ -13,5 +14,6 @@ frontend ocp4-machine-config-server
    option tcplog
    bind {{ bastion_public_ip_address }}:22623
    bind [[ bastion_private_ip_address ]]:22623
+   tcp-request inspect-delay 1s
 #--RHOCP-MCS-FRONT--here
 #   default_backend {{ cluster_name }}-machine-config-server
