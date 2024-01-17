@@ -86,7 +86,7 @@
     lineinfile:
       dest: /usr/lib/systemd/system/haproxy.service
       regex: ^ExecStartPre=
-      line: ExecStartPre=/bin/bash -c 'until host {% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
+      line: ExecStartPre=/bin/bash -c 'until host {% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -f $CFGDIR -c -q
 
   - name: Signal systemd to reload
     systemd: daemon_reload=yes
