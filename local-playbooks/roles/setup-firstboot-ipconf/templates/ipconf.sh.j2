@@ -1,5 +1,5 @@
 #!/bin/bash
-# ipconf.sh -- IP configuration in FastVM
+# ipconf.sh -- IP configuration in the ELAN
 # Checks for a configuration file on the CMS disk and configures appropriately
 
 FP={{ znetboot_cfg_path }}
@@ -27,7 +27,7 @@ function changeIP {
   fi
 
   # go ahead with the address change
-  echo "Address change is required"
+  echo "Network change is required"
   # pull the rest of the variables
   source <(grep ^GATEWAY ${FN})
   echo "Gateway is ${GATEWAY}"
@@ -72,6 +72,26 @@ function changeIP {
     CLUSTER_NAME="ocp-z-poc"
   fi
 
+  # Update the /etc/resolv.conf file
+  # This relies on NetworkManager being told to disregard resolver config!
+  cat <<EOF > /etc/resolv.conf
+# /etc/resolv.conf
+# Created by zvm-ipconf service
+search ${DOMAIN} ${CLUSTER_NAME}.${DOMAIN}
+EOF
+  if [ -v DNS1 ]; then
+    echo "nameserver ${DNS1}" >> /etc/resolv.conf
+    if [ -v DNS2 ]; then
+      echo "nameserver ${DNS2}" >> /etc/resolv.conf
+    fi
+    if [ -v DNS3 ]; then
+      echo "nameserver ${DNS3}" >> /etc/resolv.conf
+    fi
+  else
+    echo "nameserver 9.9.9.9" >> /etc/resolv.conf
+    echo "nameserver 149.112.112.112" >> /etc/resolv.conf
+  fi
+
   # all the details retrieved, let's use nmcli to do the address work
   # first, obtain the UUID of the interface
   source <(grep ^UUID /etc/sysconfig/network-scripts/ifcfg-${IFN})
@@ -85,12 +105,18 @@ function changeIP {
   nmcli con up ${UUID}
 
   # Update the system hostname
-  FULLDOMAIN="${CLUSTER_NAME}.${DOMAIN}"
+  FULLDOMAIN="${ESIGROUP,,}.${DOMAIN}"
   echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
   hostname -F /etc/hostname
   echo "System hostname updated to $(hostname)"
   # stop named
   systemctl stop named-chroot.service
+
+  # Generate TSIG key
+  tsig-keygen ${ESIGROUP,,}-key > /etc/named/${ESIGROUP,,}.key
+  # Extract BIND TSIG key
+  TSIGKEY=$(grep secret /etc/named/${ESIGROUP,,}.key | awk -F'"' '{ print $2;}')
+
   # Write out new variables to the group_vars YAML
   cat <<EOF >> /opt/ansible/inventory/group_vars/all/runtime.yml
 bastion_public_ip_address: "${IPADDR}"
@@ -102,6 +128,8 @@ elan_host_name: "${HOSTNM}"
 zvm_ip_address: "${ZVMIPADDR}"
 zvm_host_name: "${ZVMHOSTNM}"
 esigroup: "${ESIGROUP}"
+zvmesi_domain_name: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
+tsigkey: "${TSIGKEY}"
 EOF
 
 #  # Update the bastion_public_ip_address in the group_vars
@@ -156,6 +184,9 @@ EOF
     systemctl enable finnad.service
     systemctl start finnad.service
   fi
+
+  # Start incrond
+  systemctl enable --now incrond.service
 
   # Start up the DASD configuration script because we're at a new site
   systemctl start ocp-dasd.service

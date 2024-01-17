@@ -2,3 +2,4 @@
 **/*.log
 multiarch-ci-playbooks/
 .vscode/settings.json
+requirements.yml

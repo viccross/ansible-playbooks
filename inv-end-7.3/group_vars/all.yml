@@ -2,6 +2,7 @@
 # variables for all hosts
 #
 build_hostname: "lxwork01.wsclab.endicott.ibm.com"
+local_repo_uri: "http://9.76.60.182/zvmesi"
 #
 rhcos_versions:
   "4.8":

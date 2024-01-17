@@ -1,9 +1,9 @@
 #jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 $TTL 900
-@                     IN SOA bastion-int.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
+@                     IN SOA elan-int.{{ zvmesi_domain_name }}. hostmaster.{{ zvmesi_domain_name }}. (
                         2021061801 1D 1H 1W 3H
                       )
-                      IN NS bastion-int.{{ cluster_domain_name }}.
+                      IN NS elan-int.{{ zvmesi_domain_name }}.
 
 zVM                   IN A [[ zvm_internal_ip_address ]]
 LDAPSRV               IN A [[ zvm_internal_ip_address ]]

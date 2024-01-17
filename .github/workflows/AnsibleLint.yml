@@ -4,27 +4,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Lint Ansible Playbooks
-      uses: ansible-community/ansible-lint-action@v4-eol
-      with:
-        args: "-x 106 -x yaml -x fqcn-builtins"
-        override-deps: |
-          ansible==2.9.17
-        targets: |
-          local-playbooks/build-a-bastion.yml
-          local-playbooks/configure-apache.yml
-          local-playbooks/configure-cockpit.yml
-          local-playbooks/configure-dns.yml
-          local-playbooks/configure-haproxy.yml
-          local-playbooks/configure-ignition.yml
-          local-playbooks/configure-nfs.yml
-          local-playbooks/configure-squid.yml
-          local-playbooks/create-guest-for-linux.yml
-          local-playbooks/create-root-ca.yml
-          local-playbooks/create-zvm-certificates.yml
-          local-playbooks/setup-firstboot-ipconf.yml
-          local-playbooks/setup-podman-and-registry.yml
-          local-playbooks/setup-icic-deployer.yml
-          local-playbooks/setup-ocp-deployer.yml
-          local-playbooks/setup-web-resources.yml
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Lint Ansible Playbooks
+        uses: ansible/ansible-lint@main
+        with:
+          args: "--profile basic 
+            -x 106 -x yaml -x fqcn-builtins
+            local-playbooks/build-a-bastion.yml
+            local-playbooks/configure-apache.yml
+            local-playbooks/configure-cockpit.yml
+            local-playbooks/configure-dns.yml
+            local-playbooks/configure-haproxy.yml
+            local-playbooks/configure-ignition.yml
+            local-playbooks/configure-nfs.yml
+            local-playbooks/configure-squid.yml
+            local-playbooks/create-guest-for-linux.yml
+            local-playbooks/create-root-ca.yml
+            local-playbooks/create-zvm-certificates.yml
+            local-playbooks/setup-firstboot-ipconf.yml
+            local-playbooks/setup-podman-and-registry.yml
+            local-playbooks/setup-icic-deployer.yml
+            local-playbooks/setup-ocp-deployer.yml
+            local-playbooks/setup-web-resources.yml"

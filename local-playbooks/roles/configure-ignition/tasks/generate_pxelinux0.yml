@@ -1,12 +1,12 @@
 ---
-- name: touch node-pxelinux file
+- name: Touch node-pxelinux file
   file:
     path: "{{ bootfile_dest }}/{{ item }}-pxelinux.0"
     state: touch
     mode: 0644
   when: install_mode == 'zkvm'
 
-- name: generate ZNETBOOT config file
+- name: Generate ZNETBOOT config file
   when: pxe_mode == 'znetboot'
   tags: pxelinux-cfg
   template:
@@ -14,7 +14,7 @@
     src: ocpguest.znetboot.j2
     mode: 0644
 
-- name: generate parmfile
+- name: Generate parmfile
   when: pxe_mode == 'pxelinux'
   tags: pxelinux-cfg
   copy:
@@ -23,7 +23,7 @@
     content: |
       rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster_nodes[coreos_role][item].disk }} coreos.inst.image_url={{ rhcos_download_url }}/{{ rhcos_disk_image }} coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster_nodes[coreos_role][item].ign_profile }} {{ coreos_kargs_net[install_mode] }} {{ coreos_kargs_extra[install_mode] }}  # noqa 204
 
-- name: make pxelinux.0 file  # noqa 305
+- name: Make pxelinux.0 file  # noqa command-instead-of-shell
   tags: pxelinux0
   args:
     chdir: "{{ bootfile_dest }}"

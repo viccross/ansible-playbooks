@@ -1,5 +1,5 @@
 ---
-- name: configure minimal nfs server
+- name: Configure minimal NFS server
   hosts: s390x_bastion_workstation
   roles:
   - configure-nfs

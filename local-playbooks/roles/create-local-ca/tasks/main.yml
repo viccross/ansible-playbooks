@@ -1,11 +1,11 @@
 ---
-- name: generate CA private key
+- name: Generate CA private key
   openssl_privatekey:
     path: "{{ ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem"
     group: support
     mode: 0640
 
-- name: generate CA CSR
+- name: Generate CA CSR
   openssl_csr:
     path: "{{ ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr"
     privatekey_path: "{{ ca_key_path }}/oqsCA-{{ cluster_base_domain }}.pem"
@@ -17,7 +17,7 @@
     basic_constraints:
       - 'CA:TRUE'
 
-- name: generate CA Certificate
+- name: Generate CA Certificate
   openssl_certificate:
     path: "{{ ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert"
     csr_path: "{{ ca_csr_path }}/oqsCA-{{ cluster_base_domain }}.csr"
@@ -25,7 +25,7 @@
     ownca_privatekey_path: "{{ ca_key_path }}/oqsRootCA.pem"
     provider: ownca
 
-- name: add CA certificate to the local trust store
+- name: Add CA certificate to the local trust store
   file:
     src: "{{ ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert"
     dest: "{{ ca_trust_path }}/oqsCA-{{ cluster_base_domain }}.cert"

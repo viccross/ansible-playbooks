@@ -1,7 +1,7 @@
 # setup-podman-and-registry
 #
 
-- name: install podman with Cockpit support, plus jq for JSON things
+- name: Install podman with Cockpit support, plus jq for JSON things
   yum:
     name:
       - podman
@@ -11,7 +11,7 @@
       - python3-bcrypt
     state: present
 
-- name: set up registry directories
+- name: Set up registry directories
   file:
     path: "{{ item }}"
     state: directory
@@ -23,14 +23,14 @@
   - "/opt/registry/certs"
   - "/opt/registry/data"
 
-- name: create a certificate for the registry
+- name: Create a certificate for the registry
   block:
-  - name: generate a private key for Registry
+  - name: Generate a private key for Registry
     openssl_privatekey:
       path: "{{ ca_key_path }}/registry.pem"
       group: support
       mode: 0640
-  - name: generate CSR for Registry
+  - name: Generate CSR for Registry
     openssl_csr:
       path: "{{ ca_csr_path }}/registry.csr"
       privatekey_path: "{{ ca_key_path }}/registry.pem"
@@ -40,7 +40,7 @@
       country_name: "US"
       keyUsage: ["digitalSignature","keyAgreement"]
       extendedKeyUsage: ["clientAuth","serverAuth"]
-  - name: generate Certificate
+  - name: Generate Certificate
     openssl_certificate:
       path: "{{ ca_cert_path }}/registry.cert"
       csr_path: "{{ ca_csr_path }}/registry.csr"
@@ -49,11 +49,11 @@
       ownca_not_after: +397d
       provider: ownca
       force: yes
-  - name: create the bundle for Registry # noqa no-changed-when
+  - name: Create the bundle for Registry # noqa no-changed-when
     shell:
       cmd: cat registry.cert oqsCA.cert oqsRootCA.cert > /opt/registry/certs/registry.cert
       chdir: "{{ ca_cert_path }}"
-  - name: copy the key to the Registry directory
+  - name: Copy the key to the Registry directory
     copy:
       src: /etc/pki/tls/private/registry.pem
       remote_src: yes
@@ -62,7 +62,7 @@
       group: root
       mode: 0440
 
-- name: create environment file
+- name: Create environment file
   blockinfile:
     dest: /opt/registry/ESIRegistry.env
     mode: 0644
@@ -75,10 +75,10 @@
       REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.cert
       REGISTRY_HTTP_TLS_KEY=/certs/registry.key
 
-#- name: create the registry htpasswd file # noqa 302
+#- name: create the registry htpasswd file # noqa no-free-form
 #  command:
 #    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
-- name: create the registry htpasswd file
+- name: Create the registry htpasswd file
   htpasswd:
     path: /opt/registry/auth/htpasswd
     create: yes
@@ -90,11 +90,11 @@
     crypt_scheme: bcrypt
     state: present
 
-- name: pull the registry image
+- name: Pull the registry image
   podman_image:
-    name: docker.io/ibmcom/registry-s390x:2.6.2.5
+    name: docker.io/library/registry:2.8
 
-- name: create systemd service for interface reconfiguration
+- name: Create systemd service for interface reconfiguration # noqa jinja[spacing]
   blockinfile:
     dest: /usr/local/lib/systemd/system/podman-registry.service
     mode: 0644
@@ -114,7 +114,7 @@
           -v /opt/registry/data:/var/lib/registry:{{ registry_mode | default("ro",true) }} \
           -v /opt/registry/auth:/auth:z \
           -v /opt/registry/certs:/certs:z \
-          -d docker.io/ibmcom/registry-s390x:2.6.2.5
+          -d docker.io/library/registry:2.8
       ExecStop=/usr/bin/sh -c "/usr/bin/podman rm -f `cat /%t/%n-cid` && rm -f /%t/%n-cid"
       KillMode=none
       Type=forking
@@ -123,7 +123,7 @@
       [Install]
       WantedBy=default.target
 
-- name: allow traffic for registry
+- name: Allow traffic for registry
   tags: firewall
   firewalld:
     port: "{{ registry_port | default('5000', true) }}/tcp"

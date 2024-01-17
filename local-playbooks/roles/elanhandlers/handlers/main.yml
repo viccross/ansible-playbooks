@@ -1,0 +1,58 @@
+---
+# handlers file for our playbook(s)
+- name: Restart squid.service
+  service:
+    name: squid.service
+    state: restarted
+  listen: "Restart squid"
+
+- name: Restart named-chroot.service
+  service:
+    name: named-chroot.service
+    state: restarted
+  listen: "Restart dns"
+
+- name: Restart firewalld.service
+  service:
+    name: firewalld.service
+    state: restarted
+  listen: "Restart firewalld"
+
+- name: Restart nfs-server
+  service:
+    name: nfs-server.service
+    state: restarted
+    enabled: yes
+  listen: "Restart nfs"
+
+- name: Restart httpd.service
+  service:
+    name: httpd.service
+    state: restarted
+    enabled: yes
+  listen: "Restart httpd"
+
+- name: Restart haproxy
+  service:
+    name: haproxy.service
+    state: restarted
+  listen: "Restart haproxy"
+
+- name: Restart chronyd.service
+  service:
+    name: chronyd.service
+    state: restarted
+  listen: "Restart chronyd"
+
+- name: Enable incrond service
+  systemd:
+    name: incrond
+    state: stopped
+    enabled: yes
+  listen: "Enable incrond"
+
+- name: Update ca trust
+  command:
+    cmd: update-ca-trust
+  listen: "Update ca trust"
+

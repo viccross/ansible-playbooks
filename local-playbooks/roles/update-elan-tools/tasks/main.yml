@@ -1,5 +1,5 @@
 ---
-- name: update the elan-tools RPM
+- name: Update the elan-tools RPM
   yum:
     name: elan-tools
     state: latest

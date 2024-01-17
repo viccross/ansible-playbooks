@@ -1,11 +1,11 @@
 ---
 - name: Configure and enable Cockpit
   block:
-  - name: generate cockpit private key
+  - name: Generate cockpit private key
     openssl_privatekey:
       path: /etc/pki/tls/private/cockpit.pem
 
-  - name: generate cockpit CSR
+  - name: Generate cockpit CSR
     openssl_csr:
       path: /etc/pki/tls/misc/cockpit.csr
       privatekey_path: /etc/pki/tls/private/cockpit.pem
@@ -17,7 +17,7 @@
       organizational_unit_name: "Red Hat Openshift PoC"
       country_name: "{{ cert_country }}"
 
-  - name: generate Certificate
+  - name: Generate Certificate
     openssl_certificate:
       path: /etc/pki/tls/certs/cockpit.cert
       csr_path: /etc/pki/tls/misc/cockpit.csr
@@ -27,33 +27,33 @@
       provider: ownca
       force: yes
 
-  - name: create combined PEM file for Cockpit # noqa no-changed-when
+  - name: Create combined PEM file for Cockpit # noqa no-changed-when
     shell:
       cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
       chdir: /etc/pki/tls/
 
-  - name: set permissions on certificate
+  - name: Set permissions on certificate
     file:
       path: /etc/cockpit/ws-certs.d/cockpit-combined.cert
       owner: root
       group: cockpit-ws
       mode: 0640
 
-  - name: remove self-signed certs/CAs
+  - name: Remove self-signed certs/CAs
     block:
-      - name: find the files
+      - name: Find the files
         find:
           paths: /etc/cockpit/ws-certs.d
           patterns: 0-*
         register: files_to_delete
 
-      - name: delete the files
+      - name: Delete the files
         file:
           path: "{{ item.path }}"
           state: absent
         with_items: "{{ files_to_delete.files }}"
 
-- name: enable the Cockpit interface
+- name: Enable the Cockpit interface
   service:
     name: cockpit.socket
     state: started

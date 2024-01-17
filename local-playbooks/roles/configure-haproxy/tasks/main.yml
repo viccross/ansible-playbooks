@@ -1,25 +1,25 @@
 ---
 # tasks file for configure-haproxy
-- name: install haproxy
+- name: Install haproxy
   yum:
     name:
       - haproxy
       - python3-libsemanage
     state: present
 
-- name: patch HAProxy service script
+- name: Patch HAProxy service script
   lineinfile:
     dest: /usr/lib/systemd/system/haproxy.service
     regex: ^ExecStartPre=
     line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
 
-- name: create certificate for Stats page
+- name: Create certificate for Stats page
   block:
-  - name: generate haproxy private key
+  - name: Generate haproxy private key
     openssl_privatekey:
       path: /etc/pki/tls/private/haproxy.pem
 
-  - name: generate haproxy CSR
+  - name: Generate haproxy CSR
     openssl_csr:
       path: /etc/pki/tls/misc/haproxy.csr
       privatekey_path: /etc/pki/tls/private/haproxy.pem
@@ -31,7 +31,7 @@
       organizational_unit_name: "Red Hat Openshift PoC"
       country_name: "{{ cert_country }}"
 
-  - name: generate Certificate
+  - name: Generate Certificate
     openssl_certificate:
       path: /etc/pki/tls/certs/haproxy.cert
       csr_path: /etc/pki/tls/misc/haproxy.csr
@@ -41,19 +41,19 @@
       provider: ownca
       force: yes
 
-  - name: create combined PEM file for HAProxy # noqa no-changed-when
+  - name: Create combined PEM file for HAProxy # noqa no-changed-when
     shell:
       cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
       chdir: /etc/pki/tls/
 
-  - name: set permissions on certificate
+  - name: Set permissions on certificate
     file:
       path: /etc/haproxy/haproxy-combined.pem
       owner: root
       group: haproxy
       mode: 0640
 
-- name: allow traffic at 8404 for haproxy
+- name: Allow traffic at 8404 for haproxy
   tags: firewall
   firewalld:
     port: 8404/tcp
@@ -65,7 +65,7 @@
   - internal
   - public
 
-- name: allow http traffic
+- name: Allow http traffic
   firewalld:
     service: http
     permanent: yes
@@ -75,7 +75,7 @@
   - internal
   - public
 
-- name: allow https traffic
+- name: Allow https traffic
   firewalld:
     service: https
     permanent: yes
@@ -85,7 +85,7 @@
   - internal
   - public
 
-- name: allow traffic at port 6443
+- name: Allow traffic at port 6443
   firewalld:
     port: 6443/tcp
     permanent: yes
@@ -95,7 +95,7 @@
   - internal
   - public
 
-- name: allow traffic at port 22623
+- name: Allow traffic at port 22623
   firewalld:
     port: 22623/tcp
     permanent: yes
@@ -105,24 +105,23 @@
   - internal
   - public
 
-- name: create /etc/haproxy
+- name: Create /etc/haproxy
   file:
     path: /etc/haproxy
     state: directory
     group: haproxy
     mode: 0755
 
-- name: create /etc/haproxy/haproxy.cfg
+- name: Create /etc/haproxy/haproxy.cfg
   template:
     src: etc/haproxy/haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
     group: haproxy
     mode: 0644
   notify:
-  - restart haproxy
-  - restart firewalld
+  - Restart firewalld
 
-- name: turn on haproxy_connect_any
+- name: Turn on haproxy_connect_any
   seboolean:
     name: haproxy_connect_any
     state: yes
