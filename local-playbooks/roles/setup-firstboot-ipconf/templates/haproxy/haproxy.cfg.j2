@@ -44,6 +44,7 @@ frontend elan-router-http
    acl elanweb hdr(host) -i {{ elan_host_name }}.{{ cluster_base_domain }}
    acl elanweb hdr(host) -i {{ bastion_public_ip_address }}
    use_backend elan-http if elanweb
+#--RHOCP-HTTP--here
 
 frontend elan-router-https
    mode tcp
@@ -54,6 +55,7 @@ frontend elan-router-https
    acl elanweb req_ssl_sni -i {{ elan_host_name }}.{{ zvmesi_domain_name }}
    acl elanweb req_ssl_sni -i {{ elan_host_name }}.{{ cluster_base_domain }}
    use_backend elan-https if elanweb
+#--RHOCP-HTTPS--here
 
 backend elan-http
    mode http

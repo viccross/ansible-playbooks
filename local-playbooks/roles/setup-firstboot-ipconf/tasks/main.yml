@@ -112,6 +112,7 @@
   - { src: "create-certificate.yml.j2", dest: "/opt/ansible/tasks/create-certificate.yml" }
   - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml" }
   - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml" }
+  - { src: "update-haproxy-rhocp.yml.j2", dest: "/opt/ansible/update-haproxy-rhocp.yml" }
   - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2" }
   - { src: "named/zvmesi_domain_name.zone.j2", dest: "/opt/ansible/templates/named/zvmesi_domain_name.zone.j2" }
   - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2" }
@@ -120,5 +121,7 @@
   - { src: "named/slavezone.conf.j2", dest: "/opt/ansible/templates/named/slavezone.conf.j2" }
   - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2" }
   - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2" }
+  - { src: "haproxy/cluster.cfg.j2", dest: "/opt/ansible/templates/haproxy/cluster.cfg.j2" }
   - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2" }
+  - { src: "haproxy/rhocp-front.cfg.j2", dest: "/opt/ansible/templates/haproxy/rhocp-front.cfg.j2" }
   - { src: "settings.env.j2", dest: "/etc/zvmesi/settings.env" }
