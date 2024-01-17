@@ -42,6 +42,7 @@ frontend elan-router-http
    tcp-request inspect-delay 5s
    acl elanweb hdr(host) -i {{ elan_host_name }}.{{ zvmesi_domain_name }}
    acl elanweb hdr(host) -i {{ elan_host_name }}.{{ cluster_base_domain }}
+   acl elanweb hdr(host) -i {{ bastion_public_ip_address }}
    use_backend elan-http if elanweb
 
 frontend elan-router-https
