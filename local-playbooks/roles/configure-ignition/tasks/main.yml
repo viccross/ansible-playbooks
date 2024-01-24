@@ -14,7 +14,8 @@
 #    loop_var: rhcos_ver
 #  when: ansible_architecture == "s390x"
 
-- name: Create pxelinux files
+# trunk-ignore(checkov/CKV2_ANSIBLE_3)
+- name: Setup environment for KVM
   block:
     - name: Install git
       dnf:
@@ -22,38 +23,36 @@
           - git
           - file
         state: present
-      when: install_mode == 'zkvm'
-
     - name: Clone s390x-tools
       git:
         repo: https://github.com/ibm-s390-tools/s390-tools.git
         dest: /root/s390-tools
         version: master
-      when: install_mode == 'zkvm'
       environment: "{{ local_proxy_env | default(omit) }}"
+  when: install_mode == 'zkvm'
 
-    - name: Generate pxelinux0 entry (bootstrap)
-      vars:
-        coreos_role: bootstrap
-      include_tasks: generate_pxelinux0.yml
-      with_items: "{{ cluster_nodes[coreos_role] }}"
+- name: Generate pxelinux0 entry (bootstrap)
+  vars:
+    coreos_role: bootstrap
+  include_tasks: generate_pxelinux0.yml
+  with_items: "{{ cluster_nodes[coreos_role] }}"
 
-    - name: Generate pxelinux0 entry (masters)
-      vars:
-        coreos_role: masters
-      include_tasks: generate_pxelinux0.yml
-      with_items: "{{ cluster_nodes[coreos_role] }}"
+- name: Generate pxelinux0 entry (masters)
+  vars:
+    coreos_role: masters
+  include_tasks: generate_pxelinux0.yml
+  with_items: "{{ cluster_nodes[coreos_role] }}"
 
-    - name: Generate pxelinux0 entry (workers)
-      vars:
-        coreos_role: workers
-      include_tasks: generate_pxelinux0.yml
-      with_items: "{{ cluster_nodes[coreos_role] }}"
-      when: cluster_nodes.workers is defined
+- name: Generate pxelinux0 entry (workers)
+  vars:
+    coreos_role: workers
+  include_tasks: generate_pxelinux0.yml
+  with_items: "{{ cluster_nodes[coreos_role] }}"
+  when: cluster_nodes.workers is defined
 
-    - name: Generate pxelinux0 entry (bootworker)
-      vars:
-        coreos_role: bootworker
-      include_tasks: generate_pxelinux0.yml
-      with_items: "{{ cluster_nodes[coreos_role] }}"
-      when: cluster_nodes.bootworker is defined
+- name: Generate pxelinux0 entry (bootworker)
+  vars:
+    coreos_role: bootworker
+  include_tasks: generate_pxelinux0.yml
+  with_items: "{{ cluster_nodes[coreos_role] }}"
+  when: cluster_nodes.bootworker is defined
