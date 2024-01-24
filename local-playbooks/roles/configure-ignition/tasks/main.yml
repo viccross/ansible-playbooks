@@ -16,6 +16,7 @@
 
 # trunk-ignore(checkov/CKV2_ANSIBLE_3)
 - name: Setup environment for KVM
+  when: install_mode == 'zkvm'
   block:
     - name: Install git
       dnf:
@@ -29,7 +30,6 @@
         dest: /root/s390-tools
         version: master
       environment: "{{ local_proxy_env | default(omit) }}"
-  when: install_mode == 'zkvm'
 
 - name: Generate pxelinux0 entry (bootstrap)
   vars:
