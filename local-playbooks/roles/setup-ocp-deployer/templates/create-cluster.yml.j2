@@ -1,4 +1,6 @@
 - name: create ocp4 cluster
   hosts: s390x_bastion_workstation
+  vars:
+    cluster_values: "{% raw %}{{ lookup('file', '{{ webroot }}/.cluster/{{ cluster_name }}') | from_json }}{% endraw %}"
   roles:
   - "roles/create-cluster"
