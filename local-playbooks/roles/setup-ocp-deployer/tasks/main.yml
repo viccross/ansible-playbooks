@@ -198,15 +198,15 @@
     mode: 0644
   notify: Enable incrond
 
-- name: Copy the kicker script for RHOCP define
+- name: Copy the kicker script for RHOCP cluster actions
   template:
-    src: ocp-define-action.sh.j2
-    dest: /usr/local/bin/ocp-define-action.sh
+    src: ocp-cluster-action.sh.j2
+    dest: /usr/local/bin/ocp-cluster-action.sh
     mode: 0750
 - name: Copy the incrontab file
   template:
-    src: incrontab-ocp-define.j2
-    dest: /etc/incron.d/ocp-define
+    src: incrontab-ocp-cluster.j2
+    dest: /etc/incron.d/ocp-cluster
     mode: 0644
   notify: Enable incrond
 
