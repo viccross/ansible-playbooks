@@ -17,7 +17,7 @@
       group: named
       mode: 0640
     vars:
-      domain_name: "{{ cluster_name }}.{{ cluster_base_domain }}"
+      domain_name: "{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}"
 
   - name: Add the tag for the named.conf fragment
     lineinfile:
