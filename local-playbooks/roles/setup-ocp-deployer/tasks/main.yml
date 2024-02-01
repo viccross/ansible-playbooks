@@ -106,6 +106,7 @@
   - { src: defaults/main.yml, dest: /opt/ansible/roles/create-cluster/defaults/main.yml }
   - { src: cluster-guests-create.yml.j2, dest: /opt/ansible/cluster-guests-create.yml }
   - { src: cluster-guests-delete.yml.j2, dest: /opt/ansible/cluster-guests-delete.yml }
+  - { src: ocp-add-domain-dns.yml.j2, dest: /opt/ansible/ocp-add-domain-dns.yml }
   - { src: chrony.conf.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony.conf.j2 }
   - { src: chrony-manifest.yaml.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony-manifest.yaml.j2 }
   - { src: ldapIdentityCr.yml.j2, dest: /opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml.j2 }
