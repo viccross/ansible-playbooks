@@ -24,6 +24,7 @@
       line: include "/etc/named/{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}.conf";
       dest: /etc/named.conf
       insertafter: "// RHOCP zones"
+    notify: Restart dns
 
 - name: Push DNS reconfiguration to remote ELANs
   hosts: s390x_remote_elans
