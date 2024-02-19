@@ -22,7 +22,7 @@ backend {{ cluster_name }}-machine-config-server
    server {{ item }} {{ item }}.{{ cluster_domain_name }}:22623 weight 100 check
 {% endfor %}
 
-backend {{ cluster_name }}-http
+backend {{ cluster_name }}-http-router
    mode http
 {% if workers is defined %}
    {% for item in workers.keys() %}
@@ -39,7 +39,7 @@ backend {{ cluster_name }}-http
    {% endfor %}
 {% endif %}
 
-backend {{ cluster_name }}-router-https
+backend {{ cluster_name }}-https-router
    mode tcp
 {% if workers is defined %}
    {% for item in workers.keys() %}

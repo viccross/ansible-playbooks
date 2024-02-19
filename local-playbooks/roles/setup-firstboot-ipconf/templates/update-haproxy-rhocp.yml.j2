@@ -1,0 +1,95 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+---
+- name: Reconfigure HAProxy for an RHOCP cluster
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Create the RHOCP frontend config file (if needed)
+    template:
+      src: haproxy/rhocp-front.cfg.j2
+      dest: /etc/haproxy/conf.d/zz-rhocp-front.cfg
+      owner: haproxy
+      group: haproxy
+      mode: 0640
+      force: no
+
+  - name: Add the cluster config file
+    template:
+      src: haproxy/cluster.cfg.j2
+      dest: /etc/haproxy/conf.d/{{ cluster_name }}.cfg
+      owner: haproxy
+      group: haproxy
+      mode: 0640
+
+  - name: Create a file with the cluster node IPs
+    block:
+    - name: Extract the bootstrap IP(s) to the IP file
+      lineinfile:
+        path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
+        create: yes
+        line: "{{ item.value.ip }}"
+      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['bootstrap']) }}"
+    - name: Extract the master IPs to the IP file
+      lineinfile:
+        path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
+        line: "{{ item.value.ip }}"
+      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['masters']) }}"
+    - name: Extract the worker IPs to the IP file
+      lineinfile:
+        path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
+        line: "{{ item.value.ip }}"
+      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['workers']) }}"
+      when: cluster_nodes['workers'] is defined
+    - name: Extract the bootworker IP(s) to the IP file
+      lineinfile:
+        path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
+        line: "{{ item.value.ip }}"
+      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['bootworker']) }}"
+      when: cluster_nodes['bootworker'] is defined
+
+  - name: Add the API/MCS backends to the RHCOP frontends
+    lineinfile:
+      path: /etc/haproxy/conf.d/zz-rhocp-front.cfg
+      line: "{{ item.line }}"
+      regexp: "{{ item.regexp }}"
+      insertbefore: "{{ item.before }}"
+    loop:
+      - line: acl {{ cluster_name }}-api-acl req_ssl_sni -i api.{{ cluster_domain_name }}
+        regexp: ^acl {{ cluster_name }}-api-acl.*api.{{ cluster_domain_name }}
+        before: "#--RHOCP-API-FRONT--here"
+      - line: acl {{ cluster_name }}-api-acl req_ssl_sni -i api-int.{{ cluster_domain_name }}
+        regexp: ^acl {{ cluster_name }}-api-acl.*api-int.{{ cluster_domain_name }}
+        before: "#--RHOCP-API-FRONT--here"
+      - line: use_backend {{ cluster_name }}-k8s-api-server if {{ cluster_name }}-api-acl
+        regexp: ^use_backend {{ cluster_name }}-k8s-api-server
+        before: "#--RHOCP-API-FRONT--here"
+      - line: acl {{ cluster_name }}-mcs-acl src -f /etc/haproxy/conf.d/{{ cluster_name }}.ips
+        regexp: ^acl {{ cluster_name }}-mcs-acl
+        before: "#--RHOCP-MCS-FRONT--here"
+      - line: use_backend {{ cluster_name }}-machine-config-server if {{ cluster_name }}-mcs-acl
+        regexp: ^use_backend {{ cluster_name }}-machine-config-server
+        before: "#--RHOCP-MCS-FRONT--here"
+
+  - name: Add the HTTP/S backends to the corresponding frontend
+    lineinfile:
+      path: /etc/haproxy/haproxy.cfg
+      line: "{{ item.line }}"
+      regexp: "{{ item.regexp }}"
+      insertbefore: "{{ item.before }}"
+    loop:
+      - line: acl {{ cluster_name }}-http-acl hdr(host) -i -m end .apps.{{ cluster_domain_name }}
+        regexp: ^acl {{ cluster_name }}-http-acl hdr
+        before: "#--RHOCP-HTTP--here"
+      - line: use_backend {{ cluster_name }}-http-router if {{ cluster_name }}-http-acl
+        regexp: ^use_backend {{ cluster_name }}-http-router
+        before: "#--RHOCP-HTTP--here"
+      - line: acl {{ cluster_name }}-https-acl req_ssl_sni -i -m end .apps.{{ cluster_domain_name }}
+        regexp: ^acl {{ cluster_name }}-https-acl req
+        before: "#--RHOCP-HTTPS--here"
+      - line: use_backend {{ cluster_name }}-https-router if {{ cluster_name }}-https-acl
+        regexp: ^use_backend {{ cluster_name }}-https-router
+        before: "#--RHOCP-HTTPS--here"
+
+#  - name: Restart HAProxy
+#    service:
+#      name: haproxy.service
+#      state: restarted
