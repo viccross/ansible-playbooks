@@ -53,10 +53,10 @@
       regexp: "{{ item.regexp }}"
       insertbefore: "{{ item.before }}"
     loop:
-      - line: acl {{ cluster_name }}-api-acl hdr(host) -i api.{{ cluster_domain_name }}
+      - line: acl {{ cluster_name }}-api-acl req_ssl_sni -i api.{{ cluster_domain_name }}
         regexp: ^acl {{ cluster_name }}-api-acl.*api.{{ cluster_domain_name }}
         before: "#--RHOCP-API-FRONT--here"
-      - line: acl {{ cluster_name }}-api-acl hdr(host) -i api-int.{{ cluster_domain_name }}
+      - line: acl {{ cluster_name }}-api-acl req_ssl_sni -i api-int.{{ cluster_domain_name }}
         regexp: ^acl {{ cluster_name }}-api-acl.*api-int.{{ cluster_domain_name }}
         before: "#--RHOCP-API-FRONT--here"
       - line: use_backend {{ cluster_name }}-k8s-api-server if {{ cluster_name }}-api-acl
@@ -76,13 +76,13 @@
       regexp: "{{ item.regexp }}"
       insertbefore: "{{ item.before }}"
     loop:
-      - line: acl {{ cluster_name }}-http-acl hdr(host) -i -m end *.apps.{{ cluster_domain_name }}
+      - line: acl {{ cluster_name }}-http-acl hdr(host) -i -m end .apps.{{ cluster_domain_name }}
         regexp: ^acl {{ cluster_name }}-http-acl hdr
         before: "#--RHOCP-HTTP--here"
       - line: use_backend {{ cluster_name }}-http-router if {{ cluster_name }}-http-acl
         regexp: ^use_backend {{ cluster_name }}-http-router
         before: "#--RHOCP-HTTP--here"
-      - line: acl {{ cluster_name }}-https-acl req_ssl_sni -i -m end *.apps.{{ cluster_domain_name }}
+      - line: acl {{ cluster_name }}-https-acl req_ssl_sni -i -m end .apps.{{ cluster_domain_name }}
         regexp: ^acl {{ cluster_name }}-https-acl req
         before: "#--RHOCP-HTTPS--here"
       - line: use_backend {{ cluster_name }}-https-router if {{ cluster_name }}-https-acl
