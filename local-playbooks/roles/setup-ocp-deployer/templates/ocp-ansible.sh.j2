@@ -17,4 +17,4 @@ export ANSIBLE_LOG_PATH
 cd /opt/ansible || exit
 curtime=$(date)
 echo "Ansible build run started at ${curtime}" > "${ANSIBLE_LOG_PATH}"
-ansible-playbook -vv -i inventory -e "cluster_name=${CLSNAME}" create-cluster.yml
+ansible-playbook -v -i inventory -e "cluster_name=${CLSNAME}" -e "@/var/www/html/.cluster/${cluster_name}" create-cluster.yml

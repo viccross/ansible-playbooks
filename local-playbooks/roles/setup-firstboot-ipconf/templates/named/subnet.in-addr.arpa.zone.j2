@@ -1,35 +1,10 @@
 #jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
-{% set bootstrap = cluster_nodes['bootstrap'] %}
-{% set masters = cluster_nodes['masters'] %}
-{% set workers = cluster_nodes['workers'] %}
-{% if cluster_nodes['bootworker'] is defined %}
-{% set bootworker = cluster_nodes['bootworker'] %}
-{% endif %}
 $TTL 900
 @          IN SOA elan-int.{{ zvmesi_domain_name }} hostmaster.{{ zvmesi_domain_name }}. (
-             2022090501 1D 1H 1W 3H
+             2024020201 1D 1H 1W 3H
            )
-           IN NS bastion-int.{{ zvmesi_domain_name }}.
+           IN NS elan-int.{{ zvmesi_domain_name }}.
 
 [[ zvm_internal_ip_address.split('.')[3] ]] IN PTR zVM.ibmpoc.internal.
 [[ zvm_internal_ip_address.split('.')[3] ]] IN PTR LDAPSRV.ibmpoc.internal.
 [[ bastion_private_ip_address.split('.')[3] ]] IN PTR elan-int.{{ cluster_domain_name }}.
-
-{% for item in masters.keys() %}
-{{ masters[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
-{% endfor %}
-
-{% if workers is defined %}
-{% for item in workers.keys() %}
-{{ workers[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
-{% endfor %}
-{% endif %}
-{% if bootworker is defined %}
-{% for item in bootworker.keys() %}
-{{ bootworker[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
-{% endfor %}
-{% endif %}
-
-{% for item in bootstrap.keys() %}
-{{ bootstrap[item].ip.split('.')[3] }} IN PTR {{ item }}.{{ cluster_domain_name }}.
-{% endfor %}

@@ -1,0 +1,105 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+---
+- name: Create the kernel loader / boot files for CoreOS kickoff
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Make bootfile dir
+    file:
+      path: "{{ bootfile_dest }}"
+      state: directory
+      mode: 0755
+
+  - name: Get dependencies for KVM pxelinux files
+    when: install_mode == 'zkvm'
+    block:
+    - name: Install git
+      dnf:
+        name:
+        - git
+        - file
+        state: present
+    - name: Clone s390x-tools
+      git:
+        repo: 'https://github.com/ibm-s390-tools/s390-tools.git'
+        dest: /root/s390-tools
+        version: master
+      environment: "{{ local_proxy_env | default(omit) }}"
+
+  - name: Generate boot files (bootstrap)
+    vars:
+      coreos_role: bootstrap
+    include_tasks: tasks/generate-bootfile.yml
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
+
+  - name: Generate boot files (masters)
+    vars:
+      coreos_role: control
+    include_tasks: tasks/generate-bootfile.yml
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
+
+  - name: Generate boot files (workers)
+    vars:
+      coreos_role: compute
+    include_tasks: tasks/generate-bootfile.yml
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
+    when: cluster['nodes']['compute'] is defined
+
+  - name: Generate boot files (bootcompute)
+    vars:
+      coreos_role: bootcompute
+    include_tasks: tasks/generate-bootfile.yml
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
+    when: cluster['nodes']['bootcompute'] is defined
+
+  - name: Generate boot files (infra)
+    vars:
+      coreos_role: infra
+    include_tasks: tasks/generate-bootfile.yml
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
+    when: cluster['nodes']['infra'] is defined
+
+  - name: copy the ZNETBOOT config files to CMS
+    block:
+    - name: unmount the CMSFS
+      command:
+        cmd: fusermount -u [[ znetboot_cfg_path ]]
+# the DASD has to be cycled to pick up new link mode :/
+    - name: vary the DASD offline
+      command:
+        cmd: chccwdev -d 191
+    - name: link the DASD in write mode
+      command:
+        cmd: vmcp link [[ znetboot_cfg_disk ]] 191 mr
+    - name: vary the DASD online
+      command:
+        cmd: chccwdev -e 191
+    - name: pause for udev/systemd
+      pause:
+        seconds: 1
+    - name: Mount (just in case)
+      command:
+        cmd: mount -a
+# Can't use Ansible copy module due to CMSFS semantics
+# (and stubbornness of Ansible)
+    - name: copy the files
+      shell: |
+        for FN in $(find {{ bootfile_dest }} -iname "*.znetboot" -printf "%P "); do
+          rm -f [[ znetboot_cfg_path ]]/${FN^^}
+        done
+        cp {{ bootfile_dest }}/*.znetboot [[ znetboot_cfg_path ]]/
+    - name: unmount the CMSFS
+      command:
+        cmd: fusermount -u [[ znetboot_cfg_path ]]
+# the DASD has to be cycled to pick up new link mode :/
+    - name: vary the DASD offline
+      command:
+        cmd: chccwdev -d 191
+    - name: link the DASD in read mode
+      command:
+        cmd: vmcp link [[ znetboot_cfg_disk ]] 191 rr
+    - name: vary the DASD online
+      command:
+        cmd: chccwdev -e 191
+    - name: Mount (just in case)
+      command:
+        cmd: mount -a

@@ -1,7 +1,7 @@
 ---
 # tasks file for create-guest-for-linux
 - name: stop a Linux guest
-  shell: /usr/local/bin/smcli id -T {% raw %}{{ cluster_nodes[coreos_role][item].guest_name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} -t IMMED # noqa 204
+  shell: /usr/local/bin/smcli id -T {% raw %}{{ cluster['nodes'][coreos_role][item].name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} -t IMMED # noqa 204
   args:
     executable: /bin/bash
   register: ret
@@ -11,6 +11,6 @@
     ret.rc == 0
 
 - name: delete a Linux guest
-  shell: /usr/local/bin/smcli idd -T {% raw %}{{ cluster_nodes[coreos_role][item].guest_name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} -e 1 # noqa 204
+  shell: /usr/local/bin/smcli idd -T {% raw %}{{ cluster['nodes'][coreos_role][item].name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }} -e 1 # noqa 204
   args:
     executable: /bin/bash

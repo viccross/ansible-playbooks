@@ -5,8 +5,8 @@
   vars:
     zvmesi_domain: "{{zvmesi_domain_name }}."
     group_domain: "{{ esigroup | lower }}.{{cluster_base_domain }}."
-    ns_zvmesi: "{{ query('community.dns.lookup', lookup('vars', 'zvmesi_domain'), type='NS') }}" 
-    ns_group: "{{ query('community.dns.lookup', lookup('vars', 'group_domain'), type='NS') }}"
+    ns_zvmesi: "{{ lookup('dig', lookup('vars', 'zvmesi_domain'), qtype='NS', wantlist=true) }}" 
+    ns_group: "{{ lookup('dig', lookup('vars', 'group_domain'), qtype='NS', wantlist=true) }}"
     ns_hostname: "{{ sys['hostname'] }}." 
 
   tasks:

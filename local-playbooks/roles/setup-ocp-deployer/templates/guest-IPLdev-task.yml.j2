@@ -1,6 +1,6 @@
 ---
 # tasks file for create-guest-for-linux
 - name: set the real IPL device for a Linux guest
-  shell: /usr/local/bin/smcli iisd -T {% raw %}{{ cluster_nodes[coreos_role][item].guest_name|quote }}{% endraw %} -n 200 -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
+  shell: /usr/local/bin/smcli iisd -T {% raw %}{{ cluster['nodes'][coreos_role][item].name|quote }}{% endraw %} -n 200 -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
   args:
     executable: /bin/bash

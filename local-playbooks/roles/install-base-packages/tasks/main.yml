@@ -82,4 +82,12 @@
       - cockpit-ws
       - elan-tools
       - squashfs-tools
+      - fuse
+      - autofs
     state: latest
+
+- name: Activate the autofs service
+  systemd:
+    name: autofs
+    state: started
+    enabled: yes

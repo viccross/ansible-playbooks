@@ -11,8 +11,8 @@ fi
 
 # Parse the values in the trigger file
 CFPATH="/var/www/html/.cluster"
-CLSNAME=$(jq -r .name < "${CFPATH}/$1")
-CLSSTATE=$(jq -r .statusText < "${CFPATH}/$1")
+CLSNAME=$(jq -r .cluster.name < "${CFPATH}/$1")
+CLSSTATE=$(jq -r .cluster.statusText < "${CFPATH}/$1")
 
 if [[ -z ${CLSNAME} || ${CLSNAME} == "null" ]]; then
   echo "No cluster name provided!"
@@ -21,11 +21,12 @@ fi
 
 case ${CLSSTATE} in
   Defining )
-    CLSVER=$(jq -r .OCPVer < "${CFPATH}/$1")
+    CLSVER=$(jq -r .cluster.OCPVer < "${CFPATH}/$1")
     if [[ -z ${CLSVER} || ${CLSVER} == "null" ]]; then
       echo "No cluster version provided!"
       exit 3
     fi
+
     # Schedule the action
     (
       flock 9
@@ -36,8 +37,15 @@ case ${CLSSTATE} in
     # Schedule the action
     (
       flock 9
-      /usr/local/bin/ocp-ansible.sh -n "${CLSNAME}"
+      /usr/local/bin/ocp-ansible.sh "${CLSNAME}"
     ) 9>/var/run/ocp-build-action.lock
+  ;;
+  Resetting )
+    # Schedule the action
+    (
+      flock 9
+      /usr/local/bin/ocp-retry.sh "${CLSNAME}"
+    ) 9>/var/run/ocp-reset-action.lock
   ;;
   * )
     echo "Unknown action request: ${CLSSTATE}"

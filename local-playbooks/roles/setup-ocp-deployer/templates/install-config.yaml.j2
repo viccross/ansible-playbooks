@@ -7,11 +7,11 @@ proxy:
 compute:
 - hyperthreading: Enabled
   name: worker
-  replicas: {{ cluster_nodes['workers'].keys() | length }}
+  replicas: {% raw %}{{ cluster['nodes']['compute'].keys() | length }}{% endraw %}{{''}}
 controlPlane:
   hyperthreading: Enabled
   name: master
-  replicas: {{ cluster_nodes['masters'].keys() | length }}
+  replicas: {% raw %}{{ cluster['nodes']['control'].keys() | length }}{% endraw %}{{''}}
 metadata:
   name: "{% raw %}{{ cluster_name }}{% endraw %}"
 networking:
@@ -24,4 +24,4 @@ networking:
 platform:
   none: {}
 pullSecret: '{% raw %}{{ ocp4_pull_secret | to_json }}{% endraw %}'
-sshKey: '{{ bastion_pubkey.content | b64decode | trim }}'
+sshKey: '{% raw %}{{ bastion_pubkey.content | b64decode | trim }}{% endraw %}'
