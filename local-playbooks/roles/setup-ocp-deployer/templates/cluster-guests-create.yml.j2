@@ -27,8 +27,8 @@
     include_tasks: tasks/create-guest.yml
     vars:
       coreos_role: control
-      directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+      directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
 
   - name: add disk to the control nodes
     shell:
@@ -41,8 +41,8 @@
     include_tasks: tasks/create-guest.yml
     vars:
       coreos_role: compute
-      directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+      directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
     when: cluster['nodes'].compute is defined
 
   - name: add disk to the compute nodes
@@ -57,8 +57,8 @@
     include_tasks: tasks/create-guest.yml
     vars:
       coreos_role: infra
-      directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+      directory_entry: "{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}"
+    with_items: "{{ cluster['nodes'][coreos_role] }}"
     when: cluster['nodes']['infra'] is defined
 
   - name: add disk to the infra nodes

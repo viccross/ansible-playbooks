@@ -64,12 +64,14 @@ ocp_cluster_lan_name: "{{ ocp_cluster_lan_name }}"
 #      ign_profile: worker.ign
 guestmemory:
   bootstrap: "{{ guestmemory['bootstrap'] }}"
-  masters: "{{ guestmemory['masters'] }}"
-  workers: "{{ guestmemory['workers'] }}"
+  control: "{{ guestmemory['masters'] }}"
+  compute: "{{ guestmemory['workers'] }}"
+  infra: "{{ guestmemory['workers'] }}"
 guestvcpus:
   bootstrap: "{{ guestvcpus['bootstrap'] }}"
-  masters: "{{ guestvcpus['masters'] }}"
-  workers: "{{ guestvcpus['workers'] }}"
+  control: "{{ guestvcpus['masters'] }}"
+  compute: "{{ guestvcpus['workers'] }}"
+  infra: "{{ guestvcpus['workers'] }}"
 
 # The following variables should generally not need to be edited
 
@@ -84,6 +86,18 @@ znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
 webroot: "{{ webroot }}"
 bootfile_dest: "~csid_{% raw %}{{ cluster_name }}/bootfiles{% endraw %}"
+install_mode: zvm
+pxe_mode: znetboot
+ignition:
+  bootstrap: bootstrap.ign
+  control: master.ign
+  compute: worker.ign
+  bootcompute: worker.ign
+  infra: worker.ign
+coreos_kargs_net:
+  zvm: "ip={% raw %}{{ cluster['nodes'][coreos_role][item].ip }}{% endraw %}::{{ subnet_gateway }}:{{ subnet_netmask }}:::none nameserver={{ bastion_private_ip_address }}"
+coreos_kargs_extra:
+  zvm: "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
 
 # The IP configuration will write out the cluster_base_domain variable.
 # Look for runtime.yml in the group_vars/all directory (where this file is).

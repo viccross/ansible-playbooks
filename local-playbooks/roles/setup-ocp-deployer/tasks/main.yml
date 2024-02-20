@@ -114,8 +114,8 @@
   - { src: create-certificate.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/create-certificate.yml }
   - { src: configure-cluster.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/configure-cluster.yml }
   - { src: create-bootfiles.yml.j2, dest: /opt/ansible/create-bootfiles.yml }
-  - { src: generate-bootfile.yml.j2, dest: /opt/ansible/roles/create-cluster/templates/generate-bootfile.yml }
-  - { src: ocpguest.znetboot.j2, dest: /opt/ansible/roles/create-cluster/templates/ocpguest.znetboot }
+  - { src: generate-bootfile.yml.j2, dest: /opt/ansible/tasks/generate-bootfile.yml }
+  - { src: ocpguest.znetboot.j2, dest: /opt/ansible/templates/ocpguest.znetboot.j2 }
 
 #- name: Copy the DASD script
 #  template:

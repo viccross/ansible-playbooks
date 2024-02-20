@@ -1,10 +1,10 @@
 #jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
-ZNETBOOT_KERNEL=http://[[ bastion_private_ip_address ]]:8080/install/{{ rhcos_installer_kernel }}
-ZNETBOOT_INITRD=http://[[ bastion_private_ip_address ]]:8080/install/{{ rhcos_installer_initramfs }}
+ZNETBOOT_KERNEL=http://[[ bastion_private_ip_address ]]:8080/install/{{ cluster['OCPVer'] }}/rhcos/rhcos-live-kernel-s390x
+ZNETBOOT_INITRD=http://[[ bastion_private_ip_address ]]:8080/install/{{ cluster['OCPVer'] }}/rhcos/rhcos-live-initramfs.s390x.img
 ZNETBOOT_PROGRESS=2M
 
-rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster['nodes'][coreos_role][item].disk }}
-coreos.live.rootfs_url=http://[[ bastion_private_ip_address ]]:8080/install/{{ rhcos_live_image }}
-coreos.inst.ignition_url=http://[[ bastion_private_ip_address ]]:8080/ignition/{{ cluster['nodes'][coreos_role][item].ign_profile }}
+rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev=dasda
+coreos.live.rootfs_url=http://[[ bastion_private_ip_address ]]:8080/install/{{ cluster['OCPVer'] }}/rhcos/rhcos-live-rootfs.s390x.img
+coreos.inst.ignition_url=http://[[ bastion_private_ip_address ]]:8080/ignition/{{ ignition[coreos_role] }}
 {{ coreos_kargs_net[install_mode] }}
 {{ coreos_kargs_extra[install_mode] }}

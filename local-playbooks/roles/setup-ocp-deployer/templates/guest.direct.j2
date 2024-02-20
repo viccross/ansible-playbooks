@@ -1,7 +1,7 @@
 #jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 USER {{ cluster['nodes'][coreos_role][item].name }} ZVM4DEMO {{ guestmemory[coreos_role] }}{% endraw %}G {{ (guestmemory[coreos_role] | int) * 2 }}G  G
  INCLUDE OCPDFLT
- COMMAND DEFINE CPU 01-{{ '%02X' % (guestvcpus[coreos_role] | int) -1 }} TYPE IFL
+ COMMAND DEFINE CPU 01-{{ '%02X' % ((guestvcpus[coreos_role] | int) - 1) }} TYPE IFL
  CPU 00
  IPL CMS
  SHARE RELATIVE {{ guestvcpus[coreos_role] }}00
