@@ -162,31 +162,31 @@
 #    state: stopped
 #    enabled: no
 
-- name: Copy the action script for ocp-cluster-guests
-  template:
-    src: ocp-cluster-guests.sh.j2
-    dest: /usr/local/bin/ocp-cluster-guests.sh
-    mode: 0750
-- name: Copy the ocp-guests-start systemd service file
-  template:
-    src: ocp-guests-start.service.j2
-    dest: /usr/local/lib/systemd/system/ocp-guests-start.service
-    mode: 0644
-- name: Copy the ocp-guests-stop systemd service file
-  template:
-    src: ocp-guests-stop.service.j2
-    dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
-    mode: 0644
-- name: Do not enable the ocp-guests-start service
-  systemd:
-    name: ocp-guests-start
-    state: stopped
-    enabled: no
-- name: Do not enable the ocp-guests-stop service
-  systemd:
-    name: ocp-guests-stop
-    state: stopped
-    enabled: no
+#- name: Copy the action script for ocp-cluster-guests
+#  template:
+#    src: ocp-cluster-guests.sh.j2
+#    dest: /usr/local/bin/ocp-cluster-guests.sh
+#    mode: 0750
+#- name: Copy the ocp-guests-start systemd service file
+#  template:
+#    src: ocp-guests-start.service.j2
+#    dest: /usr/local/lib/systemd/system/ocp-guests-start.service
+#    mode: 0644
+#- name: Copy the ocp-guests-stop systemd service file
+#  template:
+#    src: ocp-guests-stop.service.j2
+#    dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
+#    mode: 0644
+#- name: Do not enable the ocp-guests-start service
+#  systemd:
+#    name: ocp-guests-start
+#    state: stopped
+#    enabled: no
+#- name: Do not enable the ocp-guests-stop service
+#  systemd:
+#    name: ocp-guests-stop
+#    state: stopped
+#    enabled: no
 
 - name: Copy the kicker script for RHOCP build
   template:
