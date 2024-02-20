@@ -40,6 +40,13 @@ case ${CLSSTATE} in
       /usr/local/bin/ocp-ansible.sh "${CLSNAME}"
     ) 9>/var/run/ocp-build-action.lock
   ;;
+  Resetting )
+    # Schedule the action
+    (
+      flock 9
+      /usr/local/bin/ocp-retry.sh "${CLSNAME}"
+    ) 9>/var/run/ocp-reset-action.lock
+  ;;
   * )
     echo "Unknown action request: ${CLSSTATE}"
     exit 4
