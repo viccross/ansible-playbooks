@@ -18,52 +18,52 @@ ocp_cluster_lan_name: "{{ ocp_cluster_lan_name }}"
 cluster_nodes:
   bootstrap:
     bootstrap-0:
-      guest_name: '{{ ocp_guest_pfx }}BOOT'
+      guest_name: '{% raw %}{{ cluster['nodes']['bootstrap']['name'] }}{% endraw %}'
       mac: '52:54:00:d0:f7:03'
-      ip: '{{ ip_bootstrap_0 }}'
+      ip: '{% raw %}{{ cluster['nodes']['bootstrap']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: bootstrap.ign
   masters:
     master-0:
-      guest_name: '{{ ocp_guest_pfx }}MAS0'
+      guest_name: '{% raw %}{{ cluster['nodes']['control-0']['name'] }}{% endraw %}'
       mac: '52:54:00:da:70:41'
-      ip: '{{ ip_master_0 }}'
+      ip: '{% raw %}{{ cluster['nodes']['control-0']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
     master-1:
-      guest_name: '{{ ocp_guest_pfx }}MAS1'
+      guest_name: '{% raw %}{{ cluster['nodes']['control-1']['name'] }}{% endraw %}'
       mac: '52:54:00:a2:93:d8'
-      ip: '{{ ip_master_1 }}'
+      ip: '{% raw %}{{ cluster['nodes']['control-1']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
     master-2:
-      guest_name: '{{ ocp_guest_pfx }}MAS2'
+      guest_name: '{% raw %}{{ cluster['nodes']['control-2']['name'] }}{% endraw %}'
       mac: '52:54:00:d9:5b:d8'
-      ip: '{{ ip_master_2 }}'
+      ip: '{% raw %}{{ cluster['nodes']['control-2']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: master.ign
   workers:
     worker-0:
-      guest_name: '{{ ocp_guest_pfx }}WRK0'
+      guest_name: '{% raw %}{{ cluster['nodes']['compute-0']['name'] }}{% endraw %}'
       mac: '52:54:00:70:8b:74'
-      ip: '{{ ip_worker_0 }}'
+      ip: '{% raw %}{{ cluster['nodes']['compute-0']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
     worker-1:
-      guest_name: '{{ ocp_guest_pfx }}WRK1'
+      guest_name: '{% raw %}{{ cluster['nodes']['compute-1']['name'] }}{% endraw %}'
       mac: '52:54:00:70:8b:75'
-      ip: '{{ ip_worker_1 }}'
+      ip: '{% raw %}{{ cluster['nodes']['compute-1']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
-{% if ip_worker_2 is defined %}
+{% raw %}{% if cluster['nodes']['compute-2']['ip'] is defined %}{% endraw %}
   bootworker:
     worker-2:
-      guest_name: '{{ ocp_guest_pfx }}WRK2'
+      guest_name: '{% raw %}{{ cluster['nodes']['compute-2']['name'] }}{% endraw %}'
       mac: '52:54:00:70:8b:76'
-      ip: '{{ ip_worker_2 }}'
+      ip: '{% raw %}{{ cluster['nodes']['compute-2']['ip'] }}{% endraw %}'
       disk: "{{ dev_disk[install_mode] }}"
       ign_profile: worker.ign
-{% endif %}
+{% raw %}{% endif %}{% endraw %}
 guestmemory:
   bootstrap: "{{ guestmemory['bootstrap'] }}"
   masters: "{{ guestmemory['masters'] }}"
