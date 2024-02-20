@@ -246,6 +246,7 @@
       - /opt/content
       - "{{ webroot }}/install"
       - "{{ webroot }}/.cluster"
+      - "{{ webroot }}/.clustertmp"
 
   - name: Create and set perms on incrond trigger files
     file:
