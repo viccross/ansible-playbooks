@@ -5,6 +5,6 @@ ZNETBOOT_PROGRESS=2M
 
 rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev=dasda
 coreos.live.rootfs_url=http://[[ bastion_private_ip_address ]]:8080/install/{{ cluster['OCPVer'] }}/rhcos/rhcos-live-rootfs.s390x.img
-coreos.inst.ignition_url=http://[[ bastion_private_ip_address ]]:8080/ignition/{{ ignition[coreos_role] }}
+coreos.inst.ignition_url=http://[[ bastion_private_ip_address ]]:8080/ignition/{{ cluster_name }}/{{ ignition[coreos_role] }}
 {{ coreos_kargs_net[install_mode] }}
 {{ coreos_kargs_extra[install_mode] }}

@@ -7,11 +7,11 @@ proxy:
 compute:
 - hyperthreading: Enabled
   name: worker
-  replicas: {% raw %}{{ cluster['nodes']['compute'].keys() | length }}{% endraw %}
+  replicas: {% raw %}{{ cluster['nodes']['compute'].keys() | length }}{% endraw %}{{''}}
 controlPlane:
   hyperthreading: Enabled
   name: master
-  replicas: {% raw %}{{ cluster['nodes']['control'].keys() | length }}{% endraw %}
+  replicas: {% raw %}{{ cluster['nodes']['control'].keys() | length }}{% endraw %}{{''}}
 metadata:
   name: "{% raw %}{{ cluster_name }}{% endraw %}"
 networking:
