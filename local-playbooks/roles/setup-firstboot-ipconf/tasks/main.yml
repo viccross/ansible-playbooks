@@ -65,7 +65,7 @@
   - ipcalc
   - x3270-text
 
-- name: Install the checksmapi and ipconf scripts to local executable path
+- name: Install the ipconf script to local executable path
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -73,7 +73,6 @@
     group: root
     mode: 0750
   loop:
-  - { src: "checksmapi.sh.j2", dest: "/usr/local/sbin/checksmapi.sh" }
   - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
 
 - name: Create systemd services for scripts
@@ -82,7 +81,6 @@
     dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
     mode: 0644
   loop:
-  - { servicename: "smapi", cmdpath: "/usr/local/sbin/checksmapi.sh", requires: "" }
   - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
 
 - name: Ensure old systemd service files don't exist
