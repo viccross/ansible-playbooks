@@ -1,6 +1,12 @@
 ---
 - name: Reconfigure BIND DNS for the new domain name
   hosts: s390x_bastion_workstation
+  handlers:
+  - name: Restart BIND named
+    systemd:
+      name: named-chroot.service
+      state: restarted
+    listen: Restart dns
   tasks:
   - name: Create DNS Forward zone
     template:

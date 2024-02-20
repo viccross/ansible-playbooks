@@ -85,3 +85,9 @@
       - fuse
       - autofs
     state: latest
+
+- name: Activate the autofs service
+  systemd:
+    name: autofs
+    state: started
+    enabled: yes
