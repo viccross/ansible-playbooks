@@ -1,9 +1,9 @@
 ---
 # tasks file for create-cluster
 
-- name: grab the pull secret
+- name: Grab the pull secret
   stat:
-    path: "{{ ocp4_pull_secret_file }}"
+    path: "{% raw %}{{ webroot }}/.cluster/{{ cluster_values.secret }}{% endraw %}"
   register: ps
 - name: abort if the pull secret is not present
   fail:
@@ -19,7 +19,9 @@
   file:
     path: "{{ workdir }}"
     state: "directory"
-    mode: 0755
+    owner: "{% raw %}csid_{{ cluster_name }}{% endraw %}"
+    group: rhocp_clusters
+    mode: 06755
 
 - name: copy the ZNETBOOT config files to CMS
   block:
@@ -135,18 +137,18 @@
 - block:
   - name: make ignition config directory
     file:
-      path: /var/www/html/ignition
+      path: "{% raw %}/var/www/html/ignition/{{ cluster_name }}{% endraw %}"
       state: directory
       mode: 0755
   - name: get ign files
     tags: config
     shell: ls {{ workdir }}/*.ign
     register: ign_raw
-  - name: copy ignition configs to /var/www/html/ignition
+  - name: copy ignition configs to cluster ignition directory
     tags: config
     copy:
       src: "{% raw %}{{ item }}{% endraw %}"
-      dest: "/var/www/html/ignition/"
+      dest: "{% raw %}/var/www/html/ignition/{{ cluster_name }}/{% endraw %}"
       remote_src: yes
       mode: 0644
     with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
@@ -155,7 +157,7 @@
   tags: wait-install
   copy:
     src: "{{ workdir }}/auth/kubeconfig"
-    dest: "~/.kube/config"
+    dest: "{% raw %}~csid_{{ cluster_name }}/.kube/config{% endraw %}"
     remote_src: yes
     force: yes
     mode: 0640

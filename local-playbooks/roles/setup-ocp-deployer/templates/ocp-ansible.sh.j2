@@ -1,9 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 # ocp-ansible.sh -- Kick off a build of OCP using Ansible
+
+if [[ -z $1 ]] ; then
+  echo "No cluster name was provided!"
+  exit 1
+fi
+
 sleep 10
-truncate -s 0 {{ webroot }}/logfile.txt
-cd /opt/ansible
-export ANSIBLE_LOG_PATH=/var/www/html/logfile.txt
+
+CLSNAME=$1
+CUHD=$(eval echo "~csid_${cluster_name}")
+ANSIBLE_LOG_PATH="${CUHD}/rhocp-build-$(date +"%Y%m%d%H%M%S").log"
+ln -s "${ANSIBLE_LOG_PATH}" "${CUHD}/rhocp-build.log"
+export ANSIBLE_LOG_PATH
+
+cd /opt/ansible || exit
 curtime=$(date)
-echo "Ansible build run started at $curtime" > $ANSIBLE_LOG_PATH
-ansible-playbook -vv -i inventory create-cluster.yml
+echo "Ansible build run started at ${curtime}" > "${ANSIBLE_LOG_PATH}"
+ansible-playbook -vv -i inventory -e "cluster_name=${CLSNAME}" create-cluster.yml
