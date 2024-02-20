@@ -80,7 +80,7 @@ guestvcpus:
 # dhcp_server_ip_address is not used by default in a z/VM install
 bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 
-ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/{{ cluster['secret'] }}') | from_json }}{% endraw %}"
+ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/{{ cluster.secret }}') | from_json }}{% endraw %}"
 
 znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"

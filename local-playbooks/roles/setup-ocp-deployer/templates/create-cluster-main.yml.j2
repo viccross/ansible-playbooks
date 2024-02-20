@@ -4,7 +4,7 @@
 
 - name: Grab the pull secret
   stat:
-    path: "{{ webroot }}/.secret/{{ cluster['secret'] }}"
+    path: '{{ webroot }}/.secret/{{ cluster["secret"] }}'
   register: ps
 - name: abort if the pull secret is not present
   fail:
@@ -26,7 +26,7 @@
 
 - name: Set up SSH for Ansible - slurp pubkey
   slurp:
-    src: ~/.ssh/id_ed25519.pub
+    src: ~csid_{{ cluster_name }}/.ssh/id_ed25519.pub
   register: bastion_pubkey
 
 # install config is deleted when ignition
@@ -44,7 +44,7 @@
 
 - name: create ignition configs
   tags: config
-  shell: "/opt/rhocp/install/{{ cluster['OCPVer'] }} /install/openshift-install --dir=`pwd` create ignition-configs"
+  shell: "/opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` create ignition-configs"
   args:
     chdir: "{{ workdir }}"
     creates: "{{ workdir }}/metadata.json"
@@ -183,7 +183,7 @@
 
 - name: wait for bootstrap complete # noqa 301
   tags: config
-  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }} /install/openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
+  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
   args:
     chdir: "{{ workdir }}"
   register: result
@@ -240,7 +240,7 @@
 
 - name: wait for install complete # noqa 301
   tags: wait-install
-  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }} /install/openshift-install --dir=`pwd` wait-for install-complete
+  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` wait-for install-complete
   args:
     chdir: "{{ workdir }}"
   register: result
