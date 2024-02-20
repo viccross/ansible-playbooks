@@ -33,7 +33,7 @@
       controller_passwd: "lnx4vm"
       compute_host: "iciccmp0.{% raw %}{{ cluster_base_domain }}{% endraw %}"
       compute_user_name: "root"
-      compute_private_key_data: "{% raw %}{{ lookup('file', '/root/.ssh/id_ed25519') | replace('\n','\\n') }}{% endraw %}"
+      compute_private_key_data: "{% raw %}{{ lookup('file', '/root/.ssh/id_rsa') | replace('\n','\\n') }}{% endraw %}"
       compute_vswitch: "VSW1"
       disk_pool: "ECKD:LINUX"
       host_type: "powervm"
