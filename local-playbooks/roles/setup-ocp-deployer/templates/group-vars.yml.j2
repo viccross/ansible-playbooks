@@ -83,6 +83,7 @@ ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/{{ cluster_
 znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
 webroot: "{{ webroot }}"
+bootfile_dest: "~csid_{% raw %}{{ cluster_name }}/bootfiles{% endraw %}"
 
 # The IP configuration will write out the cluster_base_domain variable.
 # Look for runtime.yml in the group_vars/all directory (where this file is).

@@ -26,6 +26,7 @@ case ${CLSSTATE} in
       echo "No cluster version provided!"
       exit 3
     fi
+
     # Schedule the action
     (
       flock 9
@@ -36,7 +37,7 @@ case ${CLSSTATE} in
     # Schedule the action
     (
       flock 9
-      /usr/local/bin/ocp-ansible.sh -n "${CLSNAME}"
+      /usr/local/bin/ocp-ansible.sh "${CLSNAME}"
     ) 9>/var/run/ocp-build-action.lock
   ;;
   * )

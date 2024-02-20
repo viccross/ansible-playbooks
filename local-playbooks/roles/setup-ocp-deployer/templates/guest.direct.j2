@@ -1,7 +1,8 @@
-USER {% raw %}{{ cluster['nodes'][coreos_role][item].name }}{% endraw %} ZVM4DEMO {% raw %}{{ guestmemory[coreos_role] }}{% endraw %}G {% raw %}{{ (guestmemory[coreos_role] | int) * 2 }}{% endraw %}G  G
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+USER {{ cluster['nodes'][coreos_role][item].name }} ZVM4DEMO {{ guestmemory[coreos_role] }}{% endraw %}G {{ (guestmemory[coreos_role] | int) * 2 }}G  G
  INCLUDE OCPDFLT
- COMMAND DEFINE CPU 01-{% raw %}{{ '%02X' % (guestvcpus[coreos_role] | int) -1 }}{% endraw %} TYPE IFL
+ COMMAND DEFINE CPU 01-{{ '%02X' % (guestvcpus[coreos_role] | int) -1 }} TYPE IFL
  CPU 00
  IPL CMS
- SHARE RELATIVE {% raw %}{{ guestvcpus[coreos_role] }}{% endraw %}00
- NICDEF 0600 TYPE HIPERS LAN SYSTEM {{ ocp_cluster_lan_name }} DEVICES 3
+ SHARE RELATIVE {{ guestvcpus[coreos_role] }}00
+ NICDEF 0600 TYPE HIPERS LAN SYSTEM [[ ocp_cluster_lan_name ]] DEVICES 3
