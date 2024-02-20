@@ -53,6 +53,7 @@
     - /opt/ansible/inventory/group_vars
     - /opt/ansible/inventory/group_vars/all
     - /opt/registry/certs
+    - /opt/rhocp/install
 
 #- name: Download and set permissions for openshift-install and oc
 #  include_tasks: download-clients.yml
