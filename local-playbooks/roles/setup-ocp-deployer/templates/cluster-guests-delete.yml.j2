@@ -6,20 +6,27 @@
     include_tasks: tasks/delete-guest.yml
     vars:
       coreos_role: bootstrap
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-  - name: delete the master nodes
+  - name: delete the control nodes
     include_tasks: tasks/delete-guest.yml
     vars:
-      coreos_role: masters
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+      coreos_role: control
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-  - name: delete the worker nodes
+  - name: delete the compute nodes
     include_tasks: tasks/delete-guest.yml
     vars:
       coreos_role: workers
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-    when: cluster_nodes.workers is defined
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+    when: cluster['nodes'].compute is defined
+
+  - name: delete the infra nodes
+    include_tasks: tasks/delete-guest.yml
+    vars:
+      coreos_role: workers
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+    when: cluster['nodes'].infra is defined
 
   - name: delete the OCP profile
     shell: /usr/local/bin/smcli pfdd -T OCPDFLT -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}  # noqa 204

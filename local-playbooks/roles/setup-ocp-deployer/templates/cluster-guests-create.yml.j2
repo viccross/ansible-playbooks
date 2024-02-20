@@ -13,19 +13,27 @@
     vars:
       coreos_role: bootstrap
       directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-  - name: create the master nodes
+  - name: create the control nodes
     include_tasks: tasks/create-guest.yml
     vars:
-      coreos_role: masters
+      coreos_role: control
       directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-  - name: create the worker nodes
+  - name: create the compute nodes
     include_tasks: tasks/create-guest.yml
     vars:
-      coreos_role: workers
+      coreos_role: compute
       directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
-    with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-    when: cluster_nodes.workers is defined
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+    when: cluster['nodes'].compute is defined
+
+  - name: create the infra nodes
+    include_tasks: tasks/create-guest.yml
+    vars:
+      coreos_role: infra
+      directory_entry: "{% raw %}{{ lookup('template', '{{ playbook_dir }}/roles/create-cluster/templates/guest.direct.j2') }}{% endraw %}"
+    with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+    when: cluster['nodes']['infra'] is defined

@@ -11,8 +11,8 @@ fi
 
 # Parse the values in the trigger file
 CFPATH="/var/www/html/.cluster"
-CLSNAME=$(jq -r .name < "${CFPATH}/$1")
-CLSSTATE=$(jq -r .statusText < "${CFPATH}/$1")
+CLSNAME=$(jq -r .cluster.name < "${CFPATH}/$1")
+CLSSTATE=$(jq -r .cluster.statusText < "${CFPATH}/$1")
 
 if [[ -z ${CLSNAME} || ${CLSNAME} == "null" ]]; then
   echo "No cluster name provided!"
@@ -21,7 +21,7 @@ fi
 
 case ${CLSSTATE} in
   Defining )
-    CLSVER=$(jq -r .OCPVer < "${CFPATH}/$1")
+    CLSVER=$(jq -r .cluster.OCPVer < "${CFPATH}/$1")
     if [[ -z ${CLSVER} || ${CLSVER} == "null" ]]; then
       echo "No cluster version provided!"
       exit 3

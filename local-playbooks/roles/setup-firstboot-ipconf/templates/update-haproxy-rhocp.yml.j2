@@ -27,24 +27,24 @@
         path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
         create: yes
         line: "{{ item.value.ip }}"
-      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['bootstrap']) }}"
-    - name: Extract the master IPs to the IP file
+      loop: "{{ query('ansible.builtin.dict',cluster['nodes']['bootstrap']) }}"
+    - name: Extract the control IPs to the IP file
       lineinfile:
         path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
         line: "{{ item.value.ip }}"
-      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['masters']) }}"
-    - name: Extract the worker IPs to the IP file
+      loop: "{{ query('ansible.builtin.dict',cluster['nodes']['control']) }}"
+    - name: Extract the compute IPs to the IP file
       lineinfile:
         path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
         line: "{{ item.value.ip }}"
-      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['workers']) }}"
-      when: cluster_nodes['workers'] is defined
-    - name: Extract the bootworker IP(s) to the IP file
+      loop: "{{ query('ansible.builtin.dict',cluster['nodes']['compute']) }}"
+      when: cluster['nodes']['compute'] is defined
+    - name: Extract the bootcompute IP(s) to the IP file
       lineinfile:
         path: /etc/haproxy/conf.d/{{ cluster_name }}.ips
         line: "{{ item.value.ip }}"
-      loop: "{{ lookup('ansible.builtin.dict',cluster_nodes['bootworker']) }}"
-      when: cluster_nodes['bootworker'] is defined
+      loop: "{{ query('ansible.builtin.dict',cluster['nodes']['bootcompute']) }}"
+      when: cluster['nodes']['bootcompute'] is defined
 
   - name: Add the API/MCS backends to the RHCOP frontends
     lineinfile:

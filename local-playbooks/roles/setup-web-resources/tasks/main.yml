@@ -245,6 +245,7 @@
       - "{{ webroot }}/service-desk-racf-master/templates_c"
       - /opt/content
       - "{{ webroot }}/install"
+      - "{{ webroot }}/.cluster"
 
   - name: Create and set perms on incrond trigger files
     file:

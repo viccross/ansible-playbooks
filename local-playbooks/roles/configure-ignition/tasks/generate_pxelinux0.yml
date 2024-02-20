@@ -10,7 +10,7 @@
   when: pxe_mode == 'znetboot'
   tags: pxelinux-cfg
   template:
-    dest: "{{ bootfile_dest }}/{{ cluster_nodes[coreos_role][item].guest_name }}.znetboot"
+    dest: "{{ bootfile_dest }}/{{ cluster['nodes'][coreos_role][item].name }}.znetboot"
     src: ocpguest.znetboot.j2
     mode: 0644
 
@@ -21,7 +21,7 @@
     mode: 0644
     dest: "{{ bootfile_dest }}/{{ item }}.parm"
     content: |
-      rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster_nodes[coreos_role][item].disk }} coreos.inst.image_url={{ rhcos_download_url }}/{{ rhcos_disk_image }} coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster_nodes[coreos_role][item].ign_profile }} {{ coreos_kargs_net[install_mode] }} {{ coreos_kargs_extra[install_mode] }}  # noqa 204
+      rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster['nodes'][coreos_role][item].disk }} coreos.inst.image_url={{ rhcos_download_url }}/{{ rhcos_disk_image }} coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster['nodes'][coreos_role][item].ign_profile }} {{ coreos_kargs_net[install_mode] }} {{ coreos_kargs_extra[install_mode] }}  # noqa 204
 
 - name: Make pxelinux.0 file  # noqa command-instead-of-shell
   tags: pxelinux0

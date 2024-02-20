@@ -67,7 +67,7 @@ zone "{{ subnet_in_addr_name }}.in-addr.arpa" {
 	file "{{ subnet_in_addr_name }}.in-addr.arpa.zone";
 	allow-query { any; };
 	allow-transfer { none; };
-	update-policy local;
+	allow-update { key "{{ esigroup | lower }}-key"; };
 };
 
 zone "ibmpoc.internal" {

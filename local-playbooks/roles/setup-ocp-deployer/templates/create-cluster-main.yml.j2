@@ -179,38 +179,38 @@
   include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-- name: boot the master nodes
+- name: boot the control nodes
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: masters
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    coreos_role: control
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
-- name: boot the worker nodes
+- name: boot the compute nodes
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: workers
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+    coreos_role: compute
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+  when: cluster['nodes'].compute is defined
 
 - name: wait for bootstrap node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['bootstrap'][item].ip }}{% endraw %}"
+    host: "{% raw %}{{ cluster['nodes']['bootstrap'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 10000
-  with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster['nodes']['bootstrap'] }}{% endraw %}"
 
 - name: wait for master node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['masters'][item].ip }}{% endraw %}"
+    host: "{% raw %}{{ cluster['nodes']['control'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{% raw %}{{ cluster_nodes['masters'] }}{% endraw %}"
+  with_items: "{% raw %}{{ cluster['nodes']['control'] }}{% endraw %}"
 
 - name: wait for bootstrap complete # noqa 301
   tags: config
@@ -223,17 +223,17 @@
   until: result is not failed
 
 - name: shut down the bootstrap node # noqa 301
-  shell: smcli id -T {% raw %}{{ cluster_nodes['bootstrap'][item].guest_name }}{% endraw %} -t 'WITHIN 60' -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
-  with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
+  shell: smcli id -T {% raw %}{{ cluster['nodes']['bootstrap'][item].name }}{% endraw %} -t 'WITHIN 60' -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
+  with_items: "{% raw %}{{ cluster['nodes']['bootstrap'] }}{% endraw %}"
 
 - name: give the bootstrap time to shut down
   pause:
     minutes: 1
-  when: cluster_nodes.bootworker is defined
+  when: cluster['nodes'].bootcompute is defined
 
 - name: rename the bootstrap node for conversion # noqa 301
-  shell: smcli ichid -T {% raw %}{{ cluster_nodes["bootstrap"]['bootstrap-0']['guest_name'] }}{% endraw %} -n {% raw %}{{ cluster_nodes["bootworker"]['worker-2']['guest_name'] }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
-  when: cluster_nodes.bootworker is defined
+  shell: smcli ichid -T {% raw %}{{ cluster['nodes']["bootstrap"]['bootstrap']['name'] }}{% endraw %} -n {% raw %}{{ cluster['nodes']["bootcompute"]['compute-2']['name'] }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
+  when: cluster['nodes'].bootcompute is defined
 
 - name: make sure converted node can access the config disk
   shell:
@@ -242,27 +242,27 @@
       dn: profilename={{ znetboot_cfg_disk | replace(' ','.') }},profiletype=VMMDISK,o=ibmzvm
       changetype: modify
       add: racfaccesscontrol
-      racfaccesscontrol: ID({% raw %}{{ cluster_nodes['bootworker'][item].guest_name }}{% endraw %}) ACCESS(READ) COUNT(0)
+      racfaccesscontrol: ID({% raw %}{{ cluster['nodes']['bootcompute'][item].name }}{% endraw %}) ACCESS(READ) COUNT(0)
       EOFLDIF
-  with_items: "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+  with_items: "{% raw %}{{ cluster['nodes']['bootcompute'] }}{% endraw %}"
+  when: cluster['nodes'].bootcompute is defined
 
-- name: boot the converted worker node
+- name: boot the converted compute node
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: bootworker
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+    coreos_role: bootcompute
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+  when: cluster['nodes'].bootcompute is defined
 
-- name: wait for worker node accessibility
+- name: wait for compute node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['workers'][item].ip }}{% endraw %}"
+    host: "{% raw %}{{ cluster['nodes']['compute'][item].ip }}{% endraw %}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{% raw %}{{ cluster_nodes['workers'] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+  with_items: "{% raw %}{{ cluster['nodes']['compute'] }}{% endraw %}"
+  when: cluster['nodes'].compute is defined
 
 - name: start the approve-csrs task
   systemd:
@@ -282,22 +282,22 @@
 - name: update boot device on the master nodes
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: masters
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    coreos_role: control
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
 
 - name: update boot device on the worker nodes
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: workers
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+    coreos_role: compute
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+  when: cluster['nodes'].compute is defined
 
 - name: update boot device on the converted bootstrap node
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: bootworker
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+    coreos_role: bootcompute
+  with_items: "{% raw %}{{ cluster['nodes'][coreos_role] }}{% endraw %}"
+  when: cluster['nodes'].bootcompute is defined
 
 - name: configure the cluster (LDAP, ingress certificate)
   include_tasks: configure-cluster.yml

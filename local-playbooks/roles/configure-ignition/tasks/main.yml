@@ -35,24 +35,24 @@
   vars:
     coreos_role: bootstrap
   include_tasks: generate_pxelinux0.yml
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
 
 - name: Generate pxelinux0 entry (masters)
   vars:
-    coreos_role: masters
+    coreos_role: control
   include_tasks: generate_pxelinux0.yml
-  with_items: "{{ cluster_nodes[coreos_role] }}"
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
 
 - name: Generate pxelinux0 entry (workers)
   vars:
-    coreos_role: workers
+    coreos_role: compute
   include_tasks: generate_pxelinux0.yml
-  with_items: "{{ cluster_nodes[coreos_role] }}"
-  when: cluster_nodes.workers is defined
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes']['compute'] is defined
 
-- name: Generate pxelinux0 entry (bootworker)
+- name: Generate pxelinux0 entry (bootcompute)
   vars:
-    coreos_role: bootworker
+    coreos_role: bootcompute
   include_tasks: generate_pxelinux0.yml
-  with_items: "{{ cluster_nodes[coreos_role] }}"
-  when: cluster_nodes.bootworker is defined
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes']bootcompute is defined

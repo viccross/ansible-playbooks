@@ -41,7 +41,7 @@ fi
 # Obtain the list of guests
 allguests="{{ guestnames }}"
 # Drop the bootstrap guest from the list
-ocpguests=${allguests//{{ cluster_nodes['bootstrap']['bootstrap-0'].guest_name }}}
+ocpguests=${allguests//{{ cluster['nodes']['bootstrap']['bootstrap'].name }}}
 IFS=" "
 
 # Mask the other service
