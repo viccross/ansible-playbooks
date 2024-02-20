@@ -33,6 +33,11 @@ backend {{ cluster_name }}-http-router
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
     {% endfor %}
    {% endif %}
+   {% if infra is defined %}
+   {% for item in infra.keys() %}
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
+   {% endfor %}
+   {% endif %}
 {% else %}
     {% for item in control.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:80 check
@@ -49,6 +54,11 @@ backend {{ cluster_name }}-https-router
     {% for item in bootcompute.keys() %}
       server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
     {% endfor %}
+   {% endif %}
+   {% if infra is defined %}
+   {% for item in infra.keys() %}
+   server {{ item }} {{ item }}.{{ cluster_domain_name }}:443 check
+   {% endfor %}
    {% endif %}
 {% else %}
     {% for item in control.keys() %}
