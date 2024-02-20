@@ -114,53 +114,53 @@
   - { src: create-certificate.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/create-certificate.yml }
   - { src: configure-cluster.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/configure-cluster.yml }
 
-- name: Copy the DASD script
-  template:
-    src: ocp-dasd.sh.j2
-    dest: /usr/local/bin/ocp-dasd.sh
-    mode: 0750
-- name: Copy the DASD script systemd service file
-  template:
-    src: ocp-dasd.service.j2
-    dest: /usr/local/lib/systemd/system/ocp-dasd.service
-    mode: 0644
-- name: Do not enable the ocp-dasd service yet
-  systemd:
-    name: ocp-dasd
-    state: stopped
-    enabled: no
+#- name: Copy the DASD script
+#  template:
+#    src: ocp-dasd.sh.j2
+#    dest: /usr/local/bin/ocp-dasd.sh
+#    mode: 0750
+#- name: Copy the DASD script systemd service file
+#  template:
+#    src: ocp-dasd.service.j2
+#    dest: /usr/local/lib/systemd/system/ocp-dasd.service
+#    mode: 0644
+#- name: Do not enable the ocp-dasd service yet
+#  systemd:
+#    name: ocp-dasd
+#    state: stopped
+#    enabled: no
 
-- name: Copy the CSRs script
-  template:
-    src: ocp-approve-csrs.sh.j2
-    dest: /usr/local/bin/ocp-approve-csrs.sh
-    mode: 0750
-- name: Copy the CSRs script systemd service file
-  template:
-    src: ocp-approve-csrs.service.j2
-    dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
-    mode: 0644
-- name: Do not enable the ocp-approve-csrs service
-  systemd:
-    name: ocp-approve-csrs
-    state: stopped
-    enabled: no
+#- name: Copy the CSRs script
+#  template:
+#    src: ocp-approve-csrs.sh.j2
+#    dest: /usr/local/bin/ocp-approve-csrs.sh
+#    mode: 0750
+#- name: Copy the CSRs script systemd service file
+#  template:
+#    src: ocp-approve-csrs.service.j2
+#    dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
+#    mode: 0644
+#- name: Do not enable the ocp-approve-csrs service
+#  systemd:
+#    name: ocp-approve-csrs
+#    state: stopped
+#    enabled: no
 
-- name: Copy the retry script
-  template:
-    src: ocp-retry.sh.j2
-    dest: /usr/local/bin/ocp-retry.sh
-    mode: 0750
-- name: Copy the ocp-retry script systemd service file
-  template:
-    src: ocp-retry.service.j2
-    dest: /usr/local/lib/systemd/system/ocp-retry.service
-    mode: 0644
-- name: Do not enable the ocp-retry service
-  systemd:
-    name: ocp-retry
-    state: stopped
-    enabled: no
+#- name: Copy the retry script
+#  template:
+#    src: ocp-retry.sh.j2
+#    dest: /usr/local/bin/ocp-retry.sh
+#    mode: 0750
+#- name: Copy the ocp-retry script systemd service file
+#  template:
+#    src: ocp-retry.service.j2
+#    dest: /usr/local/lib/systemd/system/ocp-retry.service
+#    mode: 0644
+#- name: Do not enable the ocp-retry service
+#  systemd:
+#    name: ocp-retry
+#    state: stopped
+#    enabled: no
 
 - name: Copy the action script for ocp-cluster-guests
   template:
