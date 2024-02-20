@@ -89,7 +89,7 @@
         regexp: ^use_backend {{ cluster_name }}-https-router
         before: "#--RHOCP-HTTPS--here"
 
-#  - name: Restart HAProxy
-#    service:
-#      name: haproxy.service
-#      state: restarted
+  - name: Restart HAProxy
+    service:
+      name: haproxy.service
+      state: restarted
