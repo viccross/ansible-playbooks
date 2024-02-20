@@ -28,33 +28,33 @@
   - name: Generate boot files (bootstrap)
     vars:
       coreos_role: bootstrap
-    include_tasks: generate-bootfile.yml
+    include_tasks: tasks/generate-bootfile.yml
     with_items: "{{ cluster['nodes'][coreos_role] }}"
 
   - name: Generate boot files (masters)
     vars:
       coreos_role: control
-    include_tasks: generate-bootfile.yml
+    include_tasks: tasks/generate-bootfile.yml
     with_items: "{{ cluster['nodes'][coreos_role] }}"
 
   - name: Generate boot files (workers)
     vars:
       coreos_role: compute
-    include_tasks: generate-bootfile.yml
+    include_tasks: tasks/generate-bootfile.yml
     with_items: "{{ cluster['nodes'][coreos_role] }}"
     when: cluster['nodes']['compute'] is defined
 
   - name: Generate boot files (bootcompute)
     vars:
       coreos_role: bootcompute
-    include_tasks: generate-bootfile.yml
+    include_tasks: tasks/generate-bootfile.yml
     with_items: "{{ cluster['nodes'][coreos_role] }}"
     when: cluster['nodes']['bootcompute'] is defined
 
   - name: Generate boot files (infra)
     vars:
       coreos_role: infra
-    include_tasks: generate-bootfile.yml
+    include_tasks: tasks/generate-bootfile.yml
     with_items: "{{ cluster['nodes'][coreos_role] }}"
     when: cluster['nodes']['infra'] is defined
 
