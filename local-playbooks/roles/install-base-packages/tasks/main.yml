@@ -70,6 +70,7 @@
     name:
       - ansible
       - unzip
+      - python3
       - python3-dns
       - python3.11-dns
       - python3-libsemanage
@@ -82,4 +83,12 @@
       - cockpit-ws
       - elan-tools
       - squashfs-tools
+      - fuse
+      - autofs
     state: latest
+
+- name: Activate the autofs service
+  systemd:
+    name: autofs
+    state: started
+    enabled: yes

@@ -1,9 +1,10 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 ---
 # tasks file for create-cluster
 
-- name: grab the pull secret
+- name: Grab the pull secret
   stat:
-    path: "{{ ocp4_pull_secret_file }}"
+    path: '{{ webroot }}/.secret/{{ cluster["secret"] }}'
   register: ps
 - name: abort if the pull secret is not present
   fail:
@@ -19,44 +20,14 @@
   file:
     path: "{{ workdir }}"
     state: "directory"
-    mode: 0755
+    owner: "csid_{{ cluster_name }}"
+    group: rhocp_clusters
+    mode: 06755
 
-- name: copy the ZNETBOOT config files to CMS
-  block:
-  - name: unmount the CMSFS
-    command:
-      cmd: fusermount -u {{ znetboot_cfg_path }}
-# the DASD has to be cycled to pick up new link mode :/
-  - name: vary the DASD offline
-    command:
-      cmd: chccwdev -d 191
-  - name: link the DASD in write mode
-    command:
-      cmd: vmcp link {{ znetboot_cfg_disk }} 191 mr
-  - name: vary the DASD online
-    command:
-      cmd: chccwdev -e 191
-  - name: pause for udev/systemd
-    pause:
-      seconds: 3
-# Can't use Ansible copy module due to CMSFS semantics
-# (and stubbornness of Ansible)
-  - name: copy the files
-    shell:
-      cmd: "rm -f {{ znetboot_cfg_path }}/OCP*.ZNETBOOT && cp {{ webroot }}/bootfiles/*.znetboot {{ znetboot_cfg_path }}/"
-  - name: unmount the CMSFS
-    command:
-      cmd: fusermount -u {{ znetboot_cfg_path }}
-# the DASD has to be cycled to pick up new link mode :/
-  - name: vary the DASD offline
-    command:
-      cmd: chccwdev -d 191
-  - name: link the DASD in read mode
-    command:
-      cmd: vmcp link {{ znetboot_cfg_disk }} 191 rr
-  - name: vary the DASD online
-    command:
-      cmd: chccwdev -e 191
+- name: Set up SSH for Ansible - slurp pubkey
+  slurp:
+    src: ~csid_{{ cluster_name }}/.ssh/id_ed25519.pub
+  register: bastion_pubkey
 
 # install config is deleted when ignition
 # configs are created.  this task also
@@ -64,7 +35,7 @@
 - name: generate install-config.yaml
   tags: config
   template:
-    dest: "{{ workdir }}/{% raw %}{{ item }}{% endraw %}"
+    dest: "{{ workdir }}/{{ item }}"
     src: install-config.yaml.j2
     mode: 0644
   with_items:
@@ -73,7 +44,7 @@
 
 - name: create ignition configs
   tags: config
-  shell: "openshift-install --dir=`pwd` create ignition-configs"
+  shell: "/opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` create ignition-configs"
   args:
     chdir: "{{ workdir }}"
     creates: "{{ workdir }}/metadata.json"
@@ -87,11 +58,11 @@
   - name: back up ignition configs
     tags: config
     copy:
-      src: "{% raw %}{{ item }}{% endraw %}"
-      dest: "{% raw %}{{ item }}{% endraw %}.bak"
+      src: "{{ item }}"
+      dest: "{{ item }}.bak"
       remote_src: yes
       mode: 0644
-    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
+    with_items: "{{ ign_raw.stdout_lines }}"
   - name: create bootstrap directory
     file:
       path: "{{ workdir }}/bootstrap/etc"
@@ -103,10 +74,10 @@
       src: chrony.conf.j2
       mode: 0644
   - name: filetranspile the ignition files
-    command: filetranspile -i {% raw %}{{ item }}{% endraw %}.bak -f bootstrap -o {% raw %}{{ item }}{% endraw %}{{ '' }}
+    command: filetranspile -i {{ item }}.bak -f bootstrap -o {{ item }}{{ '' }}
     args:
       chdir: "{{ workdir }}"
-    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
+    with_items: "{{ ign_raw.stdout_lines }}"
 #  - name: create ignition manifests
 #    tags: config
 #    shell: "openshift-install --dir=`pwd` create manifests"
@@ -135,27 +106,27 @@
 - block:
   - name: make ignition config directory
     file:
-      path: /var/www/html/ignition
+      path: "/var/www/html/ignition/{{ cluster_name }}"
       state: directory
       mode: 0755
   - name: get ign files
     tags: config
     shell: ls {{ workdir }}/*.ign
     register: ign_raw
-  - name: copy ignition configs to /var/www/html/ignition
+  - name: copy ignition configs to cluster ignition directory
     tags: config
     copy:
-      src: "{% raw %}{{ item }}{% endraw %}"
-      dest: "/var/www/html/ignition/"
+      src: "{{ item }}"
+      dest: "/var/www/html/ignition/{{ cluster_name }}/"
       remote_src: yes
       mode: 0644
-    with_items: "{% raw %}{{ ign_raw.stdout_lines }}{% endraw %}"
+    with_items: "{{ ign_raw.stdout_lines }}"
 
 - name: install kubeconfig
   tags: wait-install
   copy:
     src: "{{ workdir }}/auth/kubeconfig"
-    dest: "~/.kube/config"
+    dest: "~csid_{{ cluster_name }}/.kube/config"
     remote_src: yes
     force: yes
     mode: 0640
@@ -164,7 +135,7 @@
   tags: etc-hosts
   connection: local
   copy:
-    dest: "{% raw %}{{ playbook_dir }}{% endraw %}/../etc.hosts"
+    dest: "{{ playbook_dir }}/../etc.hosts"
     mode: 0644
     content: >
       {{ bastion_public_ip_address }}
@@ -177,42 +148,42 @@
   include_tasks: boot-guest.yml
   vars:
     coreos_role: bootstrap
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
 
-- name: boot the master nodes
+- name: boot the control nodes
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: masters
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    coreos_role: control
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
 
-- name: boot the worker nodes
+- name: boot the compute nodes
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: workers
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+    coreos_role: compute
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes'].compute is defined
 
 - name: wait for bootstrap node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['bootstrap'][item].ip }}{% endraw %}"
+    host: "{{ cluster['nodes']['bootstrap'][item].ip }}"
     search_regex: OpenSSH
     delay: 1
     timeout: 10000
-  with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
+  with_items: "{{ cluster['nodes']['bootstrap'] }}"
 
 - name: wait for master node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['masters'][item].ip }}{% endraw %}"
+    host: "{{ cluster['nodes']['control'][item].ip }}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{% raw %}{{ cluster_nodes['masters'] }}{% endraw %}"
+  with_items: "{{ cluster['nodes']['control'] }}"
 
 - name: wait for bootstrap complete # noqa 301
   tags: config
-  shell: openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
+  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` wait-for bootstrap-complete --log-level debug
   args:
     chdir: "{{ workdir }}"
   register: result
@@ -221,46 +192,46 @@
   until: result is not failed
 
 - name: shut down the bootstrap node # noqa 301
-  shell: smcli id -T {% raw %}{{ cluster_nodes['bootstrap'][item].guest_name }}{% endraw %} -t 'WITHIN 60' -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
-  with_items: "{% raw %}{{ cluster_nodes['bootstrap'] }}{% endraw %}"
+  shell: smcli id -T {{ cluster['nodes']['bootstrap'][item].name }} -t 'WITHIN 60' -H [[ ocp_smapi_host|quote ]] -U [[ ocp_smapi_user|quote ]] -P [[ ocp_smapi_password|quote ]]
+  with_items: "{{ cluster['nodes']['bootstrap'] }}"
 
 - name: give the bootstrap time to shut down
   pause:
     minutes: 1
-  when: cluster_nodes.bootworker is defined
+  when: cluster['nodes'].bootcompute is defined
 
 - name: rename the bootstrap node for conversion # noqa 301
-  shell: smcli ichid -T {% raw %}{{ cluster_nodes["bootstrap"]['bootstrap-0']['guest_name'] }}{% endraw %} -n {% raw %}{{ cluster_nodes["bootworker"]['worker-2']['guest_name'] }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
-  when: cluster_nodes.bootworker is defined
+  shell: smcli ichid -T {{ cluster['nodes']["bootstrap"]['bootstrap']['name'] }} -n {{ cluster['nodes']["bootcompute"]['compute-2']['name'] }} -H [[ ocp_smapi_host|quote ]] -U [[ ocp_smapi_user|quote ]] -P [[ ocp_smapi_password|quote ]]
+  when: cluster['nodes'].bootcompute is defined
 
 - name: make sure converted node can access the config disk
   shell:
     cmd: |
       ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid=IBMAUTO,profiletype=user,o=ibmzvm -w 'jTghTGinJupD63yh' <<EOFLDIF
-      dn: profilename={{ znetboot_cfg_disk | replace(' ','.') }},profiletype=VMMDISK,o=ibmzvm
+      dn: profilename=[[ znetboot_cfg_disk | replace(' ','.') ]],profiletype=VMMDISK,o=ibmzvm
       changetype: modify
       add: racfaccesscontrol
-      racfaccesscontrol: ID({% raw %}{{ cluster_nodes['bootworker'][item].guest_name }}{% endraw %}) ACCESS(READ) COUNT(0)
+      racfaccesscontrol: ID({{ cluster['nodes']['bootcompute'][item].name }}) ACCESS(READ) COUNT(0)
       EOFLDIF
-  with_items: "{% raw %}{{ cluster_nodes['bootworker'] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+  with_items: "{{ cluster['nodes']['bootcompute'] }}"
+  when: cluster['nodes'].bootcompute is defined
 
-- name: boot the converted worker node
+- name: boot the converted compute node
   include_tasks: boot-guest.yml
   vars:
-    coreos_role: bootworker
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+    coreos_role: bootcompute
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes'].bootcompute is defined
 
-- name: wait for worker node accessibility
+- name: wait for compute node accessibility
   wait_for:
     port: 22
-    host: "{% raw %}{{ cluster_nodes['workers'][item].ip }}{% endraw %}"
+    host: "{{ cluster['nodes']['compute'][item].ip }}"
     search_regex: OpenSSH
     delay: 1
     timeout: 5000
-  with_items: "{% raw %}{{ cluster_nodes['workers'] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+  with_items: "{{ cluster['nodes']['compute'] }}"
+  when: cluster['nodes'].compute is defined
 
 - name: start the approve-csrs task
   systemd:
@@ -269,7 +240,7 @@
 
 - name: wait for install complete # noqa 301
   tags: wait-install
-  shell: openshift-install --dir=`pwd` wait-for install-complete
+  shell: /opt/rhocp/install/{{ cluster['OCPVer'] }}/install/openshift-install --dir=`pwd` wait-for install-complete
   args:
     chdir: "{{ workdir }}"
   register: result
@@ -280,22 +251,22 @@
 - name: update boot device on the master nodes
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: masters
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
+    coreos_role: control
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
 
 - name: update boot device on the worker nodes
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: workers
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.workers is defined
+    coreos_role: compute
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes'].compute is defined
 
 - name: update boot device on the converted bootstrap node
   include_tasks: guest-IPLdev.yml
   vars:
-    coreos_role: bootworker
-  with_items: "{% raw %}{{ cluster_nodes[coreos_role] }}{% endraw %}"
-  when: cluster_nodes.bootworker is defined
+    coreos_role: bootcompute
+  with_items: "{{ cluster['nodes'][coreos_role] }}"
+  when: cluster['nodes'].bootcompute is defined
 
 - name: configure the cluster (LDAP, ingress certificate)
   include_tasks: configure-cluster.yml

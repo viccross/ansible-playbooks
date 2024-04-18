@@ -1,0 +1,53 @@
+---
+- name: Reconfigure BIND DNS for the new domain name
+  hosts: s390x_bastion_workstation
+  handlers:
+  - name: Restart BIND named
+    systemd:
+      name: named-chroot.service
+      state: restarted
+    listen: Restart dns
+  tasks:
+  - name: Create DNS Forward zone
+    template:
+      src: named/cluster_domain_name.zone.j2
+      dest: /var/named/{% raw %}{{ cluster_name }}{{ cluster_base_domain }}{% endraw %}.zone
+      owner: named
+      group: named
+      mode: 0640
+
+  - name: Create named.conf fragment for new zone
+    template:
+      src: named/masterzone.conf.j2
+      dest: /etc/named/{% raw %}{{ cluster_name }}{{ cluster_base_domain }}{% endraw %}.conf
+      group: named
+      mode: 0640
+    vars:
+      domain_name: "{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}"
+
+  - name: Add the tag for the named.conf fragment
+    lineinfile:
+      line: include "/etc/named/{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}.conf";
+      dest: /etc/named.conf
+      insertafter: "// RHOCP zones"
+    notify: Restart dns
+
+- name: Push DNS reconfiguration to remote ELANs
+  hosts: s390x_remote_elans
+  handlers:
+  - name: Restart BIND named
+    systemd:
+      name: named-chroot.service
+      state: restarted
+    listen: "Restart named"
+
+  - name: Update the BIND config fragments
+    template:
+      src: named/slavezone.conf.j2
+      dest: /etc/named/{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}.conf
+      group: named
+      mode: 0640
+    vars:
+      domain_name: "{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}"
+    notify:
+      - "Restart named"

@@ -27,7 +27,7 @@
   - setup-web-resources
   - configure-haproxy
   - configure-cockpit
-  - configure-ignition
+#  - configure-ignition
   - setup-ocp-deployer
   - setup-icic-deployer
   - setup-finna-response

@@ -1,0 +1,54 @@
+#!/bin/bash
+# ocp-define-action.sh
+# Kicker script for actions to be driven by RHOCP actions in the interface
+# 
+
+# cluster name should be passed by incrond
+if [[ -z $1 ]]; then
+  echo "Abort - no file/system name passed by incrond"
+  exit 1
+fi
+
+# Parse the values in the trigger file
+CFPATH="/var/www/html/.cluster"
+CLSNAME=$(jq -r .cluster.name < "${CFPATH}/$1")
+CLSSTATE=$(jq -r .cluster.statusText < "${CFPATH}/$1")
+
+if [[ -z ${CLSNAME} || ${CLSNAME} == "null" ]]; then
+  echo "No cluster name provided!"
+  exit 2
+fi
+
+case ${CLSSTATE} in
+  Defining )
+    CLSVER=$(jq -r .cluster.OCPVer < "${CFPATH}/$1")
+    if [[ -z ${CLSVER} || ${CLSVER} == "null" ]]; then
+      echo "No cluster version provided!"
+      exit 3
+    fi
+
+    # Schedule the action
+    (
+      flock 9
+      /usr/local/bin/ocp-define-cluster.sh -n "${CLSNAME}" -v "${CLSVER}"
+    ) 9>/var/run/ocp-define-action.lock
+  ;;
+  Building )
+    # Schedule the action
+    (
+      flock 9
+      /usr/local/bin/ocp-ansible.sh "${CLSNAME}"
+    ) 9>/var/run/ocp-build-action.lock
+  ;;
+  Resetting )
+    # Schedule the action
+    (
+      flock 9
+      /usr/local/bin/ocp-retry.sh "${CLSNAME}"
+    ) 9>/var/run/ocp-reset-action.lock
+  ;;
+  * )
+    echo "Unknown action request: ${CLSSTATE}"
+    exit 4
+  ;;
+esac

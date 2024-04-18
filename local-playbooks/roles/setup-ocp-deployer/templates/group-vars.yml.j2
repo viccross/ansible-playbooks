@@ -15,63 +15,63 @@ ocp_cluster_lan_name: "{{ ocp_cluster_lan_name }}"
 # The IP addresses must be on the same subnet as
 # the cluster_subnet_prefix
 # CHANGEME!
-cluster_nodes:
-  bootstrap:
-    bootstrap-0:
-      guest_name: '{{ ocp_guest_pfx }}BOOT'
-      mac: '52:54:00:d0:f7:03'
-      ip: '{{ ip_bootstrap_0 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: bootstrap.ign
-  masters:
-    master-0:
-      guest_name: '{{ ocp_guest_pfx }}MAS0'
-      mac: '52:54:00:da:70:41'
-      ip: '{{ ip_master_0 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: master.ign
-    master-1:
-      guest_name: '{{ ocp_guest_pfx }}MAS1'
-      mac: '52:54:00:a2:93:d8'
-      ip: '{{ ip_master_1 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: master.ign
-    master-2:
-      guest_name: '{{ ocp_guest_pfx }}MAS2'
-      mac: '52:54:00:d9:5b:d8'
-      ip: '{{ ip_master_2 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: master.ign
-  workers:
-    worker-0:
-      guest_name: '{{ ocp_guest_pfx }}WRK0'
-      mac: '52:54:00:70:8b:74'
-      ip: '{{ ip_worker_0 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: worker.ign
-    worker-1:
-      guest_name: '{{ ocp_guest_pfx }}WRK1'
-      mac: '52:54:00:70:8b:75'
-      ip: '{{ ip_worker_1 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: worker.ign
-{% if ip_worker_2 is defined %}
-  bootworker:
-    worker-2:
-      guest_name: '{{ ocp_guest_pfx }}WRK2'
-      mac: '52:54:00:70:8b:76'
-      ip: '{{ ip_worker_2 }}'
-      disk: "{{ dev_disk[install_mode] }}"
-      ign_profile: worker.ign
-{% endif %}
+#cluster_nodes:
+#  bootstrap:
+#    bootstrap-0:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["bootstrap"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:d0:f7:03'
+#      ip: '{% raw %}{{ cluster["nodes"]["bootstrap"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: bootstrap.ign
+#  masters:
+#    master-0:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["control-0"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:da:70:41'
+#      ip: '{% raw %}{{ cluster["nodes"]["control-0"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: master.ign
+#    master-1:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["control-1"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:a2:93:d8'
+#      ip: '{% raw %}{{ cluster["nodes"]["control-1"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: master.ign
+#    master-2:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["control-2"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:d9:5b:d8'
+#      ip: '{% raw %}{{ cluster["nodes"]["control-2"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: master.ign
+#  workers:
+#    worker-0:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["compute-0"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:70:8b:74'
+#      ip: '{% raw %}{{ cluster["nodes"]["compute-0"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: worker.ign
+#    worker-1:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["compute-1"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:70:8b:75'
+#      ip: '{% raw %}{{ cluster["nodes"]["compute-1"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: worker.ign
+#  bootworker:
+#    worker-2:
+#      guest_name: '{% raw %}{{ cluster["nodes"]["compute-2"]["name"] }}{% endraw %}'
+#      mac: '52:54:00:70:8b:76'
+#      ip: '{% raw %}{{ cluster["nodes"]["compute-2"]["ip"] }}{% endraw %}'
+#      disk: "{{ dev_disk[install_mode] }}"
+#      ign_profile: worker.ign
 guestmemory:
   bootstrap: "{{ guestmemory['bootstrap'] }}"
-  masters: "{{ guestmemory['masters'] }}"
-  workers: "{{ guestmemory['workers'] }}"
+  control: "{{ guestmemory['masters'] }}"
+  compute: "{{ guestmemory['workers'] }}"
+  infra: "{{ guestmemory['workers'] }}"
 guestvcpus:
   bootstrap: "{{ guestvcpus['bootstrap'] }}"
-  masters: "{{ guestvcpus['masters'] }}"
-  workers: "{{ guestvcpus['workers'] }}"
+  control: "{{ guestvcpus['masters'] }}"
+  compute: "{{ guestvcpus['workers'] }}"
+  infra: "{{ guestvcpus['workers'] }}"
 
 # The following variables should generally not need to be edited
 
@@ -80,11 +80,24 @@ guestvcpus:
 # dhcp_server_ip_address is not used by default in a z/VM install
 bastion_public_ip_address: "{{ guest_install_ipaddr }}"
 
-ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/.ocp4_pull_secret') | from_json }}{% endraw %}"
+ocp4_pull_secret: "{% raw %}{{ lookup('file', '{{ webroot }}/.secret/{{ cluster.secret }}') | from_json }}{% endraw %}"
 
 znetboot_cfg_path: "{{ znetboot_cfg_path }}"
 znetboot_cfg_disk: "{{ znetboot_cfg_disk }}"
 webroot: "{{ webroot }}"
+bootfile_dest: "~csid_{% raw %}{{ cluster_name }}/bootfiles{% endraw %}"
+install_mode: zvm
+pxe_mode: znetboot
+ignition:
+  bootstrap: bootstrap.ign
+  control: master.ign
+  compute: worker.ign
+  bootcompute: worker.ign
+  infra: worker.ign
+coreos_kargs_net:
+  zvm: "ip={% raw %}{{ cluster['nodes'][coreos_role][item].ip }}{% endraw %}::{{ subnet_gateway }}:{{ subnet_netmask }}:::none nameserver={{ bastion_private_ip_address }}"
+coreos_kargs_extra:
+  zvm: "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
 
 # The IP configuration will write out the cluster_base_domain variable.
 # Look for runtime.yml in the group_vars/all directory (where this file is).

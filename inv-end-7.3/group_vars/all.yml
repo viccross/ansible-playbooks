@@ -16,10 +16,11 @@ ldap_url: ldap://{{ zvm_internal_ip_address }}:389
 sdbm_base: o=IBMZVM
 admin_uid: IBMAUTO
 admin_pwd: "jTghTGinJupD63yh"
-ibmvm1_pass: "ibmzvm730"
-webroot: "/var/www/html"
-meta_header_file: "s_header.html"
-elan_web_version: "0.8.3"
+ibmvm1_pass: ibmzvm730
+webroot: /var/www/html
+meta_header_file: s_header.html
+#elan_web_version: "0.8.3"
+elan_web_version: ocp_redesign
 elan_web_pkgname: "elan-web-{{ elan_web_version }}"
 #
 # CA paramaters
@@ -29,33 +30,33 @@ ca_cert_path: /etc/pki/tls/certs
 ca_trust_path: /etc/pki/ca-trust/source/anchors
 #
 # OCP cluster params
-ocp_cluster_lan_name: "OCPLAN"
+ocp_cluster_lan_name: OCPLAN
 ocp_dasd_prefix: ZVMU
 ocp_smapi_host: "{{ zvm_internal_ip_address }}/44444"
 ocp_smapi_user: IBMAUTO
 ocp_smapi_password: "jTghTGinJupD63yh"
 #
 # Details needed for the cluster to be built
-cluster_base_domain: "wsc.ibm"
-cluster_name: "ocp-z-poc"
+cluster_base_domain: wsc.ibm
+cluster_name: ocp-z-poc
 cert_organization: IBM
 cert_country: AU
 dns_nameserver: 9.60.70.81
-bastion_vsw_dev: "ad0"
-bastion_hsi_dev: "ad8"
-guest_internal_nicid: "encad8"
+bastion_vsw_dev: ad0
+bastion_hsi_dev: ad8
+guest_internal_nicid: encad8
 guest_internal_znet: "qeth,0.0.0ad8,0.0.0ad9,0.0.0ada,layer2=0,portname={{ ocp_cluster_lan_name }},portno=0"
 subnet_gateway: 172.24.26.1
 subnet_netmask: 255.255.255.0
 subnet_cidr: 172.24.26.0/24
 bastion_private_ip_address: 172.24.26.1
 zvm_internal_ip_address: 172.24.26.10
-zvm_rd_znet: "rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=0,portno=0"
-zvm_rd_dasd: "rd.dasd=0.0.0200"
-ip_bootstrap_0: '172.24.26.2'
-ip_master_0: '172.24.26.3'
-ip_master_1: '172.24.26.4'
-ip_master_2: '172.24.26.5'
-ip_worker_0: '172.24.26.6'
-ip_worker_1: '172.24.26.7'
-ip_worker_2: '172.24.26.8'
+zvm_rd_znet: rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=0,portno=0
+zvm_rd_dasd: rd.dasd=0.0.0200
+ip_bootstrap_0: '{{ cluster["nodes"]["bootstrap"]["ip"] }}'
+ip_master_0: '{{ cluster["nodes"]["control-0"]["ip"] }}'
+ip_master_1: '{{ cluster["nodes"]["control-1"]["ip"] }}'
+ip_master_2: '{{ cluster["nodes"]["control-2"]["ip"] }}'
+ip_worker_0: '{{ cluster["nodes"]["compute-0"]["ip"] }}'
+ip_worker_1: '{{ cluster["nodes"]["compute-1"]["ip"] }}'
+ip_worker_2: '{{ cluster["nodes"]["compute-2"]["ip"] }}'

@@ -1,6 +1,6 @@
 ---
 # tasks file for create-guest-for-linux
 - name: IPL a Linux guest
-  shell: /usr/local/bin/smcli ia -T {% raw %}{{ cluster_nodes[coreos_role][item].guest_name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
+  shell: /usr/local/bin/smcli ia -T {% raw %}{{ cluster['nodes'][coreos_role][item].name|quote }}{% endraw %} -H {{ ocp_smapi_host|quote }} -U {{ ocp_smapi_user|quote }} -P {{ ocp_smapi_password|quote }}
   args:
     executable: /bin/bash

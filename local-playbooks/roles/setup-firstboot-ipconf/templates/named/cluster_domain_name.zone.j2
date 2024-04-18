@@ -1,36 +1,11 @@
 #jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
-{% set bootstrap = cluster_nodes['bootstrap'] %}
-{% set masters = cluster_nodes['masters'] %}
-{% set workers = cluster_nodes['workers'] %}
-{% set bootworker = cluster_nodes['bootworker'] %}
 $TTL 900
-@                     IN SOA bastion-int.{{ cluster_domain_name }}. hostmaster.{{ cluster_domain_name }}. (
-                        2022090501 1D 1H 1W 3H
+@                     IN SOA elan-int.{{ esigroup }}.{{ cluster_base_domain }}. hostmaster.{{ esigroup }}.{{ cluster_base_domain }}. (
+                        1 1D 1H 1W 3H
                       )
-                      IN NS bastion-int.{{ cluster_domain_name }}.
+                      IN NS elan-int.{{ esigroup }}.{{ cluster_base_domain }}.
 
-bastion               IN A {{ bastion_public_ip_address }}
-bastion-int           IN A [[ bastion_private_ip_address ]]
 api                   IN A {{ bastion_public_ip_address }}
 api-int               IN A [[ bastion_private_ip_address ]]
 apps                  IN A {{ bastion_public_ip_address }}
 *.apps                IN A {{ bastion_public_ip_address }}
-
-{% for item in bootstrap.keys() %}
-{{ item }}           IN A {{ bootstrap[item].ip }}
-{% endfor %}
-
-{% for item in masters.keys() %}
-{{ item }}              IN A {{ masters[item].ip }}
-{% endfor %}
-
-{% if workers is defined %}
-{% for item in workers.keys() %}
-{{ item }}              IN A {{ workers[item].ip }}
-{% endfor %}
-{% endif %}
-{% if bootworker is defined %}
-{% for item in bootworker.keys() %}
-{{ item }}              IN A {{ bootworker[item].ip }}
-{% endfor %}
-{% endif %}
