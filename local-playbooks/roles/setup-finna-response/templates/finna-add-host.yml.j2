@@ -1,19 +1,34 @@
 #jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
 ---
-- name: Create configuration to update DNS for finna host
+- name: Create configuration to update DNS and NFS for finna host
   hosts: s390x_bastion_workstation
   vars:
     zvmesi_domain: "{{zvmesi_domain_name }}."
     group_domain: "{{ esigroup | lower }}.{{cluster_base_domain }}."
-    ns_zvmesi: "{{ lookup('dig', lookup('vars', 'zvmesi_domain'), qtype='NS', wantlist=true) }}" 
+    ns_zvmesi: "{{ lookup('dig', lookup('vars', 'zvmesi_domain'), qtype='NS', wantlist=true) }}"
     ns_group: "{{ lookup('dig', lookup('vars', 'group_domain'), qtype='NS', wantlist=true) }}"
-    ns_hostname: "{{ sys['hostname'] }}." 
+    ns_hostname: "{{ sys['hostname'] }}."
+    nfs_network: "{{ ansible_default_ipv4['network'] }}/{{ ansible_default_ipv4['netmask'] }}"
+
+  handlers:
+  - name: Restart nfs-server
+    service:
+      name: nfs-server.service
+      state: restarted
+      enabled: yes
+    listen: "Restart nfs"
 
   tasks:
   - name: Read in the variable file
     include_vars:
       file: /var/spool/finnad/{{ sysname }}
       name: sys
+
+  - name: Add NFS share of the content directory
+    lineinfile:
+      line: /opt/content         {{ nfs_network }}(rw,sync,no_root_squash,no_subtree_check)
+      path: /etc/exports
+    notify: "Restart nfs"
 
   - name: Add or modify TXT for system release
     nsupdate:
@@ -115,4 +130,3 @@
         line: "{{ sys['hostname'].split('.')[0] }} ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
 
     when: zvm_host_name != sys['sysname'] | lower
-
