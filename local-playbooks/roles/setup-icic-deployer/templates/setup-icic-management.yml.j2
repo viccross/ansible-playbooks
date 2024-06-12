@@ -58,7 +58,7 @@
       src: "{% raw %}{{ item }}{% endraw %}"
       dest: /tmp/
       remote_src: false
-    with_fileglob: "{{ icicpath }}/icic-install-*-{{ icicver }}*.tgz"
+    with_fileglob: "{% raw %}{{ icicpath }}/icic-install-*-{{ icicver }}*.tgz{% endraw %}"
 
   - name: Run the silent installation script
     command:
