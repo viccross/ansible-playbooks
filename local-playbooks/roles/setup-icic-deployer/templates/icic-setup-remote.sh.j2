@@ -276,7 +276,7 @@ echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /etc/hosts
 # set RACF OPERATIONS on the compute guest
 echo "Adding RACF attribute to ${iciccmp}..."
 ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' <<EOFLDIF
-dn: racfid=iciccmp1,profiletype=user,o=ibmzvm
+dn: racfid=${iciccmp},profiletype=user,o=ibmzvm
 changetype: modify
 add: racfattributes
 racfattributes: OPERATIONS
@@ -285,6 +285,9 @@ EOFLDIF
 
 # Management node is already set up; go ahead and boot the compute node
 # Ansible will wait for it to be up and then run the auto'n to configure
+echo "Adding SMAPI authorisation for the compute guest..."
+smcli ala -T ${iciccmp} -f ALL -u ALL ${smapiauth}
+sleep 1
 echo "Issuing a SMAPI IPL for the compute guest..."
 smcli ia -T ${iciccmp} ${smapiauth}
 sleep 1

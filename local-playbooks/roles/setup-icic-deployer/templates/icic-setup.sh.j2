@@ -358,6 +358,9 @@ EOFLDIF
 
 # Once the management node is set up, go ahead and boot the compute node
 # Ansible will wait for it to be up and then run the auto'n to configure
+echo "Adding SMAPI authorisation for the compute guest..."
+smcli ala -T ${iciccmp} -f ALL -u ALL ${smapiauth}
+sleep 1
 echo "Issuing a SMAPI IPL for the compute guest..."
 smcli ia -T ${iciccmp} ${smapiauth}
 sleep 1
