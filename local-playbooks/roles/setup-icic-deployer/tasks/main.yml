@@ -20,8 +20,8 @@
   - { src: "icic-cert-bundle.j2", dest: "/opt/ansible/templates/icic-cert-bundle.j2"}
   - { src: "icic-config-properties.j2", dest: "/opt/ansible/templates/icic-config-properties.j2"}
   - { src: "icic-ldap.exp.j2", dest: "/opt/ansible/files/icic-ldap.exp" }
-  - { src: "ICICCMP0.direct.j2", dest: "/opt/ansible/files/ICICCMP0.direct" }
   - { src: "ICICMGT0.direct.j2", dest: "/opt/ansible/files/ICICMGT0.direct" }
+  - { src: "ICICCMP1.direct.j2", dest: "/opt/ansible/files/ICICCMP1.direct" }
   - { src: "icicdflt.direct.j2", dest: "/opt/ansible/files/icicdflt.direct" }
   - { src: "setup-icic-compute.yml.j2", dest: "/opt/ansible/setup-icic-compute.yml" }
   - { src: "setup-icic-compute-remote.yml.j2", dest: "/opt/ansible/setup-icic-compute-remote.yml" }
