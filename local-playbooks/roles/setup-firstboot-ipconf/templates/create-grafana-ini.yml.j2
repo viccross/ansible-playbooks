@@ -15,7 +15,7 @@
     block:
     - name: Set password for MQTTGATE
       shell:
-        cmd: mosquitto_passwd -b -c /etc/mosquitto/passwd {{ mqttgate_id }} {{ mqttgate_pass }}
+        cmd: mosquitto_passwd -c -b /etc/mosquitto/passwd {{ mqttgate_id }} {{ mqttgate_pass }}
         creates: /etc/mosquitto/passwd
     - name: Set password for Promtail sub
       shell:
@@ -27,7 +27,7 @@
     - name: Remove a possibly invalid passwd file
       file:
         path: /etc/mosquitto/passwd
-        exists: no
+        state: absent
 
   - name: Create environment file for promtail-mqtt
     copy:

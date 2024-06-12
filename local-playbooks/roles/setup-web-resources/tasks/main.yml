@@ -107,6 +107,10 @@
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
       # Reverse-proxy configuration for cross-system stats
       ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
+      RewriteEngine On
+      RewriteCond %{HTTP:Upgrade} websocket [NC]
+      RewriteCond %{HTTP:Connection} upgrade [NC]
+      RewriteRule ^/grafana/?(.*) "ws://127.0.0.1:3000/grafana/$1" [P,L]
       ProxyPassMatch "^/grafana/(.*)$" "http://localhost:3000/grafana/$1"
       ProxyPassReverse "/grafana/" "http://localhost:3000/grafana/"
 
