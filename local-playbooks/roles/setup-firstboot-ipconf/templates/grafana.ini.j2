@@ -8,6 +8,9 @@ enforce_domain = False
 protocol = http
 serve_from_sub_path = true
 
+[paths]
+provisioning = /etc/grafana/provisioning
+
 [security]
 allow_embedding = true
 csrf_trusted_origins = {{ elan_host_name }}.{{ cluster_base_domain }}

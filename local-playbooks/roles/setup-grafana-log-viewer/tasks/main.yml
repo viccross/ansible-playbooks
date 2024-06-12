@@ -33,12 +33,41 @@
     group: mosquitto
     backup: yes
 
-#- name: Activate Grafana and Mosquitto and Loki and Promtail
-#  systemd:
-#    service: "{{ item }}"
-#    state: enabled
-#  loop:
-#  - grafana-server
-#  - mosquitto
-#  - loki
-#  - promtail-mqtt
+- name: Create provisioning file for Loki datasource
+  copy:
+    dest: /etc/grafana/provisioning/datasources/default.yaml
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: Loki
+          type: loki
+          url: http://localhost:3100
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Create provisioning file for Loki dashboard
+  copy:
+    dest: /etc/grafana/provisioning/dashboards/default.yaml
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: Default
+          folder: "z/VM Logging dashboards"
+          type: file
+          options:
+            path:
+              /etc/grafana/dashboards
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Create provisioning file for dashboard
+  copy:
+    src: dashboard-logs.json
+    dest: /etc/grafana/dashboards/
+    mode: 0644
+    owner: grafana
+    group: grafana
