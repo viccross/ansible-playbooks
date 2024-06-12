@@ -11,30 +11,30 @@
       group: grafana
       mode: 0640
 
-- name: Configure Mosquitto passwords
-  block:
-  - name: Set password for MQTTGATE
-    shell:
-      cmd: mosquitto_passwd -b -c /etc/mosquitto/passwd {{ mqttgate_id }} {{ mqttgate_pass }}
-      creates: /etc/mosquitto/passwd
-  - name: Set password for Promtail sub
-    shell:
-      cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_promtail_id }} {{ mqtt_promtail_pass }}
-  - name: Set password for a command sender (WIP)
-    shell:
-      cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_consend_id }} {{ mqtt_consend_pass }}
-  rescue:
-  - name: Remove a possibly invalid passwd file
-    file:
-      path: /etc/mosquitto/passwd
-      exists: no
+  - name: Configure Mosquitto passwords
+    block:
+    - name: Set password for MQTTGATE
+      shell:
+        cmd: mosquitto_passwd -b -c /etc/mosquitto/passwd {{ mqttgate_id }} {{ mqttgate_pass }}
+        creates: /etc/mosquitto/passwd
+    - name: Set password for Promtail sub
+      shell:
+        cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_promtail_id }} {{ mqtt_promtail_pass }}
+    - name: Set password for a command sender (WIP)
+      shell:
+        cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_consend_id }} {{ mqtt_consend_pass }}
+    rescue:
+    - name: Remove a possibly invalid passwd file
+      file:
+        path: /etc/mosquitto/passwd
+        exists: no
 
-- name: Create environment file for promtail-mqtt
-  copy:
-    dest: /etc/zvmesi/promtail-mqtt.env
-    content: |
-      MQTTID={{ mqtt_promtail_id }}
-      MQTTPWD={{ mqtt_promtail_pass }}
-    mode: 0644
-    owner: root
-    group: root
+  - name: Create environment file for promtail-mqtt
+    copy:
+      dest: /etc/zvmesi/promtail-mqtt.env
+      content: |
+        MQTTID={{ mqtt_promtail_id }}
+        MQTTPWD={{ mqtt_promtail_pass }}
+      mode: 0644
+      owner: root
+      group: root
