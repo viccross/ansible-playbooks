@@ -1,7 +1,7 @@
 {
     "__inputs": [
       {
-        "name": "DS_LOKI",
+        "name": "elanLoki",
         "label": "Loki",
         "description": "",
         "type": "datasource",
@@ -75,7 +75,7 @@
       {
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "elanLoki"
         },
         "description": "Output from consoles of z/VM IDs",
         "gridPos": {
@@ -99,7 +99,7 @@
           {
             "datasource": {
               "type": "loki",
-              "uid": "${DS_LOKI}"
+              "uid": "elanLoki"
             },
             "editorMode": "builder",
             "expr": "{zvm_type=\"msg\"} |= `` | line_format \"{{ .zvm_user }} {{__line__}}\"",
@@ -126,7 +126,7 @@
       {
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "elanLoki"
         },
         "description": "Messages from the *VMEVENT service",
         "gridPos": {
@@ -150,7 +150,7 @@
           {
             "datasource": {
               "type": "loki",
-              "uid": "${DS_LOKI}"
+              "uid": "elanLoki"
             },
             "editorMode": "builder",
             "expr": "{zvm_type=\"vmevent\"} |= ``",

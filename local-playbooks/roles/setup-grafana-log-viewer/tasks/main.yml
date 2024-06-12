@@ -41,6 +41,7 @@
 
       datasources:
         - name: Loki
+          uid: elanLoki
           type: loki
           url: http://localhost:3100
     mode: 0644
