@@ -85,6 +85,7 @@
       - squashfs-tools
       - fuse
       - autofs
+      - samba-winbind-clients
     state: latest
 
 - name: Activate the autofs service

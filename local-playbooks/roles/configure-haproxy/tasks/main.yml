@@ -68,7 +68,8 @@
 - name: Allow http traffic
   firewalld:
     service: http
-    permanent: yes
+    permanent: true
+    immediate: true
     zone: "{{ item }}"
     state: enabled
   with_items:
@@ -78,7 +79,8 @@
 - name: Allow https traffic
   firewalld:
     service: https
-    permanent: yes
+    permanent: true
+    immediate: true
     zone: "{{ item }}"
     state: enabled
   with_items:
@@ -88,7 +90,8 @@
 - name: Allow traffic at port 6443
   firewalld:
     port: 6443/tcp
-    permanent: yes
+    permanent: true
+    immediate: true
     zone: "{{ item }}"
     state: enabled
   with_items:
@@ -98,7 +101,8 @@
 - name: Allow traffic at port 22623
   firewalld:
     port: 22623/tcp
-    permanent: yes
+    permanent: true
+    immediate: true
     zone: "{{ item }}"
     state: enabled
   with_items:
@@ -118,8 +122,6 @@
     dest: /etc/haproxy/haproxy.cfg
     group: haproxy
     mode: 0644
-  notify:
-  - Restart firewalld
 
 - name: Turn on haproxy_connect_any
   seboolean:

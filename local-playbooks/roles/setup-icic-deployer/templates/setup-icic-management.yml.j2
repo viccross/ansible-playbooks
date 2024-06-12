@@ -21,64 +21,84 @@
   - name: create ICIC certificate
     include_tasks: tasks/create-certificate.yml
     with_items:
-    - { filename: "icic", common_name: "icicmgt0.{% raw %}{{ cluster_domain_name }}{% endraw %}", subject_alt_name: ",IP:{% raw %}{{ icic_management_ip_address }}{% endraw %}" }
+    - { filename: "icic", common_name: "icicmgt0.{% raw %}{{ esigroup }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: ",IP:{% raw %}{{ icic_management_ip_address }}{% endraw %}" }
+  - name: Add or modify A for ICIC management
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
+      record: icicmgt0
+      type: A
+      value: "{% raw %}{{ icic_management_ip_address }}{% endraw %}"
+  - name: Add or modify PTR for ICIC management
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "26.24.172.in-addr.arpa"
+      record: "{% raw %}{{ icic_management_ip_address.split('.')[3] }}{% endraw %}"
+      type: PTR
+      value: "{% raw %}icicmgt0.{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}."
 
-- name: setup the ICIC management node
+- name: Setup the ICIC management node
   hosts: s390x_ICIC_management_node
   vars:
-    fastvmurlfile: "/var/www/html/.secret/.fastvmurl"
-    fastvmurl: "{% raw %}{{ lookup('file', fastvmurlfile) }}{% endraw %}"
+    icicver: "{% raw %}{{ lookup('file', '/var/www/html/.secret/.icicver' )}}{% endraw %}"
+    icicpath: "/opt/icic/{% raw %}{{ icicver }}{% endraw %}"
   tasks:
-  - name: create installation config file
+  - name: Create installation config file
     block:
-    - name: create the configuration direcctory
+    - name: Create the configuration direcctory
       file:
         dest: /etc/icic
         state: directory
         mode: '0750'
-    - name: create config file
+    - name: Create config file
       template:
         src: icic-config-properties.j2
         dest: /etc/icic/config.properties
 
-  - name: set the system locale
+  - name: Set the system locale
     command: localectl set-locale en_US.UTF8
 
-  - name: extract the installation code
-    block:
-    - name: fetch the name of the icic code
-      shell:
-        cmd: curl {% raw %}{{ fastvmurl }}{% endraw %}/ICICCODE.txt 2>/dev/null
-        warn: false
-      register: icicfile
-    - name: extract the remote archive
-      unarchive:
-        src: "{% raw %}{{ fastvmurl }}/{{ icicfile.stdout }}{% endraw %}"
-        dest: /tmp/
-        remote_src: yes
-    - name: pull the version from the supplied file name
-      set_fact:
-        icicver: '{% raw %}{{ icicfile.stdout.split("-")[4] | splitext | first }}{% endraw %}'
+  - name: Install dependencies of the installer
+    dnf:
+      state: present
+      name:
+        - gettext
+        - gettext-libs
+        - java-1.8.0-openjdk
+        - java-1.8.0-openjdk-headless
 
-  - name: run the silent installation script
+  - name: Extract the installation code
+    unarchive:
+      src: "{% raw %}{{ item }}{% endraw %}"
+      dest: /tmp/
+      remote_src: false
+    with_fileglob: "{% raw %}{{ icicpath }}/icic-install-*-{{ icicver }}*.tgz{% endraw %}"
+
+  - name: Run the silent installation script
     command:
       chdir: /tmp/icic-{% raw %}{{ icicver }}{% endraw %}/
       cmd: ./install -s -z -e -c
     environment:
       HOST_INTERFACE: encad0
 
-  - name: make sure CA certificates are onboarded
+  - name: Make sure CA certificates are onboarded
     block:
-    - name: run update-ca-trust
+    - name: Run update-ca-trust
       command:
         cmd: update-ca-trust
-    - name: run c_rehash
+    - name: Run c_rehash
       command:
         cmd: openssl rehash /etc/pki/ca-trust/source/anchors/
 
-  - name: install the ICIC certificate(s)
+  - name: Install the ICIC certificate(s)
     block:
-    - name: copy the private key
+    - name: Copy the private key
       copy:
         src: "/etc/pki/tls/private/icic.pem"
         dest: "/etc/pki/tls/private/icic.key"
@@ -86,7 +106,7 @@
         owner: root
         group: root
         mode: "0440"
-    - name: copy the certificate(s)
+    - name: Copy the certificate(s)
       template:
         src: icic-cert-bundle.j2
         dest: "/etc/pki/tls/certs/icic.crt"
@@ -94,6 +114,6 @@
         owner: root
         group: root
         mode: "0644"
-    - name: restart the ICIC services
+    - name: Restart the ICIC services
       command:
         cmd: /opt/ibm/icic/bin/icic-services restart

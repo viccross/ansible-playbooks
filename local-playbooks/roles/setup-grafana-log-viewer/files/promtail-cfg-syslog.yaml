@@ -1,0 +1,28 @@
+server:
+  http_listen_port: 0
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions_syslog.yaml
+
+clients:
+  - url: http://localhost:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: syslog
+    syslog:
+      listen_address: 127.0.0.1:20514
+      label_structured_data: false
+      labels:
+        job: syslog
+      use_incoming_timestamp: true
+      idle_timeout: 12h
+    relabel_configs:
+      - source_labels: [__syslog_message_hostname]
+        target_label: hostname
+      - source_labels: [__syslog_message_severity]
+        target_label: level
+      - source_labels: [__syslog_message_app_name]
+        target_label: application
+      - source_labels: [__syslog_message_facility]
+        target_label: facility

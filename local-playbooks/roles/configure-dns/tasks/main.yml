@@ -89,14 +89,13 @@
 - name: Add dns to firewall
   firewalld:
     permanent: true
+    immediate: true
     service: dns
     state: enabled
     zone: "{{ item }}"
   with_items:
     - internal
     - public
-  notify:
-    - Restart firewalld
 
 #- name: Restart named-chroot.service
 #  service:

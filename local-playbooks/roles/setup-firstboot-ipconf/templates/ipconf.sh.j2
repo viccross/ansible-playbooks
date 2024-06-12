@@ -135,12 +135,15 @@ EOF
 #  # Update the bastion_public_ip_address in the group_vars
 #  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
-  pushd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml && popd
+  (cd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml)
   # start named
   systemctl start named-chroot.service
 
   # Regenerate all the certificates
-  pushd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml && popd
+  (cd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml)
+
+  # Configure Grafana
+  (cd /opt/ansible && ansible-playbook -i inventory create-grafana-ini.yml)
 
   # update Apache configuration
   sed -i.bak -e "s/wsc.ibm/${DOMAIN}/g" -e "s/ocp-z-poc/${CLUSTER_NAME}/g" \
@@ -171,6 +174,23 @@ EOF
   systemctl enable haproxy.service
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
+  # restart Grafana
+  systemctl enable grafana-server.service
+  systemctl restart grafana-server.service
+  echo "Grafana restarted"
+  # restart Mosquitto
+  systemctl enable mosquitto.service
+  systemctl restart mosquitto.service
+  echo "Mosquitto restarted"
+  # restart Loki
+  systemctl enable loki.service
+  systemctl restart loki.service
+  echo "Loki restarted"
+  # restart Promtail
+  systemctl enable promtail-mqtt.service
+  systemctl restart promtail-mqtt.service
+  echo "Promtail restarted"
+
   ### This is the old DNS change, comment this before removal
 #  # upstream DNS is harder, have to change the bind config...
 #  if [ -v DNS ]; then

@@ -99,6 +99,13 @@ coreos_kargs_net:
 coreos_kargs_extra:
   zvm: "{{ zvm_rd_znet }} {{ zvm_rd_dasd }}"
 
+mqttgate_id: "{{ mqttgate_id }}"
+mqttgate_pass: "{{ mqttgate_pass }}"
+mqtt_promtail_id: "{{ mqtt_promtail_id }}"
+mqtt_promtail_pass: "{{ mqtt_promtail_pass }}"
+mqtt_consend_id: "{{ mqtt_consend_id }}"
+mqtt_consend_pass: "{{ mqtt_consend_pass }}"
+
 # The IP configuration will write out the cluster_base_domain variable.
 # Look for runtime.yml in the group_vars/all directory (where this file is).
 # If this is the only file in the 'all' directory then the IP configuration did not run :/

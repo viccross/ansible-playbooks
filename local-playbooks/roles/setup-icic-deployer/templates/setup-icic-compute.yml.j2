@@ -1,8 +1,8 @@
 ---
-- name: wait for ICIC management node accessibility
+- name: Wait for ICIC management node accessibility
   hosts: s390x_bastion_workstation
   tasks:
-  - name: wait for SSH
+  - name: Wait for SSH
     wait_for:
       port: 22
       host: "172.24.26.12"
@@ -10,13 +10,34 @@
       delay: 1
       timeout: 10000
 
-- name: setup the ICIC compute node
+- name: Setup the ICIC compute node
   hosts: s390x_ICIC_management_node
-  vars:
-    fastvmurlfile: "/var/www/html/.secret/.fastvmurl"
-    fastvmurl: "{% raw %}{{ lookup('file', fastvmurlfile) }}{% endraw %}"
+#  vars:
+#    fastvmurlfile: "/var/www/html/.secret/.fastvmurl"
+#    fastvmurl: "{% raw %}{{ lookup('file', fastvmurlfile) }}{% endraw %}"
   tasks:
-  - name: copy the script to the management node
+  - name: Add or modify A for ICIC compute
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
+      record: iciccmp1
+      type: A
+      value: "{% raw %}{{ icic_compute_ip_address }}{% endraw %}"
+  - name: Add or modify PTR for ICIC compute
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "26.24.172.in-addr.arpa"
+      record: "{% raw %}{{ icic_compute_ip_address.split('.')[3] }}{% endraw %}"
+      type: PTR
+      value: "{% raw %}iciccmp1.{{ esigroup | lower }}.{{ cluster_base_domain }}.{% endraw %}"
+
+  - name: Copy the script to the management node
     copy:
       src: icic-add-host.sh
       dest: /usr/local/bin/icic-add-host.sh
@@ -24,16 +45,16 @@
       owner: root
       group: root
 
-  - name: run the script for setup
+  - name: Run the script for setup
     command:
       cmd: /usr/local/bin/icic-add-host.sh
     environment:
       controller_host: "{% raw %}{{ icic_management_ip_address }}{% endraw %}"
       controller_user_name: "root"
       controller_passwd: "lnx4vm"
-      compute_host: "iciccmp0.{% raw %}{{ cluster_base_domain }}{% endraw %}"
+      compute_host: "iciccmp1.{% raw %}{{ esigroup }}.{{ cluster_base_domain }}{% endraw %}"
       compute_user_name: "root"
       compute_private_key_data: "{% raw %}{{ lookup('file', '/root/.ssh/id_ed25519') | replace('\n','\\n') }}{% endraw %}"
       compute_vswitch: "VSW1"
-      disk_pool: "ECKD:LINUX"
+      disk_pool: "{% raw %}{{ diskpool_type }}:LINUX{% endraw %}"
       host_type: "powervm"
