@@ -73,6 +73,14 @@ netconf() {
   fi
   # Write out the new hostname
   echo ${HN,,}.${DOMAIN} > /mnt/sysimage/etc/hostname
+  # Stop NetworkMangler from mangling DNS
+  sed -i 's/\[main\]/[main]\ndns=none/' /mnt/sysimage/etc/NetworkManager/NetworkManager.conf
+  # Set the correct DNS server (our internal one)
+  cat <<EOFRES > /mnt/sysimage/etc/resolv.conf
+# File NOT managed by NetworkManager
+search ${DOMAIN}
+nameserver 172.24.26.1
+EOFRES
   # Append hostnames to /etc/hosts
   echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}" >> /mnt/sysimage/etc/hosts
   echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /mnt/sysimage/etc/hosts
@@ -148,12 +156,12 @@ else
 fi
 
 # Set up the mount of the ICIC module content
-cat <<EOF >"/etc/auto.icic-install-${icicver}"
+cat <<EOFAU >"/etc/auto.icic-install-${icicver}"
 ${icicpath}  -fstype=squashfs,exec :/opt/content/icic-${icicver}-${disktype,,}.esi
-EOF
-cat <<EOF >"/etc/auto.master.d/icic-install-${icicver}.autofs"
+EOFAU
+cat <<EOFAM >"/etc/auto.master.d/icic-install-${icicver}.autofs"
 /-  /etc/auto.icic-install-${icicver}
-EOF
+EOFAM
 systemctl reload autofs && sleep 2
 
 if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
