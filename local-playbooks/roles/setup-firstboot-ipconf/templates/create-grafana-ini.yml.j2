@@ -1,0 +1,11 @@
+---
+- name: Create the Grafana INI file
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Create grafana.ini
+    template:
+      src: grafana.ini.j2
+      dest: /etc/grafana/grafana.ini
+      owner: grafana
+      group: grafana
+      mode: 0640

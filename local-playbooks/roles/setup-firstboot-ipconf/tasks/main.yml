@@ -123,3 +123,5 @@
   - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2" }
   - { src: "haproxy/rhocp-front.cfg.j2", dest: "/opt/ansible/templates/haproxy/rhocp-front.cfg.j2" }
   - { src: "settings.env.j2", dest: "/etc/zvmesi/settings.env" }
+  - { src: "grafana.ini.j2", dest: "/opt/ansible/templates/grafana.ini.j2" }
+  - { src: "create-grafana-ini.yml.j2", dest: "/opt/ansible/create-grafana-ini.yml" }
