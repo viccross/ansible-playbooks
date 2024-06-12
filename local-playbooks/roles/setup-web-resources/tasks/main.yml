@@ -107,6 +107,8 @@
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
       # Reverse-proxy configuration for cross-system stats
       ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
+      ProxyPassMatch "^/grafana/(.*)$" "http://localhost:3000/grafana/$1"
+      ProxyPassReverse "/grafana/" "http://localhost:3000/grafana/"
 
 - name: Download and unwind LDAP tools
   block:
