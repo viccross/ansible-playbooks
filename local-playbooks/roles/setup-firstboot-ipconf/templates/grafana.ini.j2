@@ -3,7 +3,7 @@
 http_addr =
 http_port = 3000
 domain = {{ cluster_base_domain }}
-root_url = https://{{ elan_host_name }}.{{ cluster_base_domain }}/grafana
+root_url = https://{{ elan_host_name }}.{{ esigroup | lower }}.{{ cluster_base_domain | lower }}/grafana
 enforce_domain = False
 protocol = http
 serve_from_sub_path = true
@@ -13,7 +13,7 @@ provisioning = /etc/grafana/provisioning
 
 [security]
 allow_embedding = true
-csrf_trusted_origins = {{ elan_host_name }}.{{ cluster_base_domain }}
+csrf_trusted_origins = {{ elan_host_name }}.{{ esigroup | lower }}.{{ cluster_base_domain | lower }}
 
 [dashboards]
 min_refresh_interval = 1s
