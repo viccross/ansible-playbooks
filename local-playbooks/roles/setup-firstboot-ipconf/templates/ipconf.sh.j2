@@ -171,6 +171,10 @@ EOF
   systemctl enable haproxy.service
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
+  # restart Grafana
+  systemctl enable grafana-server.service
+  systemctl restart grafana-server.service
+  echo "Grafana restarted"
   ### This is the old DNS change, comment this before removal
 #  # upstream DNS is harder, have to change the bind config...
 #  if [ -v DNS ]; then

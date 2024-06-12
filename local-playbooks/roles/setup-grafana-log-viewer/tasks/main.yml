@@ -1,0 +1,56 @@
+---
+- name: Install Grafana and Mosquitto
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+  - grafana
+  - mosquitto
+
+- name: Configure Grafana for public dashboards (for inline log viewer)
+  lineinfile:
+    line: publicDashboards = true
+    after: "[feature_toggles]"
+
+
+
+
+- name: Configure Mosquitto
+  copy:
+    content: |
+      # Configuration of Mosquitto
+      password_file /etc/mosquitto/passwd
+      listener 1883
+      protocol mqtt
+      listener 9001
+      protocol websockets
+    mode: 0644
+    owner: mosquitto
+    group: mosquitto
+
+- name: Configure Mosquitto passwords
+  block:
+  - name: Set password for MQTTGATE
+    shell:
+      cmd: mosquitto_passwd -b -c /etc/mosquitto/passwd {{ mqttgate_id }} {{ mqttgate_pass }}
+      creates: /etc/mosquitto/passwd
+  - name: Set password for Promtail sub
+    shell:
+      cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_promtail_id }} {{ mqtt_promtail_pass }}
+  rescue:
+  - name: Remove a possibly invalid passwd file
+    file:
+      path: /etc/mosquitto/passwd
+      exists: no
+
+- name: Activate Grafana and Mosquitto
+  systemd:
+    service: "{{ item }}"
+    state: enabled
+  loop:
+  - grafana
+  - mosquitto
+
+# More things here...
+#   We have to install Loki somehow (container?)
+#   We need to have the Promtail sub 
