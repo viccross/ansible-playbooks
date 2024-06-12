@@ -22,6 +22,26 @@
     include_tasks: tasks/create-certificate.yml
     with_items:
     - { filename: "icic", common_name: "icicmgt0.{% raw %}{{ esigroup }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: ",IP:{% raw %}{{ icic_management_ip_address }}{% endraw %}" }
+  - name: Add or modify A for ICIC management
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
+      record: icicmgt0
+      type: A
+      value: "{% raw %}{{ icic_management_ip_address }}{% endraw %}"
+  - name: Add or modify PTR for ICIC management
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "26.24.172.in-addr.arpa"
+      record: "{% raw %}{{ icic_management_ip_address | split('.')[3] }}{% endraw %}"
+      type: PTR
+      value: "{% raw %}icicmgt0.{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}."
 
 - name: Setup the ICIC management node
   hosts: s390x_ICIC_management_node

@@ -39,6 +39,26 @@
 - name: Setup the ICIC compute node
   hosts: s390x_ICIC_management_node
   tasks:
+  - name: Add or modify A for ICIC compute
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup | lower }}.{{ cluster_base_domain }}"
+      record: "{{ iciccmp }}"
+      type: A
+      value: "{{ icic_compute_ip_address }}"
+  - name: Add or modify PTR for ICIC compute
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "26.24.172.in-addr.arpa"
+      record: "{{ icic_compute_ip_address | split('.')[3] }}"
+      type: PTR
+      value: "{{ iciccmp }}.{{ esigroup | lower }}.{{ cluster_base_domain }}."
   - name: Copy the script to the management node
     copy:
       src: icic-add-host.sh
