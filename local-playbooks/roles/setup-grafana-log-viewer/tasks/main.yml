@@ -1,22 +1,34 @@
 ---
-- name: Install Grafana and Mosquitto
+- name: Install Grafana and Mosquitto and Loki
   dnf:
     name: "{{ item }}"
     state: present
   loop:
   - grafana
   - mosquitto
+  - elan-loki
 
-- name: Configure Grafana for public dashboards (for inline log viewer)
-  lineinfile:
-    line: publicDashboards = true
-    after: "[feature_toggles]"
+- name: Configure Grafana
+  template:
+    dest: /etc/grafana/grafana.ini
+    src: grafana.ini.j2
+    owner: root
+    group: root
+    mode: 0644
 
-
-
+- name: Allow traffic at port 1883 for Mosquitto
+  firewalld:
+    port: 1883/tcp
+    permanent: yes
+    zone: "{{ item }}"
+    state: enabled
+  with_items:
+  - internal
+  - public
 
 - name: Configure Mosquitto
   copy:
+    dest: /etc/mosquitto/mosquitto.conf
     content: |
       # Configuration of Mosquitto
       password_file /etc/mosquitto/passwd
@@ -27,6 +39,7 @@
     mode: 0644
     owner: mosquitto
     group: mosquitto
+    backup: yes
 
 - name: Configure Mosquitto passwords
   block:
@@ -37,20 +50,31 @@
   - name: Set password for Promtail sub
     shell:
       cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_promtail_id }} {{ mqtt_promtail_pass }}
+  - name: Set password for a command sender (WIP)
+    shell:
+      cmd: mosquitto_passwd -b /etc/mosquitto/passwd {{ mqtt_consend_id }} {{ mqtt_consend_pass }}
   rescue:
   - name: Remove a possibly invalid passwd file
     file:
       path: /etc/mosquitto/passwd
       exists: no
 
-- name: Activate Grafana and Mosquitto
+- name: Create environment file for promtail-mqtt
+  copy:
+    dest: /etc/zvmesi/promtail-mqtt.env
+    content: |
+      MQTTID={{ mqtt_promtail_id }}
+      MQTTPWD={{ mqtt_promtail_pass }}
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Activate Grafana and Mosquitto and Loki and Promtail
   systemd:
     service: "{{ item }}"
     state: enabled
   loop:
-  - grafana
+  - grafana-server
   - mosquitto
-
-# More things here...
-#   We have to install Loki somehow (container?)
-#   We need to have the Promtail sub 
+  - loki
+  - promtail-mqtt

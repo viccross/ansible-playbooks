@@ -28,6 +28,7 @@
   - configure-haproxy
   - configure-cockpit
 #  - configure-ignition
+  - setup-grafana-log-viewer
   - setup-ocp-deployer
   - setup-icic-deployer
   - setup-finna-response

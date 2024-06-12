@@ -60,3 +60,10 @@ ip_master_2: '{{ cluster["nodes"]["control-2"]["ip"] }}'
 ip_worker_0: '{{ cluster["nodes"]["compute-0"]["ip"] }}'
 ip_worker_1: '{{ cluster["nodes"]["compute-1"]["ip"] }}'
 ip_worker_2: '{{ cluster["nodes"]["compute-2"]["ip"] }}'
+#
+mqttgate_id: mqttgate
+mqttgate_pass: mqttgate
+mqtt_promtail_id: grafanaloki01
+mqtt_promtail_pass: grafanaloki01
+mqtt_consend_id: consend01
+mqtt_consend_pass: consend01
