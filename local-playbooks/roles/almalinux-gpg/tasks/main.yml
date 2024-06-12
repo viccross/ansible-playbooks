@@ -2,8 +2,8 @@
 - name: Set up AlmaLinux GPG key
   rpm_key:
     state: present
-    key: https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
+    key: https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux{{ "-9" if ansible_distribution_major_version == 9 }}"
 - name: Set up EPEL GPG key
   rpm_key:
     state: present
-    key: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8
+    key: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
