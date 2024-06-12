@@ -8,14 +8,6 @@
   - mosquitto
   - elan-loki
 
-- name: Configure Grafana
-  template:
-    dest: /etc/grafana/grafana.ini
-    src: grafana.ini.j2
-    owner: root
-    group: root
-    mode: 0644
-
 - name: Allow traffic at port 1883 for Mosquitto
   firewalld:
     port: 1883/tcp
