@@ -28,8 +28,6 @@
   vars:
     icicver: "{% raw %}{{ lookup('file', '/var/www/html/.secret/.icicver' )}}{% endraw %}"
     icicpath: "/opt/icic/{% raw %}{{ icicver }}{% endraw %}"
-    iciccodeidx: "{% raw %}{{ icicpath }}/iciccode.txt{% endraw %}"
-    iciccodefile: "{% raw %}{{ lookup('file', iciccodeidx )}}{% endraw %}"
   tasks:
   - name: Create installation config file
     block:
@@ -57,9 +55,10 @@
 
   - name: Extract the installation code
     unarchive:
-      src: "{% raw %}{{ lookup('file', iciccodefile }}{% endraw %}"
+      src: "{% raw %}{{ item }}{% endraw %}"
       dest: /tmp/
       remote_src: false
+    with_fileglob: "{{ icicpath }}/icic-install-*-{{ icicver }}*.tgz"
 
   - name: Run the silent installation script
     command:

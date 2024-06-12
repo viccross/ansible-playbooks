@@ -261,8 +261,9 @@ mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
 netconf ${icicmgt} ${mgtip}
 # Purge the old SSH host keys for regeneration at boot
 rm -f /mnt/sysimage/etc/ssh/ssh_host_*
-# Add the  SSH key from here to the management node
+# Add the SSH keys from here to the management node
 cat /root/.ssh/id_ed25519.pub >> /mnt/sysimage/root/.ssh/authorized_keys
+cat /root/.ssh/id_rsa_icic.pub >> /mnt/sysimage/root/.ssh/authorized_keys
 # Remove the old ICICdeps repo definition, if present
 rm -f /mnt/sysimage/etc/yum.repos.d/ICICdeps.repo
 # Copy the repo files from the ELAN
@@ -300,8 +301,9 @@ netconf ${iciccmp} ${cmpip}
 sed -i.bak '/IPADDR/s/11/12/' /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-encad8
 # Purge the old SSH host keys for regeneration at boot
 rm -f /mnt/sysimage/etc/ssh/ssh_host_*
-# Add the  SSH key from here to the management node
+# Add the SSH keys from here to the management node
 cat /root/.ssh/id_ed25519.pub >> /mnt/sysimage/root/.ssh/authorized_keys
+cat /root/.ssh/id_rsa_icic.pub >> /mnt/sysimage/root/.ssh/authorized_keys
 # Remove the old ICICdeps repo definition, if present
 rm -f /mnt/sysimage/etc/yum.repos.d/ICICdeps.repo
 # Copy the repo files from the ELAN

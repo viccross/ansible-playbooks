@@ -58,5 +58,5 @@
       compute_user_name: "root"
       compute_private_key_data: "{{ lookup('file', '/root/.ssh/id_ed25519') | replace('\n','\\n') }}"
       compute_vswitch: "VSW1"
-      disk_pool: "ECKD:LINUX"
+      disk_pool: "{{ diskpool_type }}:LINUX"
       host_type: "powervm"
