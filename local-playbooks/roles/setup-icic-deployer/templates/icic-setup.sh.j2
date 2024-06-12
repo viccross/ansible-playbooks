@@ -9,9 +9,10 @@
 # =================================================================
 #
 # icic-setup.sh
-# Set up ICIC to the z/VM system
+# Set up ICIC to the z/VM system - Version 2.0
 # - Script is deployed by Ansible (TBC)
 # - Run at boot time if ICIC is requested
+# - Updated for modularisation
 # (c) Copyright IBM Corp. 2024 All Rights Reserved
 #
 
@@ -48,10 +49,10 @@ source <(grep ^VLAN /mnt/znetboot/ZVMIP.CONF)
 
 nextip() {
   IP=$1
-  IP_HEX=$(printf '%.2X%.2X%.2X%.2X\n' `echo $IP | sed -e 's/\./ /g'`)
-  NEXT_IP_HEX=$(printf %.8X `echo $(( 0x$IP_HEX + 1 ))`)
-  NEXT_IP=$(printf '%d.%d.%d.%d\n' `echo $NEXT_IP_HEX | sed -r 's/(..)/0x\1 /g'`)
-  echo "$NEXT_IP"
+  IP_HEX=$(printf '%.2X%.2X%.2X%.2X\n' $(echo ${IP} | sed -e 's/\./ /g'))
+  NEXT_IP_HEX=$(printf %.8X `echo $(( 0x${IP_HEX} + 1 ))`)
+  NEXT_IP=$(printf '%d.%d.%d.%d\n' $(echo ${NEXT_IP_HEX} | sed -r 's/(..)/0x\1 /g'))
+  echo "${NEXT_IP}"
 }
 
 netconf() {
@@ -61,18 +62,18 @@ netconf() {
   sed -i.bak "/IPADDR/s/^IPADDR=.*$/IPADDR=${IP}/ ; \
               /NETMASK/s/^NETMASK=.*$/NETMASK=${NETMASK}/ ; \
               /PREFIX/s/^PREFIX=.*$/PREFIX=${PREFIX}/ ; \
-              /GATEWAY/s/^GATEWAY=.*$/GATEWAY=${GATEWAY}/ " /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${extnetdev}
-  if [ -v DNS1 ]; then
-    echo "DNS1=${DNS1}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${extnetdev}
-    if [ -v DNS2 ]; then
-      echo "DNS2=${DNS2}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${extnetdev}
-      if [ -v DNS3 ]; then
-        echo "DNS3=${DNS3}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${extnetdev}
+              /GATEWAY/s/^GATEWAY=.*$/GATEWAY=${GATEWAY}/ " /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-"${extnetdev}"
+  if [[ -v DNS1 ]]; then
+    echo "DNS1=${DNS1}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-"${extnetdev}"
+    if [[ -v DNS2 ]]; then
+      echo "DNS2=${DNS2}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-"${extnetdev}"
+      if [[ -v DNS3 ]]; then
+        echo "DNS3=${DNS3}" >> /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-"${extnetdev}"
       fi
     fi
   fi
   # Write out the new hostname
-  echo ${HN,,}.${DOMAIN} > /mnt/sysimage/etc/hostname
+  echo "${HN,,}"."${DOMAIN}" > /mnt/sysimage/etc/hostname
   # Stop NetworkMangler from mangling DNS
   sed -i 's/\[main\]/[main]\ndns=none/' /mnt/sysimage/etc/NetworkManager/NetworkManager.conf
   # Set the correct DNS server (our internal one)
@@ -82,8 +83,8 @@ search ${DOMAIN}
 nameserver 172.24.26.1
 EOFRES
   # Append hostnames to /etc/hosts
-  echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}" >> /mnt/sysimage/etc/hosts
-  echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /mnt/sysimage/etc/hosts
+  { echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}";
+    echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}";} >> /mnt/sysimage/etc/hosts
   # write the LDAP hostname detail to /etc/hosts
   echo "172.24.26.10 ldapsrv.ibmpoc.internal" >> /mnt/sysimage/etc/hosts
   # copy the CA certificates
@@ -105,16 +106,16 @@ growguest() {
   mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=$((mdsize / 2)) '{ if ($4 >= size) {print} }')
   # run through a loop to accumulate disk space
   devnum=201; dasdnum=0;
-  until [ ${SPACE} -eq 0 ]; do
+  until [[ ${SPACE} -eq 0 ]]; do
     # grab an available space
     IFS=" " read -r -a dasd <<< ${dasds[$((dasdnum++))]}
     IFS=" " avail=${dasd[3]}
     # if there is no more DASD, avail will either not be a number or be blank
-    if [ -z "${avail}" ] || [ ! -z "${avail//[0-9]}" ]; then
+    if [[ -z "${avail}" ]] || [[ ! -z "${avail//[0-9]}" ]]; then
       echo "No DASD volume available, we are ${SPACE} too short"
       break
     fi
-    if [ "${avail}" -ge "${SPACE}" ]; then
+    if [[ "${avail}" -ge "${SPACE}" ]]; then
       # This disk has more free space than we need, just grab it
       alloc=${SPACE}
       SPACE=0
@@ -137,13 +138,27 @@ else
   echo "SMAPI listener active, continuing..."
 fi
 
+# Set up the mount of the ICIC module content
+cat <<EOF >"/etc/auto.icic-install-${icicver}"
+${icicpath}  -fstype=squashfs,exec :${modpath}
+EOF
+cat <<EOF >"/etc/auto.master.d/icic-install-${icicver}.autofs"
+/-  /etc/auto.icic-install-${icicver}
+EOF
+systemctl reload autofs
+
+if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
+  echo "ICIC content module file could not be mounted!"
+  exit 6
+fi
+
 # fetch our current IP address, and strip the netmask off the end
 myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
 tmpip=${myip%/*}
 IFS=" ";
 
 # Look for what type of space we have: if we find no "3390-" then it's FBA.
-if [ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]; then
+if [[ "$(smcli ivsqd -T IBMAUTO -q 3 -e 3 ${smapiauth} -n LINUX  | grep 3390- | wc -l)" == "0" ]]; then
   disktype=FBA
   mdsize=${mdsizefba}
   mgtspace=${mgtspacefba}
@@ -170,7 +185,7 @@ if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
 fi
 
 # If VLAN is set, set up a VLAN parameter for the NICDEF statements
-if [ ! -z ${VLAN} ]; then
+if [[ ! -z ${VLAN} ]]; then
   vlanparm="VLAN ${VLAN}"
 else
   vlanparm=""
@@ -214,18 +229,18 @@ EOFLDIF
 echo "Writing out the disk image to the ICIC guests..."
 # Restore the disk image to the guests
 cio_ignore -r 1200,1201
-vmcp link ${icicmgt} 200 1200 w
-vmcp link ${iciccmp} 200 1201 w
+vmcp link "${icicmgt}" 200 1200 w
+vmcp link "${iciccmp}" 200 1201 w
 # echo 1 > /sys/bus/ccw/devices/0.0.1200/raw_track_access
-if [ ${disktype} == "ECKD" ]; then
+if [[ ${disktype} == "ECKD" ]]; then
   chccwdev --attribute raw_track_access=1 -e 1200,1201
 else
   chccwdev -e 1200,1201
 fi
 # Fetch the disk image file
-icicimg=$(cat ${icicpath}/icicimg.txt 2>/dev/null)
-if [ ${disktype} == "FBA" ]; then
-  icicimg=$(echo ${icicimg} | sed -e 's/-/-fba-/g')
+icicimg=$(cat "${icicpath}"/icicimg.txt 2>/dev/null)
+if [[ ${disktype} == "FBA" ]]; then
+  icicimg=$(echo "${icicimg}" | sed -e 's/-/-fba-/g')
 fi
 echo "Restoring ${icicimg%.*}..."
 zcat ${icicpath}/${icicimg} | tee \
@@ -240,8 +255,8 @@ until chccwdev -s 1200,1201 ; do
   sleep 1;
 done
 
-mgtip=$(nextip ${tmpip})
-cmpip=$(nextip ${mgtip})
+mgtip=$(nextip "${tmpip}")
+cmpip=$(nextip "${mgtip}")
 echo "Telling Ansible about our IP addresses and disk type..."
 cat >> /opt/ansible/inventory/group_vars/all/runtime.yml <<EOFYML
 #
@@ -251,7 +266,7 @@ diskpool_type: ${disktype}
 EOFYML
 
 # One at a time, we'll update the configuration of the imaged systems.  First, the management:
-if [ ${disktype} == "ECKD" ]; then
+if [[ ${disktype} == "ECKD" ]]; then
   chccwdev --attribute raw_track_access=0 -e 1200
 else
   chccwdev -e 1200
@@ -263,9 +278,9 @@ vgchange -ay
 # derive the name of the root LV in the image
 rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
 # go ahead and mount
-mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
+mount /dev/rhel_rhel8img/"${rootLV}" /mnt/sysimage
 # change the interface details
-netconf ${icicmgt} ${mgtip}
+netconf "${icicmgt}" "${mgtip}"
 # Purge the old SSH host keys for regeneration at boot
 rm -f /mnt/sysimage/etc/ssh/ssh_host_*
 # Add the SSH keys from here to the management node
@@ -289,7 +304,7 @@ until chccwdev -s 1200 ; do
 done
 
 # Second, the compute:
-if [ ${disktype} == "ECKD" ]; then
+if [[ ${disktype} == "ECKD" ]]; then
   chccwdev --attribute raw_track_access=0 -e 1201
 else
   chccwdev -e 1201
@@ -301,9 +316,9 @@ vgchange -ay
 # derive the name of the root LV in the image
 rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
 # go ahead and mount
-mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
+mount /dev/rhel_rhel8img/"${rootLV}" /mnt/sysimage
 # change the interface details
-netconf ${iciccmp} ${cmpip}
+netconf "${iciccmp}" "${cmpip}"
 # Update the address for the internal interface
 sed -i.bak '/IPADDR/s/11/12/' /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-encad8
 # Purge the old SSH host keys for regeneration at boot
@@ -349,7 +364,7 @@ echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /etc/hosts
 
 # IPLing the management guest
 echo "Issuing a SMAPI IPL for the management guest..."
-smcli ia -T ${icicmgt} ${smapiauth}
+smcli ia -T "${icicmgt}" "${smapiauth}"
 sleep 1
 echo "Starting the Ansible configuration of management guest..."
 cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-management.yml
