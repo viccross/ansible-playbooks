@@ -33,7 +33,7 @@
       key_algorithm: "hmac-sha256"
       server: "172.24.26.1"
       zone: "26.24.172.in-addr.arpa"
-      record: "{% raw %}{{ icic_compute_ip_address | split('.')[3] }}{% endraw %}"
+      record: "{% raw %}{{ icic_compute_ip_address.split('.')[3] }}{% endraw %}"
       type: PTR
       value: "{% raw %}iciccmp1.{{ esigroup | lower }}.{{ cluster_base_domain }}.{% endraw %}"
 
