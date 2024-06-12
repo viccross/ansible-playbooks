@@ -86,7 +86,6 @@
   - internal
   - public
   notify:
-    - Restart firewalld
     - Restart httpd
 
 - name: Allow traffic at 8443 for apache
@@ -101,5 +100,4 @@
   - internal
   - public
   notify:
-    - Restart firewalld
     - Restart httpd

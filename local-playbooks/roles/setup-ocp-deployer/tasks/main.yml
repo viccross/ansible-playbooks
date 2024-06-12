@@ -11,8 +11,8 @@
   firewalld:
     port: 6000/udp
     state: enabled
-    permanent: yes
-    immediate: yes
+    permanent: true
+    immediate: true
     zone: public
 
 - name: Add ntp to firewall

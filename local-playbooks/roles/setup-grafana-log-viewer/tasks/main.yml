@@ -11,7 +11,8 @@
 - name: Allow traffic at port 1883 for Mosquitto
   firewalld:
     port: 1883/tcp
-    permanent: yes
+    permanent: true
+    immediate: true
     zone: "{{ item }}"
     state: enabled
   with_items:
