@@ -22,7 +22,6 @@ source /etc/zvmesi/settings.env
 # The version to be installed is in the file from the web server
 # The code is in a module file in the "content" directory
 icicver=$(cat {{ webroot }}/.secret/.icicver)
-modpath="/opt/content/icic-${icicver}.esi"
 icicpath="/opt/icic/${icicver}"
 
 # set the size of the minidisks needed
@@ -130,20 +129,6 @@ else
   echo "SMAPI listener active, continuing..."
 fi
 
-# Set up the mount of the ICIC module content
-cat <<EOF >"/etc/auto.icic-install-${icicver}"
-${icicpath}  -fstype=squashfs,exec :${modpath}
-EOF
-cat <<EOF >"/etc/auto.master.d/icic-install-${icicver}.autofs"
-/-  /etc/auto.icic-install-${icicver}
-EOF
-systemctl reload autofs && sleep 2
-
-if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
-  echo "ICIC content module file could not be mounted!"
-  exit 6
-fi
-
 # fetch our current IP address, and strip the netmask off the end
 myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
 tmpip=${myip%/*}
@@ -160,6 +145,20 @@ else
   mdsize=${mdsizeckd}
   mgtspace=${mgtspaceckd}
   cmpspace=${cmpspaceckd}
+fi
+
+# Set up the mount of the ICIC module content
+cat <<EOF >"/etc/auto.icic-install-${icicver}"
+${icicpath}  -fstype=squashfs,exec :/opt/content/icic-${icicver}-${disktype,,}.esi
+EOF
+cat <<EOF >"/etc/auto.master.d/icic-install-${icicver}.autofs"
+/-  /etc/auto.icic-install-${icicver}
+EOF
+systemctl reload autofs && sleep 2
+
+if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
+  echo "ICIC content module file could not be mounted!"
+  exit 6
 fi
 
 # If VLAN is set, set up a VLAN parameter for the NICDEF statements
