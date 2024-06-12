@@ -230,7 +230,7 @@
       name: MAILTO
       value: root
 
-  - name: Create/set permission on directories - secrets, Smarty template cache, content, and install
+  - name: Create/set permission on directories - secrets, Smarty template cache, and install
     file:
       path: "{{ item }}"
       owner: apache
@@ -240,10 +240,18 @@
     loop:
       - "{{ webroot }}/.secret"
       - "{{ webroot }}/service-desk-racf-master/templates_c"
-      - /opt/content
       - "{{ webroot }}/install"
       - "{{ webroot }}/.cluster"
       - "{{ webroot }}/.clustertmp"
+
+  - name: Create/set permission on content directory
+    file:
+      path: /opt/content
+      owner: apache
+      group: support
+      mode: 0770
+      setype: httpd_sys_rw_content_t
+      state: directory
 
   - name: Create and set perms on incrond trigger files
     file:

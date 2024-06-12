@@ -73,3 +73,113 @@
     mode: 0644
     owner: grafana
     group: grafana
+
+- name: Create the simple Promtail instance configs
+  template:
+    src: promtail-cfg.yaml.j2
+    dest: /etc/loki/promtail-{{ item.job }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - { job: "httpd",  path: "/var/log/httpd/*_log" }
+  - { job: "phpfpm", path: "/var/log/php-fpm/*.log" }
+  - { job: "squid",  path: "/var/log/squid/*.log" }
+
+- name: Create the sd Promtail instance configs
+  template:
+    src: promtail-cfg-sd.yaml.j2
+    dest: /etc/loki/promtail-{{ item.job }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - { job: "icicbuild" }
+  - { job: "varlog" }
+
+- name: Create the YAML files for Promtail sd instances
+  template:
+    src: promtail-cfg-sd-multi.yaml.j2
+    dest: /etc/loki/promtail-{{ item.file }}-sd.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+    - file: "icicbuild"
+      jobs:
+        - { name: "icicbuild", path: "/var/www/html/iciclog*.txt" }
+    - file: "varlog"
+      jobs:
+        - { name: "dnflogs",   path: "/var/log/dnf*log" }
+        - { name: "hawkeylog", path: "/var/log/hawkey.log" }
+        - { name: "kdumplog",  path: "/var/log/kdump.log" }
+        - { name: "lastlog",   path: "/var/log/lastlog" }
+
+- name: Create Promtail config for journald and syslog
+  copy:
+    src: promtail-cfg-{{ item }}.yaml
+    dest: /etc/loki/promtail-{{ item }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - journal
+  - syslog
+
+- name: Create systemd unit template
+  copy:
+    src: promtail.service
+    dest: /usr/local/lib/systemd/system/promtail@.service
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Define Loki port with correct SElinux type
+  seport:
+    ports: 3100
+    proto: tcp
+    setype: http_port_t
+    state: present
+
+- name: Create and enable systemd units for Promtail
+  systemd:
+    name: promtail@{{ item }}
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop:
+    - httpd
+    - icicbuild
+    - journal
+    - phpfpm
+    - squid
+    - syslog
+    - varlog
+
+- name: Configure firewalld for syslog
+  firewalld:
+    service: syslog
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ item }}"
+  loop:
+    - internal
+    - public
+
+- name: Configure local Rsyslog for forwarding
+  copy:
+    content: |
+      # Rsyslog config file 
+      module(load="imudp")
+
+      ruleset(name="promtail"){
+        *.* action(type="omfwd" protocol="tcp" target="127.0.0.1" port="20514" Template="RSYSLOG_SyslogProtocol23Format" TCP_Framing="octet-counted" KeepAlive="on")
+      }
+
+      input(type="imudp" port="514" ruleset="promtail")
+    dest: /etc/rsyslog.d/promtail.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: Restart syslog

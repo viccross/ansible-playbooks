@@ -1,0 +1,11 @@
+[Unit]
+Description=Promtail service for %I
+Requires=network-online.target loki.service
+After=network-online.target named-chroot.service loki.service
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/promtail -log.level=error -config.file=/etc/loki/promtail-%i.yaml
+RemainAfterExit=false
+StandardOutput=journal
+[Install]
+WantedBy=default.target
