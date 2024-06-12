@@ -9,29 +9,29 @@
 # =================================================================
 #
 # icic-setup.sh
-# Set up ICIC to the z/VM system
+# Set up ICIC to the z/VM system - Version 2.0
 # - Script is deployed by Ansible (TBC)
 # - Run at boot time if ICIC is requested
-# (c) Copyright IBM Corp. 2024 All Rights Reserved
+# - Updated for modularisation
 #
 
 # SMAPI credentials are the same each time so set once
 source /etc/zvmesi/settings.env
 
 # Setup some vars:
-# The version to be installed is in the file from the web server
+# The version to be installed is an environment variable from the host Ansible
 # The code is in a module file in the "content" directory
-icicver=$(cat {{ webroot }}/.secret/.icicver)
+#icicver=$(cat {{ webroot }}/.secret/.icicver)
 modpath="/opt/content/icic-${icicver}.esi"
 icicpath="/opt/icic/${icicver}"
 
 # set the size of the minidisks needed
 mdsizeckd=10016             # This is 3390-9 less one cylinder
 mdsizefba=20971488          # This is 10GB less 32 blocks (8 pages)
-# Add the ICIC guests
-icicmgt="ICICMGT0"
-iciccmp="ICICCMP1"
-icicguests="${icicmgt} ${iciccmp}"
+
+# Add the ICIC compute node -- the name will come from environment
+#iciccmp="ICICCMP1"
+icicguests="${iciccmp}"
 # set a couple of variables
 mgtspaceckd=50000           # This is adding approx 35GB
 cmpspaceckd=110000          # This is adding approx 75GB
@@ -74,8 +74,7 @@ netconf() {
   fi
   # Write out the new hostname
   echo ${HN,,}.${DOMAIN} > /mnt/sysimage/etc/hostname
-  # Append hostnames to /etc/hosts
-  echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}" >> /mnt/sysimage/etc/hosts
+  # Append hostname to /etc/hosts
   echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /mnt/sysimage/etc/hosts
   # write the LDAP hostname detail to /etc/hosts
   echo "172.24.26.10 ldapsrv.ibmpoc.internal" >> /mnt/sysimage/etc/hosts
@@ -85,9 +84,9 @@ netconf() {
 }
 
 growguest() {
-  # Add extra disk space to the two guests.
-  # ICIC requirement is 40GB on the management node and 80GB on the compute node.
-  # This means an extra 32-35GB on the management and 72-75GB on the compute.
+  # Add extra disk space to the guest.
+  # ICIC requirement is 80GB on the compute node.
+  # This means an extra 72-75GB on the compute.
   # From the available disks, let's find out what space is available and grab
   # space until we get what's needed.
 
@@ -144,9 +143,10 @@ if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
   exit 6
 fi
 
+# tmpip was calculated as shown here, now it's passed in environment
 # fetch our current IP address, and strip the netmask off the end
-myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
-tmpip=${myip%/*}
+#myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
+#tmpip=${myip%/*}
 IFS=" ";
 
 # Look for what type of space we have: if we find no "3390-" then it's FBA.
@@ -170,10 +170,10 @@ else
 fi
 # list the available volumes with sufficient free space
 mapfile -t dasds < <(smcli ivsqd -T IBMAUTO -q 2 -e 3 ${smapiauth} -n LINUX | awk -v size=${mdsize} '{ if ($4 >= size) {print} }')
-# add the management guest
-smcli icd -T ${icicmgt} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${icicmgt}.direct )
+
 # add the compute guest
-smcli icd -T ${iciccmp} ${smapiauth} < <(sed "s/VLANPLACE/${vlanparm}/" </opt/ansible/files/${iciccmp}.direct )
+smcli icd -T ${iciccmp} ${smapiauth} < <(sed -e "s/VLANPLACE/${vlanparm}/" -e "s/ICMPCMP1/${iciccmp}" </opt/ansible/files/ICICCMP1.direct )
+
 # recreate the profile
 smcli dcd -T icicdflt ${smapiauth} || true
 smcli icd -T icicdflt ${smapiauth} < /opt/ansible/files/icicdflt.direct
@@ -181,22 +181,13 @@ smcli icd -T icicdflt ${smapiauth} < /opt/ansible/files/icicdflt.direct
 # grab the first DASD from the list
 IFS=" " read -r -a dasd <<< ${dasds[0]}
 # issue an smcli idicrd for the dasd
-smcli idicrd -T ${icicmgt} -a 200 -d X -t AUTOV -n ${dasd[0]} -u 1 -s ${mdsize} -m MR -f 1 ${smapiauth}
-# grab the next DASD from the list
-IFS=" " read -r -a dasd <<< ${dasds[1]}
-# issue an smcli idicrd for the dasd
 smcli idicrd -T ${iciccmp} -a 200 -d X -t AUTOV -n ${dasd[0]} -u 1 -s ${mdsize} -m MR -f 1 ${smapiauth}
 
-# at this point we have two guests with one minidisk each.
-# let's get permission to write to them
-echo "Adding RACF permissions to CIC boot disks..."
+# at this point we have a guest with one minidisk.
+# let's get permission to write to it
+echo "Adding RACF permissions to CIC boot disk..."
 ldapmodify -Zx -h LDAPSRV.ibmpoc.internal -p 389 -D racfid={{ ocp_smapi_user }},profiletype=user,o=ibmzvm -w '{{ ocp_smapi_password }}' <<EOFLDIF
-dn: profilename=ICICMGT0.200,profiletype=VMMDISK,o=ibmzvm
-changetype: modify
-add: racfaccesscontrol
-racfaccesscontrol: ID(LXOCPB01) ACCESS(UPDATE) COUNT(0)
-
-dn: profilename=ICICCMP1.200,profiletype=VMMDISK,o=ibmzvm
+dn: profilename=${iciccmp}.200,profiletype=VMMDISK,o=ibmzvm
 changetype: modify
 add: racfaccesscontrol
 racfaccesscontrol: ID(LXOCPB01) ACCESS(UPDATE) COUNT(0)
@@ -205,13 +196,12 @@ EOFLDIF
 
 # Now we can do the work to populate.
 echo "Writing out the disk image to the ICIC guests..."
-# Restore the disk image to the guests
-cio_ignore -r 1200,1201
-vmcp link ${icicmgt} 200 1200 w
-vmcp link ${iciccmp} 200 1201 w
+# Restore the disk image to the guest
+cio_ignore -r 1200
+vmcp link ${iciccmp} 200 1200 w
 # echo 1 > /sys/bus/ccw/devices/0.0.1200/raw_track_access
 if [ ${disktype} == "ECKD" ]; then
-  chccwdev --attribute raw_track_access=1 -e 1200,1201
+  chccwdev --attribute raw_track_access=1 -e 1200
 fi
 # Fetch the disk image file
 icicimg=$(cat ${icicpath}/icicimg.txt 2>/dev/null)
@@ -220,61 +210,28 @@ if [ ${disktype} == "FBA" ]; then
 fi
 echo "Restoring ${icicimg%.*}..."
 zcat ${icicpath}/${icicimg} | tee \
-	>(dd of=/dev/$(lsdasd | grep 0.0.1200 | awk '{print $3}') bs=64k iflag=fullblock oflag=direct) \
-	| dd of=/dev/$(lsdasd | grep 0.0.1201 | awk '{print $3}') bs=64k iflag=fullblock oflag=direct
+	>(dd of=/dev/$(lsdasd | grep 0.0.1200 | awk '{print $3}') bs=64k iflag=fullblock oflag=direct)
 sync;sync;sync
 sleep 1
 
-# There should not be anything holding the disks open, so using the "safe" option should be enough to release them
-until chccwdev -s 1200,1201 ; do
-  echo "Waiting for DASD to release..."
-  sleep 1;
-done
-
-mgtip=$(nextip ${tmpip})
-cmpip=$(nextip ${mgtip})
-echo "Telling Ansible about our IP addresses and disk type..."
-cat >> /opt/ansible/inventory/group_vars/all/runtime.yml <<EOFYML
-#
-icic_management_ip_address: ${mgtip}
-icic_compute_ip_address: ${cmpip}
-diskpool_type: ${disktype}
-EOFYML
-
-# One at a time, we'll update the configuration of the imaged systems.  First, the management:
-if [ ${disktype} == "ECKD" ]; then
-  chccwdev --attribute raw_track_access=0 -e 1200
-fi
-# give the VG a little time to settle before mounting
-sleep 3
-# sometimes it needs a little more help
-vgchange -ay
-# derive the name of the root LV in the image
-rootLV=$(lvs | grep "^[[:space:]]*root.*rhel8img" | awk '{print $1;}')
-# go ahead and mount
-mount /dev/rhel_rhel8img/${rootLV} /mnt/sysimage
-# change the interface details
-netconf ${icicmgt} ${mgtip}
-# Purge the old SSH host keys for regeneration at boot
-rm -f /mnt/sysimage/etc/ssh/ssh_host_*
-# Add the  SSH key from here to the management node
-cat /root/.ssh/id_ed25519.pub >> /mnt/sysimage/root/.ssh/authorized_keys
-# Rewrite the URL for the ICICdeps, jic
-sed -i.bak "/baseurl/s/^baseurl=.*$/baseurl=http:\/\/172.24.26.1:8080\/ICICdeps/" /mnt/sysimage/etc/yum.repos.d/ICICdeps.repo
-
-# Done now... unmount, remove the VG, release the disk
-umount /mnt/sysimage
-vgchange -an rhel_rhel8img
-sleep 1
 # There should not be anything holding the disks open, so using the "safe" option should be enough to release them
 until chccwdev -s 1200 ; do
   echo "Waiting for DASD to release..."
   sleep 1;
 done
 
-# Second, the compute:
+# FIXME -- will get told IP via environment
+cmpip=$(nextip ${tmpip})
+echo "Telling Ansible about our IP addresses and disk type..."
+cat >> /opt/ansible/inventory/group_vars/all/runtime.yml <<EOFYML
+#
+icic_compute_ip_address: ${cmpip}
+diskpool_type: ${disktype}
+EOFYML
+
+# Update the configuration of the imaged system.
 if [ ${disktype} == "ECKD" ]; then
-  chccwdev --attribute raw_track_access=0 -e 1201
+  chccwdev --attribute raw_track_access=0 -e 1200
 fi
 # give the VG a little time to settle before mounting
 sleep 3
@@ -299,36 +256,21 @@ sed -i.bak "/baseurl/s/^baseurl=.*$/baseurl=http:\/\/172.24.26.1:8080\/ICICdeps/
 umount /mnt/sysimage
 vgchange -an rhel_rhel8img
 sleep 1
-# There should not be anything holding the disks open, so using the "safe" option should be enough to release them
-until chccwdev -s 1201 ; do
+# There should not be anything holding the disks open, so using the "safe" option should be enough to release it
+until chccwdev -s 1200 ; do
   echo "Waiting for DASD to release..."
   sleep 1;
 done
 
-# The disks are finished with now.
-cio_ignore -a 1200,1201
-vmcp detach 1200 1201
+# The disk is finished with now.
+cio_ignore -a 1200
+vmcp detach 1200
 
-# Call function to grow the managaement node
-growguest ${icicmgt} ${mgtspace}
 # Call function to grow the compute node
 growguest ${iciccmp} ${cmpspace}
 
 # Add the host details to our local /etc/hosts
-echo "${mgtip} ${icicmgt,,}.${DOMAIN} ${icicmgt,,}" >> /etc/hosts
 echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /etc/hosts
-
-# Fetch the ICIC dependencies content and expand it
-icicdep=$(cat ${icicpath}/icicdep.txt 2>/dev/null)
-echo "Setting up ${icicdep%.*} for ICIC dependencies..."
-tar zxf ${icicpath}/${icicdep} /var/www/html/ 2>/dev/null
-
-# IPLing the management guest
-echo "Issuing a SMAPI IPL for the management guest..."
-smcli ia -T ${icicmgt} ${smapiauth}
-sleep 1
-echo "Starting the Ansible configuration of management guest..."
-cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-management.yml
 
 # set RACF OPERATIONS on the compute guest
 echo "Adding RACF attribute to ${iciccmp}..."
@@ -340,14 +282,8 @@ racfattributes: OPERATIONS
 -
 EOFLDIF
 
-# Once the management node is set up, go ahead and boot the compute node
+# Management node is already set up; go ahead and boot the compute node
 # Ansible will wait for it to be up and then run the auto'n to configure
 echo "Issuing a SMAPI IPL for the compute guest..."
 smcli ia -T ${iciccmp} ${smapiauth}
 sleep 1
-echo "Starting the Ansible configuration of ICIC for our z/VM system..."
-cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-compute.yml
-
-# once compute node is added, go back and do the LDAP setup
-echo "Setting up LDAP as authentication source..."
-cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-ldap.yml
