@@ -150,20 +150,10 @@
       dest: "{{ webroot }}/w3ds"
       creates: "{{ webroot }}/w3ds/w3ds.js"
 
-  - name: Download and unzip site structure
-    unarchive:
-      src: "/opt/resources/{{ elan_web_pkgname }}.zip"
-      dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
-
-  - name: Move downloaded site directory # noqa no-free-form
-    shell:
-      cmd: |
-        rm -rf {{ webroot }}/{scripts,justgage} \
-        rm -rf {{ webroot }}/{{ elan_web_pkgname }}/{build,tests,.travis.yml} \
-        && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
-        && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
-      removes: "{{ webroot }}/{{ elan_web_pkgname }}"
+  - name: Install the web site RPM
+    yum:
+      name: elan-web
+      state: latest
 
   - name: Set permission on the HTML files to enable Includes
     file:
