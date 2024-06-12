@@ -6,6 +6,7 @@
       - php-json
       - php-ldap
       - php-mbstring
+      - php-Smarty
     state: present
 
 - name: Create configuration for our external non-SSL VirtualHost
@@ -109,13 +110,13 @@
 
 - name: Download and unwind LDAP tools
   block:
-  - name: Download and unzip Smarty PHP template engine
-    unarchive:
-      src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
-      dest: "/usr/local/bin/"
-      creates: "/usr/local/bin/smarty-3.1.36/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
+#  - name: Download and unzip Smarty PHP template engine
+#    unarchive:
+#      src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
+#      dest: "/usr/local/bin/"
+#      creates: "/usr/local/bin/smarty-3.1.36/"
+#      remote_src: yes
+#    environment: "{{ local_proxy_env | default(omit) }}"
 
   - name: Download and unzip self-service-password
     unarchive:
