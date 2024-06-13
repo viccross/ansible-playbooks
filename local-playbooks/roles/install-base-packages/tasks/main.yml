@@ -8,6 +8,14 @@
     mode: 0755
   when: ansible_architecture != "s390x"
 
+- name: Add or modify the internal YUM repo
+  yum_repository:
+    name: zvmesi
+    description: z/VM ESI Support Code
+    baseurl: "{{ local_repo_uri }}"
+    gpgcheck: no
+    sslverify: no
+
 - name: Install EPEL repository
   block:
   - name: Install EPEL RPM
@@ -56,14 +64,6 @@
 #      line: repodir = /srv/repodir
 #      dest: /etc/dnf/plugins/local.conf
 #      regexp: "repodir"
-
-- name: Add the internal YUM repo
-  yum_repository:
-    name: zvmesi
-    description: z/VM ESI Support Code
-    baseurl: "{{ local_repo_uri }}"
-    gpgcheck: no
-    sslverify: no
 
 - name: Install base prerequisites
   yum:
