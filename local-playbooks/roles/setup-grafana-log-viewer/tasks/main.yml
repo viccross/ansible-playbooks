@@ -25,7 +25,6 @@
 
       [security]
       allow_embedding = true
-      ; csrf_trusted_origins = {{ elan_host_name }}.{{ esigroup | lower }}.{{ cluster_base_domain | lower }}
 
       [dashboards]
       min_refresh_interval = 1s
