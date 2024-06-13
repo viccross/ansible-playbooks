@@ -154,6 +154,7 @@
     yum:
       name: elan-web
       state: latest
+      update_cache: yes
 
   - name: Set permission on the HTML files to enable Includes
     file:
