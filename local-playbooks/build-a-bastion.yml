@@ -31,4 +31,5 @@
   - { role: 'setup-grafana-log-viewer', tags: 'grafana' }
   - { role: 'setup-ocp-deployer', tags: 'ocp-deployer' }
   - { role: 'setup-icic-deployer', tags: 'icic-deployer' }
+  - { role: 'setup-podman-and-registry', tags: 'podman-registry' }
   - { role: 'setup-finna-response', tags: 'finna-response' }
