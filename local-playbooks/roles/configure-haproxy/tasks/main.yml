@@ -7,11 +7,11 @@
       - python3-libsemanage
     state: present
 
-- name: Patch HAProxy service script
-  lineinfile:
-    dest: /usr/lib/systemd/system/haproxy.service
-    regex: ^ExecStartPre=
-    line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
+#- name: Patch HAProxy service script
+#  lineinfile:
+#    dest: /usr/lib/systemd/system/haproxy.service
+#    regex: ^ExecStartPre=
+#    line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
 
 - name: Create certificate for Stats page
   block:
@@ -128,3 +128,9 @@
     name: haproxy_connect_any
     state: yes
     persistent: yes
+
+- name: Start haproxy.service
+  systemd:
+    name: haproxy
+    state: restarted
+    enabled: true
