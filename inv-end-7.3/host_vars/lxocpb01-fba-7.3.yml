@@ -28,7 +28,7 @@ guest_install_repo_appstream: "AppStream"
 #   https_proxy: http://{{ upstream_proxy_ip }}:{{ upstream_proxy_port }}
 #
 # smapi parameters
-smapi_host: "9.60.87.253"
+smapi_host: "9.33.124.32"
 smapi_user: "IBMAUTO"
 smapi_password: "jTghTGinJupD63yh"
 #
