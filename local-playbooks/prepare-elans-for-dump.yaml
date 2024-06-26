@@ -38,5 +38,5 @@
     shell:
       cmd: smcli id -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
     loop:
-    - { ip: {{ smapi_ckd_ip }}, user: {{ smapi_ckd_user }}, password: {{ smapi_ckd_pass }} }
-    - { ip: {{ smapi_fba_ip }}, user: {{ smapi_fba_user }}, password: {{ smapi_fba_pass }} }
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
