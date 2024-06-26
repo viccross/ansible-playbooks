@@ -24,16 +24,25 @@
 - name: Shut down the ELANs to prepare for dump
   hosts: localhost
   vars:
-    smapi_ckd_ip: "{{ hostname['lxocpb01-7.3'].smapi_host }}"
-    smapi_fba_ip: "{{ hostname['lxocpb01-fba-7.3'].smapi_host }}"
-    smapi_ckd_user: "{{ hostname['lxocpb01-7.3'].smapi_user }}"
-    smapi_fba_user: "{{ hostname['lxocpb01-fba-7.3'].smapi_user }}"
-    smapi_ckd_pass: "{{ hostname['lxocpb01-7.3'].smapi_password }}"
-    smapi_fba_pass: "{{ hostname['lxocpb01-fba-7.3'].smapi_password }}"
+    smapi_ckd_ip: "{{ hostvars['lxocpb01-7.3'].smapi_host }}"
+    smapi_fba_ip: "{{ hostvars['lxocpb01-fba-7.3'].smapi_host }}"
+    smapi_ckd_user: "{{ hostvars['lxocpb01-7.3'].smapi_user }}"
+    smapi_fba_user: "{{ hostvars['lxocpb01-fba-7.3'].smapi_user }}"
+    smapi_ckd_pass: "{{ hostvars['lxocpb01-7.3'].smapi_password }}"
+    smapi_fba_pass: "{{ hostvars['lxocpb01-fba-7.3'].smapi_password }}"
   tasks:
   - name: Shut down the ELANS
     shell:
       cmd: smcli id -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
+    loop:
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
+  - name: Prompt to continue
+    pause:
+      prompt: Perform the dump, then resume
+  - name: Start up the ELANs
+    shell:
+      cmd: smcli ia -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
     loop:
     - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
     - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
