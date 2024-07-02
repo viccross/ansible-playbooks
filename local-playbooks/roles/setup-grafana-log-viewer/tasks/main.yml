@@ -96,13 +96,16 @@
     owner: grafana
     group: grafana
 
-- name: Create provisioning file for dashboard
+- name: Create provisioning files for dashboard
   copy:
-    src: dashboard-logs.json
+    src: dashboard-{{ item }}.json
     dest: /etc/grafana/dashboards/
     mode: 0644
     owner: grafana
     group: grafana
+  loop:
+  - logs
+  - icic
 
 - name: Create the simple Promtail instance configs
   template:
