@@ -1,8 +1,8 @@
 ---
-- name: wait for ICIC management node accessibility
+- name: Wait for ICIC management node accessibility
   hosts: s390x_bastion_workstation
   tasks:
-  - name: wait for SSH
+  - name: Wait for SSH
     wait_for:
       port: 22
       host: "172.24.26.11"
@@ -10,19 +10,19 @@
       delay: 1
       timeout: 10000
 
-- name: gather facts from the ICIC management node
+- name: Gather facts from the ICIC management node
   hosts: s390x_ICIC_management_node
   tasks:
     - setup:
 
-- name: create the certificate for ICIC
+- name: Create the certificate and DNS for ICIC
   hosts: s390x_bastion_workstation
   tasks:
-  - name: create ICIC certificate
+  - name: Create ICIC certificate
     include_tasks: tasks/create-certificate.yml
     with_items:
     - { filename: "icic", common_name: "icicmgt0.{% raw %}{{ esigroup }}.{{ cluster_base_domain }}{% endraw %}", subject_alt_name: ",IP:{% raw %}{{ icic_management_ip_address }}{% endraw %}" }
-  - name: Add or modify A for ICIC management
+  - name: Add or modify A for ICIC management (make a hack)
     nsupdate:
       key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
       key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
@@ -31,7 +31,7 @@
       zone: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
       record: icicmgt0
       type: A
-      value: "{% raw %}{{ icic_management_ip_address }}{% endraw %}"
+      value: "172.24.26.11"
   - name: Add or modify PTR for ICIC management
     nsupdate:
       key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
@@ -39,7 +39,7 @@
       key_algorithm: "hmac-sha256"
       server: "172.24.26.1"
       zone: "26.24.172.in-addr.arpa"
-      record: "{% raw %}{{ icic_management_ip_address.split('.')[3] }}{% endraw %}"
+      record: "11"
       type: PTR
       value: "{% raw %}icicmgt0.{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}."
 
@@ -117,3 +117,17 @@
     - name: Restart the ICIC services
       command:
         cmd: /opt/ibm/icic/bin/icic-services restart
+
+- name: Set the DNS for the ICIC management node correctly
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Add or modify A for ICIC management (make a hack)
+    nsupdate:
+      key_name: "{% raw %}{{ esigroup | lower }}-key{% endraw %}"
+      key_secret: "{% raw %}{{ tsigkey }}{% endraw %}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{% raw %}{{ esigroup | lower }}.{{ cluster_base_domain }}{% endraw %}"
+      record: icicmgt0
+      type: A
+      value: "{% raw %}{{ icic_management_ip_address }}{% endraw %}"
