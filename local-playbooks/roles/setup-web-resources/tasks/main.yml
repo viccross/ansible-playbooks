@@ -264,7 +264,7 @@
       state: touch
     loop:
       - ".ocp4_pull_secret"
-      - ".fastvmurl"
+      - ".icicver"
 
 #  - name: fix path to Smarty in config file
 #    lineinfile:
