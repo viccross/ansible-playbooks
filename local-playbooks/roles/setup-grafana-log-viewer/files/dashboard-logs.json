@@ -102,7 +102,7 @@
               "uid": "elanLoki"
             },
             "editorMode": "builder",
-            "expr": "{application=\"VMCONS\"} |= `` | line_format \"{{ .hostname }} {{__line__}}\"",
+            "expr": "{application=\"VMCONS\", zvm_guest=~\"${guestname}\"} |= `` | line_format \"{{ .zvm_guest }} {{__line__}}\"",
             "queryType": "range",
             "refId": "A"
           }
@@ -153,7 +153,7 @@
               "uid": "elanLoki"
             },
             "editorMode": "builder",
-            "expr": "{application=\"VMEVENT\"} |= ``",
+            "expr": "{application=\"VMEVENT\", zvm_guest=~\"${guestname}\"} |= ``",
             "queryType": "range",
             "refId": "A"
           }
@@ -167,7 +167,38 @@
     "style": "dark",
     "tags": [],
     "templating": {
-      "list": []
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "elanLoki"
+          },
+          "definition": "",
+          "description": "Filter on z/VM guest name",
+          "hide": 0,
+          "includeAll": true,
+          "label": "z/VM guest name",
+          "multi": true,
+          "name": "guestname",
+          "options": [],
+          "query": {
+            "label": "zvm_guest",
+            "refId": "LokiVariableQueryEditor-VariableQuery",
+            "stream": "",
+            "type": 1
+          },
+          "refresh": 2,
+          "regex": "/^(?!(?:localhost)$)(.+)/",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
     },
     "time": {
       "from": "now-6h",
@@ -177,6 +208,6 @@
     "timezone": "",
     "title": "z/VM ESI System Messages",
     "uid": "RfzH9eoSz",
-    "version": 2,
+    "version": 4,
     "weekStart": ""
   }

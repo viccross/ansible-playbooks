@@ -26,3 +26,24 @@ scrape_configs:
         target_label: application
       - source_labels: [__syslog_message_facility]
         target_label: facility
+    pipeline_stages:
+    - match:
+        pipeline_name: vmcons
+        selector: '{application="VMCONS"}'
+        stages:
+        - labels:
+            zvm_guest: hostname
+        - labeldrop:
+          - hostname
+          - level
+          - facility
+    - match:
+        pipeline_name: vmevent
+        selector: '{application="VMEVENT"}'
+        stages:
+        - labels:
+            zvm_guest: hostname
+        - labeldrop:
+          - hostname
+          - level
+          - facility
