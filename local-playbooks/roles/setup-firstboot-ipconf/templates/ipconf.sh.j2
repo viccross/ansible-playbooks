@@ -208,8 +208,6 @@ EOF
   # Start incrond
   systemctl enable --now incrond.service
 
-  # Start up the DASD configuration script because we're at a new site
-  systemctl start ocp-dasd.service
   # Prevent this service from starting next time
   systemctl disable zvm-ipconf.service
   # Announce we've finished
