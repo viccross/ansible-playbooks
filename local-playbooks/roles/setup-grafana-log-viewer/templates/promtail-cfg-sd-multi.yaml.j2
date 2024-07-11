@@ -1,0 +1,7 @@
+{% for line in item.jobs %}
+- targets:
+    - localhost
+  labels:
+    job: "{{ line.name }}"
+    __path__: "{{ line.path }}"
+{% endfor %}

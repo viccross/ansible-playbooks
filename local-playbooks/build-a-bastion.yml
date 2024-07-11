@@ -2,12 +2,12 @@
 - name: Create a CA for the Bastion
   hosts: localhost
   roles:
-  - create-local-ca
+  - { role: 'create-local-ca', tags: 'local-ca' }
 
 - name: Copy Intermediate CA cert to the ESI ELAN system
   hosts: s390x_bastion_workstation
   roles:
-  - copy-ca-to-bastion
+  - { role: 'copy-ca-to-bastion', tags: 'copy-ca-to-bastion' }
   vars:
     root_ca_key_path: "{{ hostvars['localhost']['ca_key_path'] }}"
     root_ca_csr_path: "{{ hostvars['localhost']['ca_csr_path'] }}"
@@ -16,18 +16,20 @@
 - name: Configure services on the ESI ELAN system
   hosts: s390x_bastion_workstation
   roles:
-  - configure-internal-net
-  - almalinux-gpg
-  - install-base-packages
-  - configure-squid
-  - setup-firstboot-ipconf
-  - configure-dns
-  - configure-nfs
-  - configure-apache
-  - setup-web-resources
-  - configure-haproxy
-  - configure-cockpit
+  - { role: 'configure-internal-net', tags: 'internal-net' }
+  - { role: 'almalinux-gpg', tags: 'almalinux-gpg' }
+  - { role: 'install-base-packages', tags: 'base-packages' }
+  - { role: 'configure-squid', tags: 'squid' }
+  - { role: 'setup-firstboot-ipconf', tags: 'firstboot' }
+  - { role: 'configure-dns', tags: 'dns' }
+  - { role: 'configure-nfs', tags: 'nfs' }
+  - { role: 'configure-apache', tags: 'apache' }
+  - { role: 'setup-web-resources', tags: 'web-resources' }
+  - { role: 'configure-haproxy', tags: 'haproxy' }
+  - { role: 'configure-cockpit', tags: 'cockpit' }
 #  - configure-ignition
-  - setup-ocp-deployer
-  - setup-icic-deployer
-  - setup-finna-response
+  - { role: 'setup-grafana-log-viewer', tags: 'grafana' }
+  - { role: 'setup-ocp-deployer', tags: 'ocp-deployer' }
+  - { role: 'setup-icic-deployer', tags: 'icic-deployer' }
+  - { role: 'setup-podman-and-registry', tags: 'podman-registry' }
+  - { role: 'setup-finna-response', tags: 'finna-response' }

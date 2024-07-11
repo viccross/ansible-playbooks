@@ -1,0 +1,218 @@
+---
+- name: Install Grafana and Mosquitto and Loki
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+  - grafana
+  - mosquitto
+  - elan-loki
+
+- name: Create basic grafana.ini
+  copy:
+    content: |
+      [server]
+      http_addr =
+      http_port = 3000
+      domain = {{ cluster_base_domain }}
+      root_url = http://{{ bastion_public_ip_address }}:3000/
+      enforce_domain = False
+      protocol = http
+      ; serve_from_sub_path = true
+
+      [paths]
+      provisioning = /etc/grafana/provisioning
+
+      [security]
+      allow_embedding = true
+
+      [dashboards]
+      min_refresh_interval = 1s
+
+      [plugins]
+      allow_loading_unsigned_plugins = performancecopilot-pcp-app,pcp-redis-datasource,pcp-vector-datasource,pcp-bpftrace-datasource,pcp-flamegraph-panel,pcp-breadcrumbs-panel,pcp-troubleshooting-panel,performancecopilot-redis-datasource,performancecopilot-vector-datasource,performancecopilot-bpftrace-datasource,performancecopilot-flamegraph-panel,performancecopilot-breadcrumbs-panel,performancecopilot-troubleshooting-panel
+
+      [feature_toggles]
+      publicDashboards = true
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    mode: 0644
+
+- name: Allow traffic at port 1883 for Mosquitto
+  firewalld:
+    port: 1883/tcp
+    permanent: true
+    immediate: true
+    zone: "{{ item }}"
+    state: enabled
+  with_items:
+  - internal
+  - public
+
+- name: Configure Mosquitto
+  copy:
+    dest: /etc/mosquitto/mosquitto.conf
+    content: |
+      # Configuration of Mosquitto
+      password_file /etc/mosquitto/passwd
+      listener 1883
+      protocol mqtt
+      listener 9001
+      protocol websockets
+    mode: 0644
+    owner: mosquitto
+    group: mosquitto
+    backup: yes
+
+- name: Create provisioning file for Loki datasource
+  copy:
+    dest: /etc/grafana/provisioning/datasources/default.yaml
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: Loki
+          uid: elanLoki
+          type: loki
+          url: http://localhost:3100
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Create provisioning file for Loki dashboard
+  copy:
+    dest: /etc/grafana/provisioning/dashboards/default.yaml
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: Default
+          folder: "z/VM Logging dashboards"
+          type: file
+          options:
+            path:
+              /etc/grafana/dashboards
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Create provisioning files for dashboard
+  copy:
+    src: dashboard-{{ item }}.json
+    dest: /etc/grafana/dashboards/
+    mode: 0644
+    owner: grafana
+    group: grafana
+  loop:
+  - logs
+  - icic
+
+- name: Create the simple Promtail instance configs
+  template:
+    src: promtail-cfg.yaml.j2
+    dest: /etc/loki/promtail-{{ item.job }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - { job: "httpd",  path: "/var/log/httpd/*_log" }
+  - { job: "phpfpm", path: "/var/log/php-fpm/*.log" }
+  - { job: "squid",  path: "/var/log/squid/*.log" }
+
+- name: Create the sd Promtail instance configs
+  template:
+    src: promtail-cfg-sd.yaml.j2
+    dest: /etc/loki/promtail-{{ item.job }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - { job: "icicbuild" }
+  - { job: "varlog" }
+
+- name: Create the YAML files for Promtail sd instances
+  template:
+    src: promtail-cfg-sd-multi.yaml.j2
+    dest: /etc/loki/promtail-{{ item.file }}-sd.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+    - file: "icicbuild"
+      jobs:
+        - { name: "icicbuild", path: "/var/www/html/iciclog*.txt" }
+    - file: "varlog"
+      jobs:
+        - { name: "dnflogs",   path: "/var/log/dnf*log" }
+        - { name: "hawkeylog", path: "/var/log/hawkey.log" }
+        - { name: "kdumplog",  path: "/var/log/kdump.log" }
+        - { name: "lastlog",   path: "/var/log/lastlog" }
+
+- name: Create Promtail config for journald and syslog
+  copy:
+    src: promtail-cfg-{{ item }}.yaml
+    dest: /etc/loki/promtail-{{ item }}.yaml
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+  - journal
+  - syslog
+
+- name: Create systemd unit template
+  copy:
+    src: promtail.service
+    dest: /usr/local/lib/systemd/system/promtail@.service
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Define Loki port with correct SElinux type
+  seport:
+    ports: 3100
+    proto: tcp
+    setype: http_port_t
+    state: present
+
+- name: Create and enable systemd units for Promtail
+  systemd:
+    name: promtail@{{ item }}
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop:
+    - httpd
+    - icicbuild
+    - journal
+    - phpfpm
+    - squid
+    - syslog
+    - varlog
+
+- name: Configure firewalld for syslog
+  firewalld:
+    service: syslog
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ item }}"
+  loop:
+    - internal
+    - public
+
+- name: Configure local Rsyslog for forwarding
+  copy:
+    content: |
+      # Rsyslog config file 
+      module(load="imudp")
+
+      ruleset(name="promtail"){
+        *.* action(type="omfwd" protocol="tcp" target="127.0.0.1" port="20514" Template="RSYSLOG_SyslogProtocol23Format" TCP_Framing="octet-counted" KeepAlive="on")
+      }
+
+      input(type="imudp" port="514" ruleset="promtail")
+    dest: /etc/rsyslog.d/promtail.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: Restart syslog

@@ -1,0 +1,48 @@
+---
+- name: Clean up the ELAN disks
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Find rotated log files
+    find:
+      paths: /var/log
+      recurse: true
+      patterns:
+        - '*-2*'
+        - 'dnf*.log.*'
+        - 'audit.log.*'
+        - 'grafana.log.*'
+    register: find_results
+  - name: Clean the found logs
+    file:
+      path: "{{ item['path'] }}"
+      state: absent
+    with_items: "{{ find_results['files'] }}"
+  - name: Zero the empty space
+    shell:
+      cmd: dd if=/dev/zero of=/zerofile bs=1k || rm -f /zerofile
+
+- name: Shut down the ELANs to prepare for dump
+  hosts: localhost
+  vars:
+    smapi_ckd_ip: "{{ hostvars['lxocpb01-7.3'].smapi_host }}"
+    smapi_fba_ip: "{{ hostvars['lxocpb01-fba-7.3'].smapi_host }}"
+    smapi_ckd_user: "{{ hostvars['lxocpb01-7.3'].smapi_user }}"
+    smapi_fba_user: "{{ hostvars['lxocpb01-fba-7.3'].smapi_user }}"
+    smapi_ckd_pass: "{{ hostvars['lxocpb01-7.3'].smapi_password }}"
+    smapi_fba_pass: "{{ hostvars['lxocpb01-fba-7.3'].smapi_password }}"
+  tasks:
+  - name: Shut down the ELANS
+    shell:
+      cmd: smcli id -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
+    loop:
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
+  - name: Prompt to continue
+    pause:
+      prompt: Perform the dump, then resume
+  - name: Start up the ELANs
+    shell:
+      cmd: smcli ia -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
+    loop:
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }

@@ -6,6 +6,7 @@
       - php-json
       - php-ldap
       - php-mbstring
+      - php-Smarty
     state: present
 
 - name: Create configuration for our external non-SSL VirtualHost
@@ -106,16 +107,22 @@
       Substitute s|/([A-F0-9]+)/([A-F0-9]+)/\"\+lnam|/perftk/$1/$2/\"\+lnam|
       # Reverse-proxy configuration for cross-system stats
       ProxyPassMatch "^/zvmstats-(.*).json$" "https://$1:8443/zvmstats.json"
+      RewriteEngine On
+      RewriteCond %{HTTP:Upgrade} websocket [NC]
+      RewriteCond %{HTTP:Connection} upgrade [NC]
+      RewriteRule ^/grafana/?(.*) "ws://127.0.0.1:3000/grafana/$1" [P,L]
+      ProxyPassMatch "^/grafana/(.*)$" "http://localhost:3000/grafana/$1"
+      ProxyPassReverse "/grafana/" "http://localhost:3000/grafana/"
 
 - name: Download and unwind LDAP tools
   block:
-  - name: Download and unzip Smarty PHP template engine
-    unarchive:
-      src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
-      dest: "/usr/local/bin/"
-      creates: "/usr/local/bin/smarty-3.1.36/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
+#  - name: Download and unzip Smarty PHP template engine
+#    unarchive:
+#      src: "https://github.com/smarty-php/smarty/archive/v3.1.36.tar.gz"
+#      dest: "/usr/local/bin/"
+#      creates: "/usr/local/bin/smarty-3.1.36/"
+#      remote_src: yes
+#    environment: "{{ local_proxy_env | default(omit) }}"
 
   - name: Download and unzip self-service-password
     unarchive:
@@ -143,20 +150,15 @@
       dest: "{{ webroot }}/w3ds"
       creates: "{{ webroot }}/w3ds/w3ds.js"
 
-  - name: Download and unzip site structure
-    unarchive:
-      src: "/opt/resources/{{ elan_web_pkgname }}.zip"
-      dest: "{{ webroot }}/"
-      creates: "{{ webroot }}/{{ elan_web_pkgname }}/{{ meta_header_file }}"
-
-  - name: Move downloaded site directory # noqa no-free-form
-    shell:
-      cmd: |
-        rm -rf {{ webroot }}/{scripts,justgage} \
-        rm -rf {{ webroot }}/{{ elan_web_pkgname }}/{build,tests,.travis.yml} \
-        && mv {{ webroot }}/{{ elan_web_pkgname }}/* {{ webroot }}/ \
-        && rm -rf {{ webroot }}/{{ elan_web_pkgname }}
-      removes: "{{ webroot }}/{{ elan_web_pkgname }}"
+  - name: Install the web site RPM
+    yum:
+      name: elan-web
+      state: latest
+      update_cache: yes
+    retries: 3
+    delay: 6
+    register: result
+    until: result is not failed
 
   - name: Set permission on the HTML files to enable Includes
     file:
@@ -233,7 +235,7 @@
       name: MAILTO
       value: root
 
-  - name: Create/set permission on directories - secrets, Smarty template cache, content, and install
+  - name: Create/set permission on directories - secrets, Smarty template cache, and install
     file:
       path: "{{ item }}"
       owner: apache
@@ -243,10 +245,18 @@
     loop:
       - "{{ webroot }}/.secret"
       - "{{ webroot }}/service-desk-racf-master/templates_c"
-      - /opt/content
       - "{{ webroot }}/install"
       - "{{ webroot }}/.cluster"
       - "{{ webroot }}/.clustertmp"
+
+  - name: Create/set permission on content directory
+    file:
+      path: /opt/content
+      owner: apache
+      group: support
+      mode: 0770
+      setype: httpd_sys_rw_content_t
+      state: directory
 
   - name: Create and set perms on incrond trigger files
     file:
@@ -258,7 +268,7 @@
       state: touch
     loop:
       - ".ocp4_pull_secret"
-      - ".fastvmurl"
+      - ".icicver"
 
 #  - name: fix path to Smarty in config file
 #    lineinfile:

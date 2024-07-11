@@ -25,3 +25,8 @@
 
 - name: Stop the FTP server on z/VM # noqa command-instead-of-shell no-changed-when
   shell: /usr/local/bin/smcli id -T FTPSERVE -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
+
+- name: Run the certificate import task # noqa command-instead-of-shell no-changed-when
+  shell:
+    chdir: /usr/local/bin
+    cmd: LDAPSRVcert.expect Y:{{ zvm_internal_ip_address }} "GSKADMIN BY {{ smapi_user }}" {{ smapi_password }}

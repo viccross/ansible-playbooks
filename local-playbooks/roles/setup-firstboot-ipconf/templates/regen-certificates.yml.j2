@@ -1,8 +1,8 @@
 ---
-- name: regenerate certificates for the new domain name
+- name: Regenerate certificates for the new domain name
   hosts: s390x_bastion_workstation
   tasks:
-  - name: generate the certificates
+  - name: Generate the certificates
     include_tasks: tasks/create-certificate.yml
     with_items:
     - { filename: "cockpit", common_name: "{% raw %}{{ elan_host_name }}.{{ zvmesi_domain_name }}{% endraw %}", subject_alt_name: ",DNS:{% raw %}{{ elan_host_name }}.{{ cluster_base_domain }}{% endraw %}" }
@@ -12,19 +12,24 @@
     - { filename: "zVMLDAP", common_name: "LDAPSRV.ibmpoc.internal", subject_alt_name: ",DNS:{% raw %}{{ zvm_host_name }}.{{ zvmesi_domain_name }},DNS:{{ zvm_host_name }}.{{ cluster_base_domain }},IP:{{ zvm_ip_address }}{% endraw %},IP:{{ zvm_internal_ip_address }}" }
     - { filename: "registry", common_name: "registry.{% raw %}{{ cluster_base_domain }}{% endraw %}" }
 
-  - name: create combined PEM file for Cockpit
+  - name: Create combined PEM file for Cockpit
     shell:
       cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
       chdir: /etc/pki/tls/
 
-  - name: create combined PEM file for HAProxy
+  - name: Create combined PEM file for HAProxy
     shell:
       cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
       chdir: /etc/pki/tls/
 
-  - name: create the bundle for registry
+  - name: Create the bundle for registry
     shell:
       cmd: cat certs/registry.cert certs/oqsCA.cert private/cockpit.pem > /opt/registry/certs/registry.cert
+      chdir: /etc/pki/tls
+
+  - name: Create the bundle for Grafana
+    shell:
+      cmd: cat certs/httpd.cert certs/oqsCA.cert certs/oqsRootCA.cert > /etc/grafana/grafana.crt
       chdir: /etc/pki/tls
 
   - name: start the FTP server on z/VM # noqa no-changed-when

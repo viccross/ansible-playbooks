@@ -1,7 +1,4 @@
-#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
-{# ------------------------------------ CRITICAL -------------------------------------- #}
-{# This file must be synchronised between configure-haproxy and setup-firstboot-ipconf! #}
-{# ------------------------------------ CRITICAL -------------------------------------- #}
+# HAProxy default configuration for ELAN
 
 global
     log         127.0.0.1 local2
@@ -38,28 +35,21 @@ frontend elan-router-http
    mode http
    option tcplog
    bind {{ bastion_public_ip_address }}:80
-   tcp-request inspect-delay 5s
-   acl elanweb hdr(host) -i {{ elan_host_name }}.{{ zvmesi_domain_name }}
-   acl elanweb hdr(host) -i {{ elan_host_name }}.{{ cluster_base_domain }}
-   use_backend elan-http if elanweb
+   default_backend elan-http
 
 frontend elan-router-https
    mode tcp
    option tcplog
    bind {{ bastion_public_ip_address }}:443
-   tcp-request inspect-delay 5s
-   tcp-request content accept if { req_ssl_hello_type 1 }
-   acl elanweb req_ssl_sni -i {{ elan_host_name }}.{{ zvmesi_domain_name }}
-   acl elanweb req_ssl_sni -i {{ elan_host_name }}.{{ cluster_base_domain }}
-   use_backend elan-https if elanweb
+   default_backend elan-https
 
 backend elan-http
    mode http
-      server elan {{ elan_host_name }}.{{ zvmesi_domain_name }}:8080 check
+   server elan 172.24.26.1:8080 check
 
 backend elan-https
    mode tcp
-      server elan {{ elan_host_name }}.{{ zvmesi_domain_name }}:8443 check
+   server elan 172.24.26.1:8443 check
 
 frontend stats
   bind *:8404 ssl crt /etc/haproxy/haproxy-combined.pem

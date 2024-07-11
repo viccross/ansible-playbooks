@@ -18,7 +18,7 @@
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
     mode: 0644
 
-- name: Write the parmfile to the reader # noqa no-changed-when command-instead-of-shell 
+- name: Write the parmfile to the reader # noqa no-changed-when command-instead-of-shell command-instead-of-module
   shell: curl -Q "SITE FIX 132" -T {{ znetboot_cfg_path }}/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user | quote }}:{{ smapi_password | quote }}@{{ smapi_host | quote }}/MAINT.200/  # noqa 204
   args:
     warn: false

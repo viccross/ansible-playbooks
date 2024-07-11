@@ -32,7 +32,7 @@
     enabled: yes
   listen: "Restart httpd"
 
-- name: Restart haproxy
+- name: Restart haproxy.service
   service:
     name: haproxy.service
     state: restarted
@@ -44,7 +44,7 @@
     state: restarted
   listen: "Restart chronyd"
 
-- name: Enable incrond service
+- name: Enable incrond.service
   systemd:
     name: incrond
     state: stopped
@@ -56,3 +56,13 @@
     cmd: update-ca-trust
   listen: "Update ca trust"
 
+- name: Restart rsyslog.service
+  systemd:
+    name: rsyslog
+    state: restarted
+  listen: "Restart syslog"
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  listen: "Reload systemd"

@@ -1,0 +1,82 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+---
+- name: Wait for ICIC management node accessibility
+  hosts: s390x_bastion_workstation
+  tasks:
+  - name: Wait for SSH
+    wait_for:
+      port: 22
+      host: "172.24.26.11"
+      search_regex: OpenSSH
+      delay: 1
+      timeout: 10000
+  - name: Get the new system's hostname
+    shell:
+      cmd: /usr/local/bin/finna {{ sysname }} hostname
+    register: elan_hn
+  - name: Calculate the new compute node sequence
+    shell:
+      cmd: "dig +short {{ elan_hn.sysout }} TXT | sed -e 's/\"//' | awk -F: '{print $1;}'"
+    register: seq
+  - name: Get the current IP?
+    shell:
+      cmd: "dig +short iciccmp{{ seq.stdout | int - 1 }}.{{ esigroup }}.{{ cluster_base_domain }}"
+    register: prev_ip
+
+- name: Create an ICIC compute node on a remote system
+  hosts: "{{ elan_hn.sysout | split('.') | first }}"
+  tasks:
+  - name: Run the remote ICIC compute deploy script
+    shell:
+      cmd: /usr/local/bin/icic-setup-remote.sh
+    vars:
+      icicverpath: "[[ webroot ]]/.secret/.icicver"
+    environment:
+      icicver: "{{ lookup('file', icicverpath ) }}"
+      iciccmp: "iciccmp{{ seq.stdout }}"
+      tmpip: "{{ prev_ip.stdout }}"
+
+- name: Setup the ICIC compute node
+  hosts: s390x_ICIC_management_node
+  tasks:
+  - name: Add or modify A for ICIC compute
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "{{ esigroup | lower }}.{{ cluster_base_domain }}"
+      record: "{{ iciccmp }}"
+      type: A
+      value: "{{ icic_compute_ip_address }}"
+  - name: Add or modify PTR for ICIC compute
+    nsupdate:
+      key_name: "{{ esigroup | lower }}-key"
+      key_secret: "{{ tsigkey }}"
+      key_algorithm: "hmac-sha256"
+      server: "172.24.26.1"
+      zone: "26.24.172.in-addr.arpa"
+      record: "{% raw %}{{ icic_compute_ip_address.split('.')[3] }}{% endraw %}"
+      type: PTR
+      value: "{{ iciccmp }}.{{ esigroup | lower }}.{{ cluster_base_domain }}."
+  - name: Copy the script to the management node
+    copy:
+      src: icic-add-host.sh
+      dest: /usr/local/bin/icic-add-host.sh
+      mode: "0750"
+      owner: root
+      group: root
+
+  - name: Run the script for setup
+    command:
+      cmd: /usr/local/bin/icic-add-host.sh
+    environment:
+      controller_host: "{{ icic_management_ip_address }}"
+      controller_user_name: "root"
+      controller_passwd: "lnx4vm"
+      compute_host: "{{ iciccmp }}.{{ esigroup }}.{{ cluster_base_domain }}"
+      compute_user_name: "root"
+      compute_private_key_data: "{{ lookup('file', '/root/.ssh/id_ed25519') | replace('\n','\\n') }}"
+      compute_vswitch: "VSW1"
+      disk_pool: "{% raw %}{{ diskpool_type }}:LINUX{% endraw %}"
+      host_type: "powervm"
