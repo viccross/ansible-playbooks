@@ -155,6 +155,10 @@
       name: elan-web
       state: latest
       update_cache: yes
+    retries: 3
+    delay: 6
+    register: result
+    until: result is not failed
 
   - name: Set permission on the HTML files to enable Includes
     file:
