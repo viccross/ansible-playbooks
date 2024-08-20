@@ -6,7 +6,7 @@
     mode: 0644
   loop:
   - { src: "finna-add-host.yml.j2", dest: "/opt/ansible/finna-add-host.yml" }
-  - { src: "finna-remote-dns.yml.j2", dest: "/opt/ansible/finna-remote-dns.yml" }
+  - { src: "finna-remote-elan.yml.j2", dest: "/opt/ansible/finna-remote-elan.yml" }
 
 - name: Set up the incron stuff
   block:

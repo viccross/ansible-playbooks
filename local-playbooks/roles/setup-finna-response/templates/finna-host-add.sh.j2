@@ -8,9 +8,9 @@ SYSNAME=$1;
 # Run the playbook to add DNS records for host
 pushd /opt/ansible && ansible-playbook -i inventory -e sysname=${SYSNAME} finna-add-host.yml && popd
 
-# Is this a remote ELAN?  Push BIND updates if yes
+# Is this a remote ELAN?
 LOCALSYS=$(/usr/local/bin/finna self name)
 if [ ${SYSNAME} != ${LOCALSYS} ]; then
   MYIP=$(/usr/local/bin/finna self ip)
-  pushd /opt/ansible && ansible-playbook -i inventory -e masterip=${MYIP} finna-remote-dns.yml && popd
+  pushd /opt/ansible && ansible-playbook -i inventory -e masterip=${MYIP} finna-remote-elan.yml && popd
 fi
