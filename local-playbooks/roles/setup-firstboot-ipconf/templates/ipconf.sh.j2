@@ -137,8 +137,9 @@ EOF
 #  sed -i.bak '/bastion_public_ip_address/c \bastion_public_ip_address: '\"${IPADDR}\" /opt/ansible/inventory/group_vars/all.yml
   # Run Ansible playbook to update the BIND configuration
   (cd /opt/ansible && ansible-playbook -i inventory update-dns-domain.yml)
-  # start named
+  # start and enable named
   systemctl start named-chroot.service
+  systemctl enable named-chroot.service
 
   # Regenerate all the certificates
   (cd /opt/ansible && ansible-playbook -i inventory regen-certificates.yml)
