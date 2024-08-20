@@ -5,7 +5,7 @@
 
 
 global
-    log         127.0.0.1 local2
+    log         {{ bastion_public_ip_address }} local2
     chroot      /var/lib/haproxy
     pidfile     /var/run/haproxy.pid
     maxconn     4000

@@ -106,6 +106,7 @@ EOF
 
   # Update the system hostname
   FULLDOMAIN="${ESIGROUP,,}.${DOMAIN}"
+  echo "${IPADDR}  ${HOSTNM}.${FULLDOMAIN} ${HOSTNM}" >> /etc/hosts
   echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
   hostname -F /etc/hostname
   echo "System hostname updated to $(hostname)"

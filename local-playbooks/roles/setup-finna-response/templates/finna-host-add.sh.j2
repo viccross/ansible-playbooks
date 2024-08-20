@@ -12,5 +12,5 @@ pushd /opt/ansible && ansible-playbook -i inventory -e sysname=${SYSNAME} finna-
 LOCALSYS=$(/usr/local/bin/finna self name)
 if [ ${SYSNAME} != ${LOCALSYS} ]; then
   MYIP=$(/usr/local/bin/finna self ip)
-  pushd /opt/ansible && ansible-playbook -i inventory -e masterip=${MYIP} finna-remote-elan.yml && popd
+  pushd /opt/ansible && ansible-playbook -i inventory -e masterip=${MYIP} -e sysname=${SYSNAME} finna-remote-elan.yml && popd
 fi
