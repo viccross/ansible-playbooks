@@ -12,5 +12,5 @@ fi
 # Schedule the action
 ( 
   flock 9
-  /usr/local/sbin/finna-host-add.sh $1
+  /usr/local/sbin/finna-host-add.sh $1 >> /var/log/finnad-action-$1
 ) 9>/var/run/finnad-action.lock

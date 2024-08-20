@@ -1,0 +1,95 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+---
+- name: Playbook to push DNS and NFS reconfiguration to remote ELANs
+  hosts: s390x_remote_elans
+  handlers:
+  - name: Restart BIND named
+    systemd:
+      name: named-chroot.service
+      state: restarted
+    listen: "Restart named"
+
+  tasks:
+  - name: Update the BIND config fragments
+    template:
+      src: named/slavezone.conf.j2
+      dest: /etc/named/{{ item }}.conf
+      group: named
+      mode: 0640
+    vars:
+      domain_name: "{{ item }}"
+    loop:
+      - "{{ zvmesi_domain_name }}"
+      - "{{ esigroup | lower }}.zvmesi"
+    notify:
+      - "Restart named"
+  - name: Get the coordinator IP address
+    shell:
+      cmd: finna coord ip
+    register: coord_ip
+  - name: Add the NFS mount for ESI content
+    mount:
+      src: "{{ coord_ip.stdout }}:/opt/content"
+      path: /opt/content
+      opts: rw,sync,hard
+      state: mounted
+      fstype: nfs
+  - name: Add config file for Loki forwarder
+    template:
+      src: promtail-cfg-loki-fwd.yaml.j2
+      dest: /etc/loki/promtail-loki-fwd.yaml
+      mode: 0644
+      owner: root
+      group: root
+  - name: Disable Loki and Grafana on this host
+    systemd:
+      name: "{{ item }}"
+      state: stopped
+      enabled: false
+    loop:
+      - loki
+      - grafana
+  - name: Remove loki.service dependency from promtail@ unit
+    replace:
+      path: /usr/local/lib/systemd/system/promtail@.service
+      regexp: '(\s+)loki\.service(\s+)?$'
+      replace: '\1promtail-loki-fwd.service\2'
+      backup: yes
+  - name: Create promtail-loki-fwd.service
+    copy:
+      dest: /usr/local/lib/systemd/system/promtail-loki-fwd.service
+      content: |
+        [Unit]
+        Description=Promtail service for loki-push-api forwarder
+        Requires=network-online.target
+        After=network-online.target named-chroot.service
+        [Service]
+        Type=exec
+        Environment="HOSTNAME=%H"
+        ExecStart=/usr/local/bin/promtail -log.level=error -config.file=/etc/loki/promtail-loki-fwd.yaml -client.external-labels=hostname=${HOSTNAME}
+        RemainAfterExit=false
+        StandardOutput=journal
+        [Install]
+        WantedBy=default.target
+      mode: 0644
+      owner: root
+      group: root
+  - name: Start the Loki push API forwarder
+    systemd:
+      name: promtail-loki-fwd
+      state: started
+      enabled: true
+      daemon-reload: true
+  - name: Restart the other Promtail instances
+    systemd:
+      name: "promtail@{{ item }}"
+      state: restarted
+      enabled: true
+    loop:
+      - httpd
+      - icicbuild
+      - journal
+      - phpfpm
+      - squid
+      - syslog
+      - varlog
