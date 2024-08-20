@@ -177,6 +177,16 @@
   loop:
     - internal
     - public
+- name: Configure firewalld for Loki
+  firewalld:
+    port: 3100/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ item }}"
+  loop:
+    - internal
+    - public
 
 - name: Configure local Rsyslog for forwarding
   copy:
