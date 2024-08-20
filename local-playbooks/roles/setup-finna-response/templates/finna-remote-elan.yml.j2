@@ -1,3 +1,4 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
 ---
 - name: Playbook to push DNS and NFS reconfiguration to remote ELANs
   hosts: s390x_remote_elans
@@ -12,14 +13,14 @@
   - name: Update the BIND config fragments
     template:
       src: named/slavezone.conf.j2
-      dest: /etc/named/{% raw %}{{ item }}{% endraw %}.conf
+      dest: /etc/named/{{ item }}.conf
       group: named
       mode: 0640
     vars:
-      domain_name: "{% raw %}{{ item }}{% endraw %}"
+      domain_name: "{{ item }}"
     loop:
-      - "{% raw %}{{ zvmesi_domain_name }}{% endraw %}"
-      - "{% raw %}{{ esigroup | lower }}{% endraw %}.zvmesi"
+      - "{{ zvmesi_domain_name }}"
+      - "{{ esigroup | lower }}.zvmesi"
     notify:
       - "Restart named"
   - name: Get the coordinator IP address
@@ -28,7 +29,7 @@
     register: coord_ip
   - name: Add the NFS mount for ESI content
     mount:
-      src: "{% raw %}{{ coord_ip.stdout }}{% endraw %}:/opt/content"
+      src: "{{ coord_ip.stdout }}:/opt/content"
       path: /opt/content
       opts: rw,sync,hard
       state: mounted
