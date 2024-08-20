@@ -52,7 +52,7 @@
   - name: Remove loki.service dependency from promtail@ unit
     replace:
       path: /usr/local/lib/systemd/system/promtail@.service
-      regexp: '(\s+)loki\.service(\s+.*)?$'
+      regexp: '(\s+)loki\.service(\s+)?$'
       replace: '\1promtail-loki-fwd.service\2'
       backup: yes
   - name: Create promtail-loki-fwd.service
