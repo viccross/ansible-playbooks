@@ -82,7 +82,7 @@
       daemon-reload: true
   - name: Restart the other Promtail instances
     systemd:
-      name: "{{ item }}"
+      name: "promtail@{{ item }}"
       state: restarted
       enabled: true
     loop:
