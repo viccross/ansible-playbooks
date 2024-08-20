@@ -106,6 +106,7 @@ EOF
 
   # Update the system hostname
   FULLDOMAIN="${ESIGROUP,,}.${DOMAIN}"
+  echo "${IPADDR}  ${HOSTNM}.${FULLDOMAIN} ${HOSTNM}" >> /etc/hosts
   echo "${HOSTNM}.${FULLDOMAIN}" > /etc/hostname
   hostname -F /etc/hostname
   echo "System hostname updated to $(hostname)"
@@ -178,18 +179,26 @@ EOF
   systemctl enable grafana-server.service
   systemctl restart grafana-server.service
   echo "Grafana restarted"
-  # restart Mosquitto
-  systemctl enable mosquitto.service
-  systemctl restart mosquitto.service
-  echo "Mosquitto restarted"
+  # not using Mosquitto for now
+  systemctl disable mosquitto.service
+  systemctl stop mosquitto.service
+  echo "Mosquitto disabled"
   # restart Loki
   systemctl enable loki.service
   systemctl restart loki.service
   echo "Loki restarted"
-  # restart Promtail
-  systemctl enable promtail-mqtt.service
-  systemctl restart promtail-mqtt.service
-  echo "Promtail restarted"
+  # not using the MQTT Promtail for now
+  systemctl disable promtail-mqtt.service
+  systemctl stop promtail-mqtt.service
+  echo "promtail-mqtt disabled"
+  # restart the remaining Promtails
+  for prom in httpd icicbuild journal phpfpm squid syslog varlog; do
+    systemctl restart promtail@${prom}
+  done
+  echo "Restarted general Promtails"
+  # restart rsyslogd
+  systemctl restart rsyslog.service
+  echo "Rsyslog restarted"
 
   ### This is the old DNS change, comment this before removal
 #  # upstream DNS is harder, have to change the bind config...

@@ -12,7 +12,7 @@ scrape_configs:
   - job_name: syslog
     syslog:
       listen_address: 127.0.0.1:20514
-      label_structured_data: false
+      label_structured_data: true
       labels:
         job: syslog
       use_incoming_timestamp: true
@@ -26,6 +26,8 @@ scrape_configs:
         target_label: application
       - source_labels: [__syslog_message_facility]
         target_label: facility
+      - source_labels: [__syslog_message_sd_zVMESI_2_zvmname]
+        target_label: zvm_name
     pipeline_stages:
     - match:
         pipeline_name: vmcons
