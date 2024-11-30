@@ -350,7 +350,7 @@ echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /etc/hosts
 
 # IPLing the management guest
 echo "Issuing a SMAPI IPL for the management guest..."
-smcli ia -T "${icicmgt}" "${smapiauth}"
+smcli ia -T ${icicmgt} ${smapiauth}
 sleep 1
 echo "Starting the Ansible configuration of management guest..."
 cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-management.yml
