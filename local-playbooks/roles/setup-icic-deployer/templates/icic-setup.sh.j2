@@ -138,20 +138,6 @@ else
   echo "SMAPI listener active, continuing..."
 fi
 
-# Set up the mount of the ICIC module content
-cat <<EOF >"/etc/auto.icic-install-${icicver}"
-${icicpath}  -fstype=squashfs,exec :${modpath}
-EOF
-cat <<EOF >"/etc/auto.master.d/icic-install-${icicver}.autofs"
-/-  /etc/auto.icic-install-${icicver}
-EOF
-systemctl reload autofs
-
-if ! ls ${icicpath}/icicimg.txt 2>/dev/null ; then
-  echo "ICIC content module file could not be mounted!"
-  exit 6
-fi
-
 # fetch our current IP address, and strip the netmask off the end
 myip=$(ip -br addr show dev encad0 | awk '{print $3}') # the devname in here has to be set using Ansible too
 tmpip=${myip%/*}
@@ -364,7 +350,7 @@ echo "${cmpip} ${iciccmp,,}.${DOMAIN} ${iciccmp,,}" >> /etc/hosts
 
 # IPLing the management guest
 echo "Issuing a SMAPI IPL for the management guest..."
-smcli ia -T "${icicmgt}" "${smapiauth}"
+smcli ia -T ${icicmgt} ${smapiauth}
 sleep 1
 echo "Starting the Ansible configuration of management guest..."
 cd /opt/ansible && ansible-playbook -i inventory -v setup-icic-management.yml

@@ -52,7 +52,7 @@
           <FilesMatch ".*\.php$">
             Require all denied
           </FilesMatch>
-          <FilesMatch "(s_|ocp-|start).*$">
+          <FilesMatch "^(s_|ocp-|start).*html$">
             Require all denied
           </FilesMatch>
           ErrorDocument 403 /error.html
