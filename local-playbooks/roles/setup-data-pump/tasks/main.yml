@@ -83,7 +83,7 @@
 
 - name: Set the pod service to start
   ansible.builtin.systemd:
-    name: container-vmprf
+    name: pod-vmprf
     state: started
     enabled: true
 
@@ -111,6 +111,6 @@
 
 - name: Stop the pod service
   ansible.builtin.systemd:
-    name: container-vmprf
+    name: pod-vmprf
     state: stopped
     enabled: true
