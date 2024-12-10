@@ -48,6 +48,7 @@
 - name: Define the InfluxDB container in the pod
   containers.podman.podman_container:
     image: icr.io/ibmz/influxdb:1.8.9
+    name: influxdb
     pod: vmprf
     environment:
       INFLUXDB_ADMIN_USER: support
