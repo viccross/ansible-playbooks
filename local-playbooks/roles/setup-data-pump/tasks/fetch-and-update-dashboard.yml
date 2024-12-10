@@ -26,3 +26,8 @@
         elif type == "object" and has("__inputs") then del(.__inputs) else . end)' < {{ item.number }}-dl.json > {{ item.number }}.json && rm -f {{ item.number }}-dl.json
     chdir: /etc/grafana/dashboards/datapump
   when: item.number != "19263"
+- name: Set spanNulls to make graphs look okay
+  replace:
+    path: /etc/grafana/dashboards/datapump/{{ item.number }}
+    regexp: '^(\s*"spanNulls":) false'
+    replace: '\1 120000'
