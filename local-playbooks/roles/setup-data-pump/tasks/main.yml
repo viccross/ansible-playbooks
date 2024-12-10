@@ -32,6 +32,7 @@
 - name: Set up the pod
   containers.podman.podman_pod:
     name: vmprf
+    state: created
     ports:
       - "3000:3000"
       - "8086:8086"
