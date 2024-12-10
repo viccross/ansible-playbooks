@@ -1,31 +1,70 @@
 ---
-- name: Copy the InfluxDB image
+- name: Copy the Grafana and InfluxDB images
   copy:
-    src: /opt/resources/influxdb.tar
+    src: /opt/resources/{{ item }}.tar
     dest: /tmp/
+  loop:
+    - grafana-11.2.2
+    - influxdb-1.8.9
 
-- name: Load the InfluxDB image
+- name: Load the Grafana and InfluxDB images
   containers.podman.podman_load:
-    input: /tmp/influxdb.tar
+    input: /tmp/{{ item }}.tar
+  loop:
+    - grafana-11.2.2
+    - influxdb-1.8.9
 
 - name: Clean up the image file
   file:
-    path: /tmp/influxdb.tar
+    path: /tmp/{{ item }}.tar
     state: absent
+  loop:
+    - grafana-11.2.2
+    - influxdb-1.8.9
 
-- name: Create a volume for the InfluxDB container
+- name: Create volumes for the Grafana and InfluxDB containers
   containers.podman.podman_volume:
-    name: influxdb
+    name: "{{ item }}"
+  loop:
+    - grafana
+    - influxdb
 
 - name: Set up the pod
   containers.podman.podman_pod:
     name: vmprf
-    ports: "8086:8086"
+    ports:
+      - "3000:3000"
+      - "8086:8086"
+
+- name: Create the Grafana config directory
+  file:
+    path: /etc/grafana
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create the Grafana log directory
+  file:
+    path: /var/log/grafana
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
 
 - name: Create the InfluxDB config directory
   file:
     path: /etc/vmprf/influxdb
     state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Configure Grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    mode: 0644
     owner: root
     group: root
 
@@ -57,12 +96,6 @@
       - "/etc/vmprf/influxdb/:/etc/influxdb/:z,ro"
       - "influxdb:/var/lib/influxdb"
 
-- name: Define the systemd service for the pod
-  containers.podman.podman_generate_systemd:
-    name: vmprf
-    dest: /usr/local/lib/systemd/system/
-    requires: network-online
-
 - name: SELinux define the InfluxDB port (so Grafana can connect)
   seport:
     ports: 8086
@@ -81,11 +114,10 @@
     - internal
     - public
 
-- name: Set the pod service to start
-  ansible.builtin.systemd:
-    name: pod-vmprf
+- name: Start the InfluxDB container to set up the DB
+  containers.podman.podman_pod:
+    name: vmprf
     state: started
-    enabled: true
 
 - name: Copy the influx cli from the pod/container
   containers.podman.podman_container_copy:
@@ -118,15 +150,9 @@
   delay: 10
   until: result is not failed
 
-- name: Stop the pod service
-  ansible.builtin.systemd:
-    name: pod-vmprf
-    state: stopped
-    enabled: true
-
-- name: Stop Grafana while we provision it
-  ansible.builtin.systemd:
-    name: grafana-server
+- name: Stop the InfluxDB container once DB is set up
+  containers.podman.podman_pod:
+    name: vmprf
     state: stopped
 
 - name: Create provisioning file for InfluxDB datasource
@@ -142,7 +168,8 @@
           url: http://localhost:8086/
           database: zvm
           user: grafana
-          password: Just2read
+          secureJsonData:
+            password: Just2read
 
     mode: 0644
     owner: grafana
@@ -180,7 +207,31 @@
     - { number: "19311", name: "z/VM Multi-System Overview" }
     - { number: "21407", name: "z/VM Linux Guest Detail" }
 
-- name: Restart Grafana to finalise provisioning
+- name: Define the Grafana container in the pod
+  containers.podman.podman_container:
+    image: icr.io/ibmz/grafana:11.2.2
+    name: grafana
+    pod: vmprf
+    env:
+      LOG_DIR: /var/log/grafana
+      CONF_FILE: /etc/grafana/grafana.ini
+      DATA_DIR: /var/lib/grafana
+      CONF_DIR: /etc/grafana
+      PROVISIONING_CFG_DIR: /etc/grafana/provisioning
+    volumes:
+      - /etc/grafana/:/etc/grafana/:z,ro
+      - grafana:/var/lib/grafana
+      - /var/log/grafana/:/var/log/grafana/:z,rw
+
+- name: Define the systemd service for the pod
+  containers.podman.podman_generate_systemd:
+    name: vmprf
+    dest: /usr/local/lib/systemd/system/
+    requires: network-online
+
+- name: Enable the pod service
   ansible.builtin.systemd:
-    name: grafana-server
-    state: started
+    name: pod-vmprf
+    daemon-reload: true
+    state: stopped
+    enabled: true
