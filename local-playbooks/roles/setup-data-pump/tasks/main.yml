@@ -37,9 +37,9 @@
       - "3000:3000"
       - "8086:8086"
 
-- name: Create the Grafana config directory
+- name: Create the Grafana dashboard directory
   file:
-    path: /etc/grafana
+    path: /etc/grafana/dashboards/datapump
     state: directory
     owner: root
     group: root
