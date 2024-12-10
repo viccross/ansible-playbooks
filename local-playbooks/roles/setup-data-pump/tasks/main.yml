@@ -119,6 +119,7 @@
 - name: Start the InfluxDB container to set up the DB
   containers.podman.podman_pod:
     name: vmprf
+    recreate: false
     state: started
 
 - name: Copy the influx cli from the pod/container
