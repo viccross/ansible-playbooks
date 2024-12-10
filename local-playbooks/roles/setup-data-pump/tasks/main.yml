@@ -121,6 +121,9 @@
     name: vmprf
     recreate: false
     state: started
+    ports: 
+      - "3000:3000"
+      - "8086:8086"
 
 - name: Copy the influx cli from the pod/container
   containers.podman.podman_container_copy:
