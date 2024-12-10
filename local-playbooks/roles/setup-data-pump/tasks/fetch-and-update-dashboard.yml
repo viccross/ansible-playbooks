@@ -2,11 +2,14 @@
 - name: Fetch the dashboard JSON
   uri:
     url: https://grafana.com/api/dashboards/{{ item.number }}/revisions/latest/download
-    dest: /etc/grafana/provisioning/dashboards/{{ item.number }}-dl.json
+    dest: /etc/grafana/dashboards/datapump/{{ item.number }}-dl.json
+    owner: grafana
+    group: grafana
+    mode: 0644
 - name: Massage the downloaded JSON
   shell:
     cmd: |
       jq 'walk(if type == "object" and has("type") and has("uid") then
         if .type == "influxdb" then .uid = "InfluxDBzvm" else . end
         elif type == "object" and has("__inputs") then del(.__inputs) else . end)' < {{ item.number }}-dl.json > {{ item.number }}.json && rm -f {{ item.number }}-dl.json
-    chdir: /etc/grafana/provisioning/dashboards/
+    chdir: /etc/grafana/dashboards/datapump
