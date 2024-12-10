@@ -57,8 +57,8 @@
           type: loki
           url: http://host.containers.internal:3100
     mode: 0644
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
 
 - name: Create provisioning file for Loki dashboard
   copy:
