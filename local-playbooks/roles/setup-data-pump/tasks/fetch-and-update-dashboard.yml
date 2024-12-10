@@ -3,8 +3,8 @@
   uri:
     url: https://grafana.com/api/dashboards/{{ item.number }}/revisions/latest/download
     dest: /etc/grafana/dashboards/datapump/{{ item.number }}-dl.json
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
     mode: 0644
 - name: Massage the downloaded JSON
   shell:
