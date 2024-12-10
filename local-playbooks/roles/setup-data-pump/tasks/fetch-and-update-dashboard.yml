@@ -17,7 +17,7 @@
         .options.conversions = [{"destinationType":"number","targetField":"last"}] else . end ) 
         else . end )'  > {{ item.number }}.json && rm -f {{ item.number }}-dl.json
     chdir: /etc/grafana/dashboards/datapump
-  when: item.number is 19263
+  when: item.number == 19263
 - name: Massage the downloaded JSON, for the others
   shell:
     cmd: |
@@ -25,3 +25,4 @@
         if .type == "influxdb" then .uid = "InfluxDBzvm" else . end
         elif type == "object" and has("__inputs") then del(.__inputs) else . end)' < {{ item.number }}-dl.json > {{ item.number }}.json && rm -f {{ item.number }}-dl.json
     chdir: /etc/grafana/dashboards/datapump
+  when: item.number != 19263
