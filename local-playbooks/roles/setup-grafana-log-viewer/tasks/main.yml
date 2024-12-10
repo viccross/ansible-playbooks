@@ -1,5 +1,5 @@
 ---
-- name: Install Grafana and Mosquitto and Loki
+- name: Install Mosquitto and Loki
   dnf:
     name: "{{ item }}"
     state: present
@@ -34,17 +34,20 @@
     group: mosquitto
     backup: yes
 
-- name: Configure Grafana
-  template:
-    src: grafana.ini.j2
-    dest: /etc/grafana/grafana.ini
-    mode: 0644
-    owner: grafana
-    group: grafana
+- name: Create directories for provisioning Grafana
+  file:
+    path: /etc/grafana/provisioning/{{ item }}
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - dashboards
+    - datasources
 
 - name: Create provisioning file for Loki datasource
   copy:
-    dest: /etc/grafana/provisioning/datasources/default.yaml
+    dest: /etc/grafana/provisioning/datasources/elanloki.yaml
     content: |
       apiVersion: 1
 
@@ -52,7 +55,7 @@
         - name: Loki
           uid: elanLoki
           type: loki
-          url: http://localhost:3100
+          url: http://host.containers.internal:3100
     mode: 0644
     owner: grafana
     group: grafana
@@ -71,16 +74,16 @@
             path:
               /etc/grafana/dashboards/logging
     mode: 0644
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
 
 - name: Create files for logging dashboard provisioning
   copy:
     src: dashboard-{{ item }}.json
     dest: /etc/grafana/dashboards/logging/
     mode: 0644
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
   loop:
   - logs
   - icic
