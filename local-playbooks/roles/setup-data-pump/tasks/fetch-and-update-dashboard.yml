@@ -28,6 +28,6 @@
   when: item.number != "19263"
 - name: Set spanNulls to make graphs look okay
   replace:
-    path: /etc/grafana/dashboards/datapump/{{ item.number }}
+    path: /etc/grafana/dashboards/datapump/{{ item.number }}.json
     regexp: '^(\s*"spanNulls":) false'
     replace: '\1 120000'
