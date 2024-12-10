@@ -89,6 +89,7 @@
     image: icr.io/ibmz/influxdb:1.8.9
     name: influxdb
     pod: vmprf
+    state: created
     env:
       INFLUXDB_ADMIN_USER: support
       INFLUXDB_ADMIN_PASSWORD: ibmzvm
