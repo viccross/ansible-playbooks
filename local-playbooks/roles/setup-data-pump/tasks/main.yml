@@ -107,7 +107,16 @@
 - name: Create grafana user and set permissions
   containers.podman.podman_container_exec:
     name: influxdb
-    command: influx -username support -password "ibmzvm" -execute "create user grafana with password 'Just2read'; grant read on zvm to grafana; grant read on _internal to grafana"
+    command: influx -username support -password "ibmzvm" -execute "create user grafana with password 'Just2read'; grant read on zvm to grafana"
+
+- name: Grant stats access to grafana user
+  containers.podman.podman_container_exec:
+    name: influxdb
+    command: influx -username support -password "ibmzvm" -execute "grant read on _internal to grafana"
+  register: result
+  retries: 6
+  delay: 10
+  until: result is not failed
 
 - name: Stop the pod service
   ansible.builtin.systemd:
@@ -160,16 +169,16 @@
   include_tasks:
     file: fetch-and-update-dashboard.yml
   loop:
-    - '{{ number: "19002", name: "z/VM Overview" }}'
-    - '{{ number: "19003", name: "z/VM Memory and Paging" }}'
-    - '{{ number: "19020", name: "z/VM APVIRT and Crypto Express" }}'
-    - '{{ number: "19028", name: "z/VM CPU Cache Metrics" }}'
-    - '{{ number: "19138", name: "z/VM Shared File System Usage" }}'
-    - '{{ number: "19158", name: "z/VM SSI Overview" }}'
-    - '{{ number: "19204", name: "z/VM Virtual Switch Activity" }}'
-    - '{{ number: "19263", name: "z/VM LPAR Overview" }}'
-    - '{{ number: "19311", name: "z/VM Multi-System Overview"}}'
-    - '{{ number: "21407", name: "z/VM Linux Guest Detail" }}'
+    - { number: "19002", name: "z/VM Overview" }
+    - { number: "19003", name: "z/VM Memory and Paging" }
+    - { number: "19020", name: "z/VM APVIRT and Crypto Express" }
+    - { number: "19028", name: "z/VM CPU Cache Metrics" }
+    - { number: "19138", name: "z/VM Shared File System Usage" }
+    - { number: "19158", name: "z/VM SSI Overview" }
+    - { number: "19204", name: "z/VM Virtual Switch Activity" }
+    - { number: "19263", name: "z/VM LPAR Overview" }
+    - { number: "19311", name: "z/VM Multi-System Overview" }
+    - { number: "21407", name: "z/VM Linux Guest Detail" }
 
 - name: Restart Grafana to finalise provisioning
   ansible.builtin.systemd:
