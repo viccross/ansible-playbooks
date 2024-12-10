@@ -12,7 +12,7 @@
       cat {{ item.number }}-dl.json | jq 'walk(if type == "object" and has("type") and has("uid") then 
         if .type == "influxdb" then .uid = "InfluxDBzvm" else . end
         elif type == "object" and has("__inputs") then del(.__inputs) else . end)' |
-        jq 'walk(if type == "object" and has("type") and .type == "stat" and has("transformations") then
+        jq 'walk(if type == "object" and has("type") and .type == "stat" and has("transformations") and (.targets[].select[][].params[] | contains("cpctype_val") ) then
         walk(if type == "object" and has("id") and .id == "convertFieldType" and .options.conversions == [] then
         .options.conversions = [{"destinationType":"number","targetField":"last"}] else . end ) 
         else . end )'  > {{ item.number }}.json && rm -f {{ item.number }}-dl.json
