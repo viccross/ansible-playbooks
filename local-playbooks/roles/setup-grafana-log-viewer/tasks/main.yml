@@ -59,25 +59,25 @@
 
 - name: Create provisioning file for Loki dashboard
   copy:
-    dest: /etc/grafana/provisioning/dashboards/default.yaml
+    dest: /etc/grafana/provisioning/dashboards/zVMlogs.yaml
     content: |
       apiVersion: 1
 
       providers:
-        - name: Default
+        - name: zVMLogsAndEvents
           folder: "z/VM Logging dashboards"
           type: file
           options:
             path:
-              /etc/grafana/dashboards
+              /etc/grafana/dashboards/logging
     mode: 0644
     owner: grafana
     group: grafana
 
-- name: Create provisioning files for dashboard
+- name: Create files for logging dashboard provisioning
   copy:
     src: dashboard-{{ item }}.json
-    dest: /etc/grafana/dashboards/
+    dest: /etc/grafana/dashboards/logging/
     mode: 0644
     owner: grafana
     group: grafana

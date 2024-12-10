@@ -114,3 +114,64 @@
     name: pod-vmprf
     state: stopped
     enabled: true
+
+- name: Stop Grafana while we provision it
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: stopped
+
+- name: Create provisioning file for InfluxDB datasource
+  copy:
+    dest: /etc/grafana/provisioning/datasources/influxdb-zvm.yaml
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: InfluxDB-zvm
+          uid: InfluxDBzvm
+          type: influxdb
+          url: http://localhost:8086/
+          database: zvm
+          user: grafana
+          password: Just2read
+
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Create the dashboard provisioning config file
+  copy:
+    dest: /etc/grafana/provisioning/dashboards/datapump.yaml
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: zVMDataPump
+          folder: "z/VM Performance dashboards"
+          type: file
+          options:
+            path:
+              /etc/grafana/dashboards/datapump
+    mode: 0644
+    owner: grafana
+    group: grafana
+
+- name: Populate the Data Pump dashboard directory
+  include_tasks:
+    file: fetch-and-update-dashboard.yml
+  loop:
+    - '{{ number: "19002", name: "z/VM Overview" }}'
+    - '{{ number: "19003", name: "z/VM Memory and Paging" }}'
+    - '{{ number: "19020", name: "z/VM APVIRT and Crypto Express" }}'
+    - '{{ number: "19028", name: "z/VM CPU Cache Metrics" }}'
+    - '{{ number: "19138", name: "z/VM Shared File System Usage" }}'
+    - '{{ number: "19158", name: "z/VM SSI Overview" }}'
+    - '{{ number: "19204", name: "z/VM Virtual Switch Activity" }}'
+    - '{{ number: "19263", name: "z/VM LPAR Overview" }}'
+    - '{{ number: "19311", name: "z/VM Multi-System Overview"}}'
+    - '{{ number: "21407", name: "z/VM Linux Guest Detail" }}'
+
+- name: Restart Grafana to finalise provisioning
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: started
