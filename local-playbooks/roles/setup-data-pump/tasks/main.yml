@@ -60,7 +60,7 @@
 - name: Define the systemd service for the pod
   containers.podman.podman_generate_systemd:
     name: vmprf
-    path: /usr/local/lib/systemd/system/
+    dest: /usr/local/lib/systemd/system/
     requires: network-online
 
 - name: SELinux define the InfluxDB port (so Grafana can connect)
