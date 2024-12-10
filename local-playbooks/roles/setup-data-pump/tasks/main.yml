@@ -178,8 +178,8 @@
             password: Just2read
 
     mode: 0644
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
 
 - name: Create the dashboard provisioning config file
   copy:
@@ -195,8 +195,8 @@
             path:
               /etc/grafana/dashboards/datapump
     mode: 0644
-    owner: grafana
-    group: grafana
+    owner: root
+    group: root
 
 - name: Populate the Data Pump dashboard directory
   include_tasks:
