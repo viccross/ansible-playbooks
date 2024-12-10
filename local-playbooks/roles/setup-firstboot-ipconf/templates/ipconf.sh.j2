@@ -177,9 +177,9 @@ EOF
   systemctl restart haproxy.service
   echo "HA-Proxy restarted"
   # restart Grafana
-  systemctl enable grafana-server.service
-  systemctl restart grafana-server.service
-  echo "Grafana restarted"
+#  systemctl enable grafana-server.service
+#  systemctl restart grafana-server.service
+#  echo "Grafana restarted"
   # not using Mosquitto for now
   systemctl disable mosquitto.service
   systemctl stop mosquitto.service
@@ -200,6 +200,9 @@ EOF
   # restart rsyslogd
   systemctl restart rsyslog.service
   echo "Rsyslog restarted"
+  # Ensure the vmprf pod is enabled and started
+  systemctl enable pod-vmprf
+  systemctl start pod-vmprf
 
   ### This is the old DNS change, comment this before removal
 #  # upstream DNS is harder, have to change the bind config...

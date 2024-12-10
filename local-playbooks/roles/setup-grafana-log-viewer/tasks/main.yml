@@ -4,7 +4,6 @@
     name: "{{ item }}"
     state: present
   loop:
-  - grafana
   - mosquitto
   - elan-loki
 
@@ -139,6 +138,12 @@
   loop:
   - journal
   - syslog
+
+- name: Remove grafana-server from Loki service dependencies (if present)
+  replace:
+    path: /usr/local/lib/systemd/system/loki.service
+    regexp: 'grafana-server.service'
+    replace: ' '
 
 - name: Create systemd unit template
   copy:
