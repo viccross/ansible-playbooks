@@ -233,7 +233,7 @@
   containers.podman.podman_generate_systemd:
     name: vmprf
     dest: /usr/local/lib/systemd/system/
-    requires: network-online
+    requires: network-online.target
 
 - name: Enable the pod service
   ansible.builtin.systemd:
