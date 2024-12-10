@@ -69,6 +69,17 @@
     setype: http_port_t
     state: present
 
+- name: Open the port on the firewall
+  firewalld:
+    port: 8086/tcp
+    permanent: true
+    immediate: true
+    zone: "{{ item }}"
+    state: enabled
+  loop:
+    - internal
+    - public
+
 - name: Set the pod service to start
   ansible.builtin.systemd:
     name: container-vmprf
