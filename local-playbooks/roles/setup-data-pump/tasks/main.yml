@@ -1,7 +1,7 @@
 ---
 - name: Copy the InfluxDB image
   copy:
-    src: /opt/content/influxdb.tar
+    src: /opt/resources/influxdb.tar
     dest: /tmp/
 
 - name: Load the InfluxDB image
