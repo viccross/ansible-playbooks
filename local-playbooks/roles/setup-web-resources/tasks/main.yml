@@ -113,6 +113,7 @@
       RewriteRule ^/grafana/?(.*) "ws://127.0.0.1:3000/grafana/$1" [P,L]
       ProxyPassMatch "^/grafana/(.*)$" "http://localhost:3000/grafana/$1"
       ProxyPassReverse "/grafana/" "http://localhost:3000/grafana/"
+      ProxyPreserveHost On
 
 - name: Download and unwind LDAP tools
   block:
