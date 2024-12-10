@@ -109,8 +109,8 @@
     name: influxdb
     command: influx -username support -password "ibmzvm" -execute "create user grafana with password 'Just2read'; grant read on zvm to grafana; grant read on _internal to grafana"
 
-#- name: Stop the pod service
-#  ansible.builtin.systemd:
-#    name: pod-vmprf
-#    state: stopped
-#    enabled: true
+- name: Stop the pod service
+  ansible.builtin.systemd:
+    name: pod-vmprf
+    state: stopped
+    enabled: true
