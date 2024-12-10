@@ -29,6 +29,7 @@
   - { role: 'configure-cockpit', tags: 'cockpit' }
 #  - configure-ignition
   - { role: 'setup-grafana-log-viewer', tags: 'grafana' }
+  - { role: 'setup-data-pump', tags: 'datapump' }
   - { role: 'setup-ocp-deployer', tags: 'ocp-deployer' }
   - { role: 'setup-icic-deployer', tags: 'icic-deployer' }
   - { role: 'setup-podman-and-registry', tags: 'podman-registry' }

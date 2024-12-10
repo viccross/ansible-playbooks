@@ -1,0 +1,104 @@
+---
+- name: Copy the InfluxDB image
+  copy:
+    src: /opt/content/influxdb.tar
+    dest: /tmp/
+
+- name: Load the InfluxDB image
+  containers.podman.podman_load:
+    input: /tmp/influxdb.tar
+
+- name: Clean up the image file
+  file:
+    path: /tmp/influxdb.tar
+    state: absent
+
+- name: Create a volume for the InfluxDB container
+  containers.podman.podman_volume:
+    name: influxdb
+
+- name: Set up the pod
+  containers.podman.podman_pod:
+    name: vmprf
+    ports: "8086:8086"
+
+- name: Create the InfluxDB config directory
+  file:
+    path: /etc/vmprf/influxdb
+    state: directory
+    owner: root
+    group: root
+
+- name: Configure InfluxDB
+  copy:
+    dest: /etc/vmprf/influxdb/influxdb.conf
+    content: |
+      reporting-disabled = true
+      bind-address = ""
+      [meta]
+        dir = "/var/lib/influxdb/meta"
+      [data]
+        dir = "/var/lib/influxdb/data"
+        wal-dir = "/var/lib/influxdb/wal"
+      [http]
+        auth-enabled = true
+    owner: root
+    mode: 0644
+
+- name: Define the InfluxDB container in the pod
+  containers.podman.podman_container:
+    image: icr.io/ibmz/influxdb:1.8.9
+    pod: vmprf
+    environment:
+      INFLUXDB_ADMIN_USER: support
+      INFLUXDB_ADMIN_PASSWORD: ibmzvm
+    volumes:
+      - "/etc/vmprf/influxdb/:/etc/influxdb/:z,ro"
+      - "influxdb:/var/lib/influxdb"
+
+- name: Define the systemd service for the pod
+  containers.podman.podman_generate_systemd:
+    name: vmprf
+    path: /usr/local/lib/systemd/system/
+    requires: network-online
+
+- name: SELinux define the InfluxDB port (so Grafana can connect)
+  seport:
+    ports: 8086
+    proto: tcp
+    setype: http_port_t
+    state: present
+
+- name: Set the pod service to start
+  ansible.builtin.systemd:
+    name: container-vmprf
+    state: started
+    enabled: true
+
+- name: Copy the influx cli from the pod/container
+  containers.podman.podman_container_copy:
+    from_container: true
+    container: influxdb
+    src: /usr/bin/influx
+    dest: /usr/local/bin/influx
+
+- name: Define the database
+  containers.podman.podman_container_exec:
+    name: influxdb
+    command: influx -username support -password "ibmzvm" -execute "create database zvm; alter retention policy autogen on zvm duration 4w; show databases"
+
+- name: Create datapump user and set permissions
+  containers.podman.podman_container_exec:
+    name: influxdb
+    command: influx -username support -password "ibmzvm" -execute "create user datapump with password 'Secret123'; grant write on zvm to datapump"
+
+- name: Create grafana user and set permissions
+  containers.podman.podman_container_exec:
+    name: influxdb
+    command: influx -username support -password "ibmzvm" -execute "create user grafana with password 'Just2read'; grant read on zvm to grafana; grant read on _internal to grafana"
+
+- name: Stop the pod service
+  ansible.builtin.systemd:
+    name: container-vmprf
+    state: stopped
+    enabled: true
