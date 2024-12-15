@@ -17,9 +17,27 @@
       path: "{{ item['path'] }}"
       state: absent
     with_items: "{{ find_results['files'] }}"
+  - name: Stop the vmprf pod, if running
+    systemd:
+      name: pod-vmprf
+      state: stopped
+  - name: Remove the podman volumes
+    containers.podman.podman_volume:
+      name: "{{ item }}"
+      state: absent
+    loop:
+      - influxdb
+      - grafana
   - name: Zero the empty space
     shell:
       cmd: dd if=/dev/zero of=/zerofile bs=1k || rm -f /zerofile
+  - name: Recreate the podman volumes
+    containers.podman.podman_volume:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - influxdb
+      - grafana
 
 - name: Shut down the ELANs to prepare for dump
   hosts: localhost
