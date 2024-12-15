@@ -17,27 +17,25 @@
       path: "{{ item['path'] }}"
       state: absent
     with_items: "{{ find_results['files'] }}"
-  - name: Stop the vmprf pod, if running
-    systemd:
-      name: pod-vmprf
-      state: stopped
-  - name: Remove the podman volumes
-    containers.podman.podman_volume:
-      name: "{{ item }}"
-      state: absent
-    loop:
-      - influxdb
-      - grafana
+  - name: Drop the database
+    containers.podman.podman_container_exec:
+      name: influxdb
+      command: influx -username support -password "ibmzvm" -execute "drop database zvm; show databases"
+  - name: Define the database
+    containers.podman.podman_container_exec:
+      name: influxdb
+      command: influx -username support -password "ibmzvm" -execute "create database zvm; alter retention policy autogen on zvm duration 4w; show databases"
+  - name: Create datapump user and set permissions
+    containers.podman.podman_container_exec:
+      name: influxdb
+      command: influx -username support -password "ibmzvm" -execute "create user datapump with password 'Secret123'; grant write on zvm to datapump"
+  - name: Create grafana user and set permissions
+    containers.podman.podman_container_exec:
+      name: influxdb
+      command: influx -username support -password "ibmzvm" -execute "create user grafana with password 'Just2read'; grant read on zvm to grafana"
   - name: Zero the empty space
     shell:
       cmd: dd if=/dev/zero of=/zerofile bs=1k || rm -f /zerofile
-  - name: Recreate the podman volumes
-    containers.podman.podman_volume:
-      name: "{{ item }}"
-      state: present
-    loop:
-      - influxdb
-      - grafana
 
 - name: Shut down the ELANs to prepare for dump
   hosts: localhost
