@@ -62,3 +62,5 @@
     loop:
     - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
     - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
+    register: result
+    failed_when: result.rc != 0 and "Image already active" not in result.stdout
