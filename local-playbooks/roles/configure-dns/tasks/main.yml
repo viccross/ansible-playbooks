@@ -44,12 +44,14 @@
     state: restarted
 
 - name: Use local dns in resolv.conf
-  blockinfile:
+  copy:
     dest: /etc/resolv.conf
-    insertbefore: BOF
-    block: |
+    content: |
       search {{ cluster_domain_name }}
       nameserver {{ bastion_private_ip_address }}
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Create DNS Reverse zone
   template:
