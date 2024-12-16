@@ -75,10 +75,9 @@
       state: restarted
 
   - name: Use local dns in resolv.conf
-    blockinfile:
+    copy:
       dest: /etc/resolv.conf
-      insertbefore: BOF
-      block: |
+      content: |
         search {% raw %}{{ zvmesi_domain_name }}{% endraw %}{{''}}
         nameserver {{ bastion_private_ip_address }}
 
