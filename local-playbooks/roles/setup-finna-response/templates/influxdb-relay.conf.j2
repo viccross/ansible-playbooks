@@ -1,0 +1,63 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+[[http]]
+# Name of the HTTP server, used for display purposes only.
+name = "{{ sysname | lower }}-http"
+
+# TCP address to bind to, for HTTP server.
+bind-addr = "0.0.0.0:8086"
+
+# Timeout for /health route
+# After this time, the host may be considered down
+health-timeout-ms = 10000
+
+# Request limiting (Applied to all backend)
+rate-limit = 5
+burst-limit = 10
+
+# Ping response code, default is 204
+default-ping-response = 200
+
+# InfluxDB instances to use as backend for Relay
+[[http.output]]
+# name: name of the backend, used for display purposes only.
+name = "local-influxdb"
+
+# location: full URL of the /write endpoint of the backend
+location = "http://{{ masterip }}:8086/"
+
+# endpoints: Routes to use on Relay
+# write: Route for standard InfluxDB request
+# write_prom: Route for Prometheus request
+# ping: Route for ping request
+# query: Route fot querying InfluxDB backends
+endpoints = {write="/write", write_prom="/api/v1/prom/write", ping="/ping", query="/query"}
+
+# timeout: Go-parseable time duration. Fail writes if incomplete in this time.
+timeout = "10s"
+
+# skip-tls-verification: skip verification for HTTPS location. WARNING: it's insecure. Don't use in production.
+skip-tls-verification = true
+
+[[udp]]
+# Name of the UDP server, used for display purposes only.
+name = "{{ sysname | lower }}-udp"
+
+# UDP address to bind to.
+bind-addr = "0.0.0.0:8086"
+
+# Socket buffer size for incoming connections.
+read-buffer = 0 # default
+
+# Precision to use for timestamps
+precision = "n" # Can be n, u, ms, s, m, h
+
+# InfluxDB instance to use as backend for Relay.
+[[udp.output]]
+# name: name of the backend, used for display purposes only.
+name = "local-influxdb"
+
+# location: host and port of backend.
+location = "{{ masterip }}:8086"
+
+# mtu: maximum output payload size
+mtu = 1024

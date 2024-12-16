@@ -6,6 +6,7 @@
   loop:
     - grafana-11.2.2
     - influxdb-1.8.9
+    - influxdb-relay
 
 - name: Load the Grafana and InfluxDB images
   containers.podman.podman_load:
@@ -13,6 +14,7 @@
   loop:
     - grafana-11.2.2
     - influxdb-1.8.9
+    - influxdb-relay
 
 - name: Clean up the image file
   file:
@@ -21,6 +23,7 @@
   loop:
     - grafana-11.2.2
     - influxdb-1.8.9
+    - influxdb-relay
 
 - name: Create volumes for the Grafana and InfluxDB containers
   containers.podman.podman_volume:

@@ -41,14 +41,14 @@
       mode: 0644
       owner: root
       group: root
-  - name: Disable Loki and Grafana on this host
+  - name: Disable Loki and the VMPRF pod on this host
     systemd:
       name: "{{ item }}"
       state: stopped
       enabled: false
     loop:
       - loki
-      - grafana
+      - pod-vmprf
   - name: Remove loki.service dependency from promtail@ unit
     replace:
       path: /usr/local/lib/systemd/system/promtail@.service
@@ -93,3 +93,50 @@
       - squid
       - syslog
       - varlog
+  - name: Configure influxdb-relay
+    template:
+      src: influxdb-relay.conf.j2
+      dest: /etc/influxdb-relay.conf
+      mode: 0644
+      owner: root
+      group: root
+  - name: Remove Grafana and InfluxDB containers
+    containers.podman.podman_container:
+      name: "{{ item }}"
+      pod: vmprf
+      state: absent
+    loop:
+      - influxdb
+      - grafana
+  - name: Remove Grafana and InfluxDB volumes
+    containers.podman.podman_volume:
+      name: "{{ item }}"
+      state: absent
+    loop:
+      - influxdb
+      - grafana
+  - name: Re-create the vmprf pod (not that we want to, it will do it)
+    containers.podman.podman_pod:
+      name: vmprf
+      state: created
+      ports:
+        - "8086:8086"
+  - name: Create the influxdb-relay container
+    containers.podman.podman_container:
+      image: influxdb-relay:latest
+      name: influxdb-relay
+      pod: vmprf
+      state: created
+      volumes:
+        - /etc/influxdb-relay.conf:/etc/influxdb-relay/influxdb-relay.conf:z,ro
+  - name: Re-generate systemd
+    containers.podman.podman_generate_systemd:
+      name: vmprf
+      dest: /usr/local/lib/systemd/system/
+      requires: network-online.target
+  - name: Re-enable the pod service
+    ansible.builtin.systemd:
+      name: pod-vmprf
+      daemon-reload: true
+      state: started
+      enabled: true

@@ -202,7 +202,7 @@ EOF
   echo "Rsyslog restarted"
   # Ensure the vmprf pod is enabled and started
   systemctl enable pod-vmprf
-  systemctl start pod-vmprf
+  systemctl restart pod-vmprf
 
   ### This is the old DNS change, comment this before removal
 #  # upstream DNS is harder, have to change the bind config...
