@@ -1,4 +1,24 @@
 ---
+- name: Shut down the DATAPUMPs to prepare for dump
+  hosts: localhost
+  vars:
+    smapi_ckd_ip: "{{ hostvars['lxocpb01-7.3'].smapi_host }}"
+    smapi_fba_ip: "{{ hostvars['lxocpb01-fba-7.3'].smapi_host }}"
+    smapi_ckd_user: "{{ hostvars['lxocpb01-7.3'].smapi_user }}"
+    smapi_fba_user: "{{ hostvars['lxocpb01-fba-7.3'].smapi_user }}"
+    smapi_ckd_pass: "{{ hostvars['lxocpb01-7.3'].smapi_password }}"
+    smapi_fba_pass: "{{ hostvars['lxocpb01-fba-7.3'].smapi_password }}"
+  tasks:
+  - name: Shut down the DATAPUMPs
+    shell:
+      cmd: smcli id -T DATAPUMP -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
+    loop:
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
+  - name: Paulse for a bit
+    pause:
+      seconds: 10
+
 - name: Clean up the ELAN disks
   hosts: s390x_bastion_workstation
   tasks:
@@ -59,6 +79,14 @@
   - name: Start up the ELANs
     shell:
       cmd: smcli ia -T LXOCPB01 -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
+    loop:
+    - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
+    - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
+    register: result
+    failed_when: result.rc != 0 and "Image already active" not in result.stdout
+  - name: Start up the DATAPUMPs
+    shell:
+      cmd: smcli ia -T DATAPUMP -H {{ item.ip }}/44444 -U {{ item.user }} -P {{ item.password }}
     loop:
     - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
     - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
