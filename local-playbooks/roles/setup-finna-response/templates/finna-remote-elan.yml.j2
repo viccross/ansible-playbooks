@@ -23,6 +23,8 @@
       - "{{ esigroup | lower }}.zvmesi"
     notify:
       - "Restart named"
+  - name: Flush handlers
+    meta: flush_handlers
   - name: Get the coordinator IP address
     shell:
       cmd: finna coord ip
