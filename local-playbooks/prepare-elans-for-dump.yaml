@@ -22,6 +22,14 @@
 - name: Clean up the ELAN disks
   hosts: s390x_bastion_workstation
   tasks:
+  - name: Stop Loki
+    systemd:
+      name: loki
+      state: stopped
+  - name: Clear out Loki storage
+    file:
+      path: /tmp/loki
+      state: absent
   - name: Find rotated log files
     find:
       paths: /var/log
