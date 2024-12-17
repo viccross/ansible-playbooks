@@ -43,6 +43,7 @@
       mode: 0644
       owner: root
       group: root
+      force: false
   - name: Disable Loki and the VMPRF pod on this host
     systemd:
       name: "{{ item }}"
@@ -76,6 +77,7 @@
       mode: 0644
       owner: root
       group: root
+      force: false
   - name: Start the Loki push API forwarder
     systemd:
       name: promtail-loki-fwd
@@ -102,43 +104,48 @@
       mode: 0644
       owner: root
       group: root
-  - name: Remove Grafana and InfluxDB containers
-    containers.podman.podman_container:
-      name: "{{ item }}"
-      pod: vmprf
-      state: absent
-    loop:
-      - influxdb
-      - grafana
-  - name: Remove Grafana and InfluxDB volumes
-    containers.podman.podman_volume:
-      name: "{{ item }}"
-      state: absent
-    loop:
-      - influxdb
-      - grafana
-  - name: Re-create the vmprf pod (not that we want to, it will do it)
-    containers.podman.podman_pod:
-      name: vmprf
-      state: created
-      ports:
-        - "8086:8086"
-  - name: Create the influxdb-relay container
-    containers.podman.podman_container:
-      image: influxdb-relay:latest
-      name: influxdb-relay
-      pod: vmprf
-      state: created
-      volumes:
-        - /etc/influxdb-relay.conf:/etc/influxdb-relay/influxdb-relay.conf:z,ro
-  - name: Re-generate systemd
-    containers.podman.podman_generate_systemd:
-      name: vmprf
-      dest: /usr/local/lib/systemd/system/
-      requires: network-online.target
-  - name: Re-enable the pod service
-    ansible.builtin.systemd:
-      name: pod-vmprf
-      daemon-reload: true
-      state: started
-      enabled: true
+      force: false
+    register: relay_create
+  - name: Do all the InfluxDB Relay setup
+    when: relay_create.changed
+    block:
+      - name: Remove Grafana and InfluxDB containers
+        containers.podman.podman_container:
+          name: "{{ item }}"
+          pod: vmprf
+          state: absent
+        loop:
+          - influxdb
+          - grafana
+      - name: Remove Grafana and InfluxDB volumes
+        containers.podman.podman_volume:
+          name: "{{ item }}"
+          state: absent
+        loop:
+          - influxdb
+          - grafana
+      - name: Re-create the vmprf pod (not that we want to, it will do it)
+        containers.podman.podman_pod:
+          name: vmprf
+          state: created
+          ports:
+            - "8086:8086"
+      - name: Create the influxdb-relay container
+        containers.podman.podman_container:
+          image: influxdb-relay:latest
+          name: influxdb-relay
+          pod: vmprf
+          state: created
+          volumes:
+            - /etc/influxdb-relay.conf:/etc/influxdb-relay/influxdb-relay.conf:z,ro
+      - name: Re-generate systemd
+        containers.podman.podman_generate_systemd:
+          name: vmprf
+          dest: /usr/local/lib/systemd/system/
+          requires: network-online.target
+      - name: Re-enable the pod service
+        ansible.builtin.systemd:
+          name: pod-vmprf
+          daemon-reload: true
+          state: started
+          enabled: true
