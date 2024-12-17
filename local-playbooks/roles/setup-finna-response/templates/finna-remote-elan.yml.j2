@@ -143,9 +143,9 @@
           name: vmprf
           dest: /usr/local/lib/systemd/system/
           requires: network-online.target
-      - name: Re-enable the pod service
-        ansible.builtin.systemd:
-          name: pod-vmprf
-          daemon-reload: true
-          state: started
-          enabled: true
+  - name: Re-enable the pod service
+    ansible.builtin.systemd:
+      name: pod-vmprf
+      daemon-reload: true
+      state: started
+      enabled: true
