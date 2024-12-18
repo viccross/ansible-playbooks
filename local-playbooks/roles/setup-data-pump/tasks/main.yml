@@ -72,6 +72,50 @@
     owner: root
     group: root
 
+- name: Create Grafana LDAP configuration
+  copy:
+    dest: /etc/grafana/ldap.toml
+    content: |
+      [[servers]]
+      host = "LDAPSRV.ibmpoc.internal"
+      port = 389
+      use_ssl = false
+      use_tls = true
+      start_tls = true
+      root_ca_cert = "/etc/grafana/oqsRootCA.cert"
+      ssl_skip_verify = false
+      search_filter = "(uid=%s)"
+      search_base_dns = ["ou=ibmzvm,o=ibm"]
+
+      group_search_filter = "(&(objectClass=posixGroup)(member=%s))"
+      group_search_base_dns = ["ou=groups,ou=ibmzvm,o=ibm"]
+      group_search_filter_user_attribute = "dn"
+
+      [servers.attributes]
+      name = "givenName"
+      surname = "sn"
+      username = "uid"
+      email = "email"
+
+      [[servers.group_mappings]]
+      group_dn = "cn=admins,ou=groups,ou=ibmzvm,o=ibm"
+      org_role = "Admin"
+      grafana_admin = true
+      [[servers.group_mappings]]
+      group_dn = "cn=users,ou=groups,ou=ibmzvm,o=ibm"
+      org_role = "Viewer"
+    owner: root
+    mode: 0644
+
+- name: Copy the Root CA for Grafana's container
+  copy:
+    dest: /etc/grafana/oqsRootCA.cert
+    src: /etc/pki/tls/certs/oqsRootCA.cert
+    remote_src: true
+    mode: 0644
+    owner: root
+    group: root
+    
 - name: Configure InfluxDB
   copy:
     dest: /etc/vmprf/influxdb/influxdb.conf
