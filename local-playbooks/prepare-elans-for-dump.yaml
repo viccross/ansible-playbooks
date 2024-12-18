@@ -15,7 +15,9 @@
     loop:
     - { ip: "{{ smapi_ckd_ip }}", user: "{{ smapi_ckd_user }}", password: "{{ smapi_ckd_pass }}" }
     - { ip: "{{ smapi_fba_ip }}", user: "{{ smapi_fba_user }}", password: "{{ smapi_fba_pass }}" }
-  - name: Paulse for a bit
+    register: result
+    failed_when: result.rc !=0 and "Image not active" not in result.stdout
+  - name: Pause for a bit
     pause:
       seconds: 10
 
