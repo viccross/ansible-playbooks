@@ -5,13 +5,13 @@
 # incron job can pick it up
 #
 - name: Create destination directory if needed
-  file:
+  ansible.builtin.file:
     path: "{{ bootfile_dest }}/{{ rhcos_ver }}"
     state: directory
     mode: 0755
 
 - name: Download images
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/{{ item }}"
     dest: "{{ bootfile_dest }}/{{ rhcos_ver }}/{{ item }}"
     checksum: "sha256:{{ rhcos_download_url }}/{{ rhcos_versions[rhcos_ver].path }}/sha256sum.txt"
@@ -22,7 +22,7 @@
   environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: Define alternatives for the version downloaded # noqa no-changed-when
-  command: "alternatives --install /var/www/html/bootfiles/rhcos-live-kernel-s390x rhcos-kernel \
+  ansible.builtin.command: "alternatives --install /var/www/html/bootfiles/rhcos-live-kernel-s390x rhcos-kernel \
                                    /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-kernel-s390x {{ rhcos_ver.split('.')[1] }} \
                          --slave /var/www/html/bootfiles/rhcos-live-rootfs.s390x.img rhcos-rootfs \
                                  /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-rootfs.s390x.img \
@@ -30,4 +30,4 @@
                                  /var/www/html/bootfiles/{{ rhcos_ver }}/rhcos-live-initramfs.s390x.img "
 
 - name: Set alternative to auto mode # noqa no-changed-when
-  command: "alternatives --auto rhcos-kernel "
+  ansible.builtin.command: "alternatives --auto rhcos-kernel "

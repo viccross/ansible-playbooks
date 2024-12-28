@@ -1,6 +1,6 @@
 ---
 - name: Touch node-pxelinux file
-  file:
+  ansible.builtin.file:
     path: "{{ bootfile_dest }}/{{ item }}-pxelinux.0"
     state: touch
     mode: 0644
@@ -9,23 +9,23 @@
 - name: Generate ZNETBOOT config file
   when: pxe_mode == 'znetboot'
   tags: pxelinux-cfg
-  template:
+  ansible.builtin.template:
     dest: "{{ bootfile_dest }}/{{ cluster['nodes'][coreos_role][item].name }}.znetboot"
     src: ocpguest.znetboot.j2
     mode: 0644
 
-- name: Generate parmfile
+- name: Generate parmfile # noqa line-length
   when: pxe_mode == 'pxelinux'
   tags: pxelinux-cfg
-  copy:
+  ansible.builtin.copy:
     mode: 0644
     dest: "{{ bootfile_dest }}/{{ item }}.parm"
     content: |
       rd.neednet=1 console=ttysclp0 coreos.inst=yes coreos.inst.install_dev={{ cluster['nodes'][coreos_role][item].disk }} coreos.inst.image_url={{ rhcos_download_url }}/{{ rhcos_disk_image }} coreos.inst.ignition_url=http://bastion.{{ cluster_domain_name }}:8080/ignition/{{ cluster['nodes'][coreos_role][item].ign_profile }} {{ coreos_kargs_net[install_mode] }} {{ coreos_kargs_extra[install_mode] }}  # noqa 204
 
-- name: Make pxelinux.0 file  # noqa command-instead-of-shell
+- name: Make pxelinux.0 file  # noqa command-instead-of-shell no-changed-when line-length
   tags: pxelinux0
   args:
     chdir: "{{ bootfile_dest }}"
-  shell: bash /root/s390-tools/netboot/mk-s390image rhcos-{{ rhcos_version }}-installer-kernel -r rhcos-{{ rhcos_version }}-installer-initramfs.img -p {{ item }}-pxelinux.parm {{ item }}-pxelinux.0  # noqa 204
+  ansible.builtin.shell: bash /root/s390-tools/netboot/mk-s390image rhcos-{{ rhcos_version }}-installer-kernel -r rhcos-{{ rhcos_version }}-installer-initramfs.img -p {{ item }}-pxelinux.parm {{ item }}-pxelinux.0  # noqa 204
   when: install_mode == 'zkvm'

@@ -1,60 +1,60 @@
 ---
 - name: Configure and enable Cockpit
   block:
-  - name: Generate cockpit private key
-    openssl_privatekey:
-      path: /etc/pki/tls/private/cockpit.pem
+    - name: Generate cockpit private key
+      openssl_privatekey:
+        path: /etc/pki/tls/private/cockpit.pem
 
-  - name: Generate cockpit CSR
-    openssl_csr:
-      path: /etc/pki/tls/misc/cockpit.csr
-      privatekey_path: /etc/pki/tls/private/cockpit.pem
-      common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-      subject_alt_name:
-        - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-        - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
-      organization_name: "{{ cert_organization }}"
-      organizational_unit_name: "Red Hat Openshift PoC"
-      country_name: "{{ cert_country }}"
+    - name: Generate cockpit CSR
+      openssl_csr:
+        path: /etc/pki/tls/misc/cockpit.csr
+        privatekey_path: /etc/pki/tls/private/cockpit.pem
+        common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+        subject_alt_name:
+          - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+          - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
+        organization_name: "{{ cert_organization }}"
+        organizational_unit_name: "Red Hat Openshift PoC"
+        country_name: "{{ cert_country }}"
 
-  - name: Generate Certificate
-    openssl_certificate:
-      path: /etc/pki/tls/certs/cockpit.cert
-      csr_path: /etc/pki/tls/misc/cockpit.csr
-      ownca_path: /etc/pki/tls/certs/oqsCA.cert
-      ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
-      ownca_not_after: +397d
-      provider: ownca
-      force: yes
+    - name: Generate Certificate
+      openssl_certificate:
+        path: /etc/pki/tls/certs/cockpit.cert
+        csr_path: /etc/pki/tls/misc/cockpit.csr
+        ownca_path: /etc/pki/tls/certs/oqsCA.cert
+        ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+        ownca_not_after: +397d
+        provider: ownca
+        force: yes
 
-  - name: Create combined PEM file for Cockpit # noqa no-changed-when
-    shell:
-      cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
-      chdir: /etc/pki/tls/
+    - name: Create combined PEM file for Cockpit # noqa no-changed-when
+      ansible.builtin.shell:
+        cmd: cat certs/cockpit.cert certs/oqsCA.cert private/cockpit.pem > /etc/cockpit/ws-certs.d/cockpit-combined.cert
+        chdir: /etc/pki/tls/
 
-  - name: Set permissions on certificate
-    file:
-      path: /etc/cockpit/ws-certs.d/cockpit-combined.cert
-      owner: root
-      group: cockpit-ws
-      mode: 0640
+    - name: Set permissions on certificate
+      ansible.builtin.file:
+        path: /etc/cockpit/ws-certs.d/cockpit-combined.cert
+        owner: root
+        group: cockpit-ws
+        mode: 0640
 
-  - name: Remove self-signed certs/CAs
-    block:
-      - name: Find the files
-        find:
-          paths: /etc/cockpit/ws-certs.d
-          patterns: 0-*
-        register: files_to_delete
+    - name: Remove self-signed certs/CAs
+      block:
+        - name: Find the files
+          ansible.builtin.find:
+            paths: /etc/cockpit/ws-certs.d
+            patterns: 0-*
+          register: files_to_delete
 
-      - name: Delete the files
-        file:
-          path: "{{ item.path }}"
-          state: absent
-        with_items: "{{ files_to_delete.files }}"
+        - name: Delete the files
+          ansible.builtin.file:
+            path: "{{ item.path }}"
+            state: absent
+          with_items: "{{ files_to_delete.files }}"
 
 - name: Enable the Cockpit interface
-  service:
+  ansible.builtin.service:
     name: cockpit.socket
     state: started
     enabled: yes

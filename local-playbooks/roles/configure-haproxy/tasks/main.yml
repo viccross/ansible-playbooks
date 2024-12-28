@@ -1,57 +1,57 @@
 ---
 # tasks file for configure-haproxy
 - name: Install haproxy
-  yum:
+  ansible.builtin.dnf:
     name:
       - haproxy
       - python3-libsemanage
     state: present
 
-#- name: Patch HAProxy service script
-#  lineinfile:
-#    dest: /usr/lib/systemd/system/haproxy.service
-#    regex: ^ExecStartPre=
-#    line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
+# - name: Patch HAProxy service script
+#   lineinfile:
+#     dest: /usr/lib/systemd/system/haproxy.service
+#     regex: ^ExecStartPre=
+#     line: ExecStartPre=/bin/bash -c 'until host api.{{ cluster_domain_name }}; do sleep 1; done' && /usr/sbin/haproxy -f $CONFIG -c -q
 
 - name: Create certificate for Stats page
   block:
-  - name: Generate haproxy private key
-    openssl_privatekey:
-      path: /etc/pki/tls/private/haproxy.pem
+    - name: Generate haproxy private key
+      openssl_privatekey:
+        path: /etc/pki/tls/private/haproxy.pem
 
-  - name: Generate haproxy CSR
-    openssl_csr:
-      path: /etc/pki/tls/misc/haproxy.csr
-      privatekey_path: /etc/pki/tls/private/haproxy.pem
-      common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-      subject_alt_name:
-        - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
-        - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
-      organization_name: "{{ cert_organization }}"
-      organizational_unit_name: "Red Hat Openshift PoC"
-      country_name: "{{ cert_country }}"
+    - name: Generate haproxy CSR
+      openssl_csr:
+        path: /etc/pki/tls/misc/haproxy.csr
+        privatekey_path: /etc/pki/tls/private/haproxy.pem
+        common_name: "{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+        subject_alt_name:
+          - "DNS:{{ guest_install_hostname }}.{{ cluster_name }}.{{ cluster_base_domain }}"
+          - "DNS:{{ guest_install_hostname }}.{{ cluster_base_domain }}"
+        organization_name: "{{ cert_organization }}"
+        organizational_unit_name: "Red Hat Openshift PoC"
+        country_name: "{{ cert_country }}"
 
-  - name: Generate Certificate
-    openssl_certificate:
-      path: /etc/pki/tls/certs/haproxy.cert
-      csr_path: /etc/pki/tls/misc/haproxy.csr
-      ownca_path: /etc/pki/tls/certs/oqsCA.cert
-      ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
-      ownca_not_after: +397d
-      provider: ownca
-      force: yes
+    - name: Generate Certificate
+      openssl_certificate:
+        path: /etc/pki/tls/certs/haproxy.cert
+        csr_path: /etc/pki/tls/misc/haproxy.csr
+        ownca_path: /etc/pki/tls/certs/oqsCA.cert
+        ownca_privatekey_path: /etc/pki/tls/private/oqsCA.pem
+        ownca_not_after: +397d
+        provider: ownca
+        force: yes
 
-  - name: Create combined PEM file for HAProxy # noqa no-changed-when
-    shell:
-      cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
-      chdir: /etc/pki/tls/
+    - name: Create combined PEM file for HAProxy # noqa no-changed-when
+      ansible.builtin.shell:
+        cmd: cat certs/haproxy.cert certs/oqsCA.cert private/haproxy.pem > /etc/haproxy/haproxy-combined.pem
+        chdir: /etc/pki/tls/
 
-  - name: Set permissions on certificate
-    file:
-      path: /etc/haproxy/haproxy-combined.pem
-      owner: root
-      group: haproxy
-      mode: 0640
+    - name: Set permissions on certificate
+      ansible.builtin.file:
+        path: /etc/haproxy/haproxy-combined.pem
+        owner: root
+        group: haproxy
+        mode: 0640
 
 - name: Allow traffic at 8404 for haproxy
   tags: firewall
@@ -62,8 +62,8 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Allow http traffic
   firewalld:
@@ -73,8 +73,8 @@
     zone: "{{ item }}"
     state: enabled
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Allow https traffic
   firewalld:
@@ -84,8 +84,8 @@
     zone: "{{ item }}"
     state: enabled
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Allow traffic at port 6443
   firewalld:
@@ -95,8 +95,8 @@
     zone: "{{ item }}"
     state: enabled
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Allow traffic at port 22623
   firewalld:
@@ -106,18 +106,18 @@
     zone: "{{ item }}"
     state: enabled
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Create /etc/haproxy
-  file:
+  ansible.builtin.file:
     path: /etc/haproxy
     state: directory
     group: haproxy
     mode: 0755
 
 - name: Create /etc/haproxy/haproxy.cfg
-  template:
+  ansible.builtin.template:
     src: etc/haproxy/haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
     group: haproxy
@@ -130,7 +130,7 @@
     persistent: yes
 
 - name: Start haproxy.service
-  systemd:
+  ansible.builtin.systemd:
     name: haproxy
     state: restarted
     enabled: true

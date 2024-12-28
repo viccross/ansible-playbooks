@@ -1,6 +1,6 @@
 ---
 - name: Install apache httpd
-  yum:
+  ansible.builtin.dnf:
     name:
       - httpd
       - mod_ssl
@@ -19,8 +19,8 @@
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "Red Hat Openshift PoC"
     country_name: "{{ cert_country }}"
-    keyUsage: ["digitalSignature","keyAgreement"]
-    extendedKeyUsage: ["clientAuth","serverAuth"]
+    keyUsage: ["digitalSignature", "keyAgreement"]
+    extendedKeyUsage: ["clientAuth", "serverAuth"]
 
 - name: Generate Certificate
   openssl_certificate:
@@ -33,43 +33,43 @@
     force: yes
 
 - name: Bind httpd to port 8080
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf/httpd.conf
     regexp: ^Listen 80
     line: Listen 8080
 
 - name: Switch Apache SSL port to 8443
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "^Listen"
     line: Listen *:8443
 
 - name: Switch Apache SSL VirtualHost to 8443
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "VirtualHost _default_:443"
     line: <VirtualHost _default_:8443>
 
 - name: Set ServerName and ServerAlias
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf/httpd.conf
     regexp: ^#?ServerName
     line: ServerName {{ guest_install_hostname }}.{{ cluster_domain_name }}
 
 - name: Define CA details for apache, SSLCertificateFile
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "^#?SSLCertificateFile"
     line: SSLCertificateFile /etc/pki/tls/certs/httpd.cert
 
 - name: Define CA details for apache, SSLCertificateKeyFile
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "^#?SSLCertificateKeyFile"
     line: SSLCertificateKeyFile /etc/pki/tls/private/httpd.pem
 
 - name: Define CA details for apache, SSLCertificateChainFile
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     regexp: "^#?SSLCertificateChainFile"
     line: SSLCertificateChainFile /etc/pki/tls/certs/oqsCA.cert
@@ -83,8 +83,8 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
   notify:
     - Restart httpd
 
@@ -97,7 +97,7 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
   notify:
     - Restart httpd

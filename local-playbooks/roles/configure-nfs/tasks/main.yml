@@ -1,6 +1,6 @@
 ---
 - name: Install NFS utilities
-  yum:
+  ansible.builtin.dnf:
     name:
       - nfs-utils
     state: present
@@ -14,8 +14,8 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
   notify: Restart firewalld
 
 - name: Allow RPC traffic
@@ -27,8 +27,8 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
   notify: Restart firewalld
 
 - name: Allow mountd traffic
@@ -40,12 +40,12 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public
   notify: Restart firewalld
 
 - name: Create the export directory
-  file:
+  ansible.builtin.file:
     path: /srv/nfs
     owner: root
     group: root
@@ -54,7 +54,7 @@
   notify: Restart nfs
 
 - name: Set up exports file
-  template:
+  ansible.builtin.template:
     src: exports.j2
     dest: /etc/exports
     owner: root
@@ -63,6 +63,6 @@
   notify: Restart nfs
 
 - name: Enable nfs-server.service
-  service:
+  ansible.builtin.service:
     name: nfs-server.service
     enabled: true

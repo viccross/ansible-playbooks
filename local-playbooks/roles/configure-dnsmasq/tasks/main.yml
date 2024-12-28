@@ -1,39 +1,45 @@
 ---
 # tasks file for configure-dnsmasq
 
-- name: install dnsmasq for dns
-  dnf:
+- name: Install dnsmasq for dns
+  ansible.builtin.dnf:
     name: dnsmasq
     state: present
 
-- name: unmanage resolve.conf in NetworkManager
-  lineinfile:
+- name: Unmanage resolve.conf in NetworkManager
+  ansible.builtin.lineinfile:
     line: dns=none
     dest: /etc/NetworkManager/NetworkManager.conf
     insertafter: "\\[main\\].*"
     regexp: "^dns=.*"
 
-- name: use local dns in resolv.conf
-  blockinfile:
+- name: Use local dns in resolv.conf
+  ansible.builtin.blockinfile:
     dest: /etc/resolv.conf
     insertbefore: BOF
     block: |
       search {{ cluster_domain_name }}
       nameserver {{ bastion_private_ip_address }}
 
-- name: create hosts file
-  template:
+- name: Create hosts file
+  ansible.builtin.template:
     src: etc/hosts-ocp.j2
     dest: /etc/hosts-ocp
+    owner: root
+    group: root
+    mode: 0664
 
-- name: create dnsmasq configuration file
-  template:
+- name: Create dnsmasq configuration file
+  ansible.builtin.template:
     src: etc/dnsmasq.d.ocp.j2
     dest: /etc/dnsmasq.d/ocp.conf
+    owner: root
+    group: root
+    mode: 0664
   notify:
-   - restart dns
+    - restart dns
 
-- name: add dns to firewall
+- name: Add dns to firewall
   firewalld:
     permanent: true
     service: dns
@@ -43,11 +49,10 @@
     - internal
     - public
   notify:
-  - restart firewalld
+    - restart firewalld
 
 - name: Restart dnsmasq.service
-  service:
+  ansible.builtin.service:
     name: dnsmasq.service
     state: restarted
     enabled: true
-
