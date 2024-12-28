@@ -11,7 +11,7 @@
   when: ocp_cluster_lan_name is defined
 
 - name: Add zone to internal interface
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: ZONE=internal
     dest: /etc/sysconfig/network-scripts/ifcfg-{{ guest_internal_nicid }}
     insertbefore: BOF
@@ -52,7 +52,7 @@
     - public
 
 - name: Restart NetworkManager to rezone internal interface
-  systemd:
+  ansible.builtin.systemd:
     name: NetworkManager
     state: restarted
   when: ocp_cluster_lan_name is defined

@@ -2,4 +2,4 @@
 - name: Perform setup of the ICIC deployment capability
   hosts: s390x_bastion_workstation
   roles:
-  - "roles/setup-icic-deployer"
+    - setup-icic-deployer

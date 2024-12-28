@@ -2,4 +2,4 @@
 - name: Update the elan-tools RPM (driven by Jenkins)
   hosts: s390x_bastion_workstation
   roles:
-  - update-elan-tools
+    - update-elan-tools

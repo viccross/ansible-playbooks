@@ -3,4 +3,4 @@
 - name: Configure apache to serve ignition configs and SSL
   hosts: s390x_bastion_workstation
   roles:
-  - configure-apache
+    - configure-apache

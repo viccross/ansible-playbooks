@@ -2,6 +2,6 @@
 - name: Patch the group_vars/all.yml file on the destination with the values for that cluster
   hosts: [s390x_bastion_workstation]
   roles:
-  - kwoodson.yedit
-  - "{{playbook_dir}}/roles/set-groupvars"
+    - kwoodson.yedit
+    - set-groupvars
 

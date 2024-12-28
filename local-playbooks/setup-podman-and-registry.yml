@@ -3,4 +3,4 @@
   #  hosts: s390x_bastion_workstation
   hosts: s390x_bastion_workstation,localhost
   roles:
-  - "roles/setup-podman-and-registry"
+    - setup-podman-and-registry

@@ -4,6 +4,6 @@
 - name: Create guest for OCP Bastion
   hosts: zvm_hosts
   vars:
-  - directory_entry: "{{ lookup('template', 'guest.direct.j2') }}"
+    - directory_entry: "{{ lookup('template', 'guest.direct.j2') }}"
   roles:
-  - create-guest-for-linux
+    - create-guest-for-linux
