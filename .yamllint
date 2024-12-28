@@ -1,0 +1,6 @@
+---
+rules:
+  octal-values:
+    forbid-implicit-octal: false
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
