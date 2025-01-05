@@ -1,48 +1,52 @@
 ---
 # tasks file for create-guest-for-linux
 - name: Create a new directory entry for a Linux guest # noqa no-changed-when command-instead-of-shell
-  shell: /usr/local/bin/smcli icd -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
+  ansible.builtin.shell:
+    cmd: /usr/local/bin/smcli icd -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     stdin: "{{ directory_entry }}"
     executable: /bin/bash
 
 - name: Create the installation ZNETBOOT config # noqa risky-file-permissions
-  template:
+  ansible.builtin.template:
     src: "templates/guest.znetboot.j2"
     dest: "{{ znetboot_cfg_path }}/{{ guest_name }}.znetboot"
     unsafe_writes: true
 
 - name: Create the installation kickstart file
-  template:
+  ansible.builtin.template:
     src: "templates/guest.ks.j2"
     dest: "/srv/install/rhelks/{{ guest_install_hostname }}.ks"
     mode: 0644
 
 - name: Write the parmfile to the reader # noqa no-changed-when command-instead-of-shell command-instead-of-module
-  shell: curl -Q "SITE FIX 132" -T {{ znetboot_cfg_path }}/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user | quote }}:{{ smapi_password | quote }}@{{ smapi_host | quote }}/MAINT.200/  # noqa 204
+  ansible.builtin.shell:
+    cmd: curl -Q "SITE FIX 132" -T {{ znetboot_cfg_path }}/{{ guest_name }}.znetboot -B ftp://MAINT.BY.{{ smapi_user | quote }}:{{ smapi_password | quote }}@{{ smapi_host | quote }}/MAINT.200/  # noqa 204
   args:
     warn: false
   when: use_cmsfs_for_znetboot_cfg is false
 
 - name: IPL a Linux guest # noqa no-changed-when command-instead-of-shell
-  shell: /usr/local/bin/smcli ia -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
+  ansible.builtin.shell:
+    cmd: /usr/local/bin/smcli ia -T {{ guest_name | quote }} -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     executable: /bin/bash
 
 - name: Wait here for a while...
   connection: local
-  wait_for:
+  ansible.builtin.wait_for:
     timeout: 480
 
 - name: Wait for the build to complete
   connection: local
-  wait_for:
+  ansible.builtin.wait_for:
     port: 22
     host: "{{ guest_install_ipaddr }}"
     search_regex: OpenSSH
     delay: 20
 
-- name: Set the real IPL device for a Linux guest # noqa no-changed-when command-instead-of-shell
-  shell: /usr/local/bin/smcli iisd -T {{ guest_name | quote }} -n 200 -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
+- name: Set the real IPL device for a Linux guest # noqa no-changed-when command-instead-of-shell line-length
+  ansible.builtin.shell:
+    cmd: /usr/local/bin/smcli iisd -T {{ guest_name | quote }} -n 200 -H {{ smapi_host | quote }}/44444 -U {{ smapi_user | quote }} -P {{ smapi_password | quote }}
   args:
     executable: /bin/bash

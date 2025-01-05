@@ -1,6 +1,6 @@
 ---
 - name: Ensure all required directories exist on the host
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0755
@@ -23,7 +23,7 @@
     name: community.crypto
 
 - name: Add the cmsfs-fuse-a script
-  copy:
+  ansible.builtin.copy:
     dest: /usr/local/bin/cmsfs-fuse-a
     owner: root
     mode: 0755
@@ -42,7 +42,7 @@
     dump: "0"
 
 - name: Make sure ELAN can access the config disk # noqa no-changed-when
-  shell:
+  ansible.builtin.shell:
     cmd: |
       ldapmodify -Zx -h {{ zvm_internal_ip_address }} -p 389 -D racfid={{ admin_uid }},profiletype=user,o=ibmzvm -w {{ admin_pwd | quote }} <<EOFLDIF
       dn: profilename=LNXMAINT.200,profiletype=VMMDISK,o=ibmzvm
@@ -52,76 +52,76 @@
       EOFLDIF
 
 - name: Add the dasd.conf line for LNXMAINT.200
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/dasd.conf
     insertbefore: EOF
     line: 0.0.0191
 
 - name: Install tools (dependencies of ipconf.sh and LDAPSRVcert)
-  yum:
+  ansible.builtin.dnf:
     name: "{{ item }}"
     state: present
   loop:
-  - ipcalc
-  - x3270-text
+    - ipcalc
+    - x3270-text
 
 - name: Install the ipconf script to local executable path
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0750
   loop:
-  - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
+    - { src: "ipconf.sh.j2", dest: "/usr/local/sbin/ipconf.sh" }
 
 - name: Create systemd services for scripts
-  template:
+  ansible.builtin.template:
     src: "systemd.service.j2"
     dest: "/usr/local/lib/systemd/system/{{ item.servicename }}.service"
     mode: 0644
   loop:
-  - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
+    - { servicename: "zvm-ipconf", cmdpath: "/usr/local/sbin/ipconf.sh", requires: "" }
 
 - name: Ensure old systemd service files don't exist
-  file:
+  ansible.builtin.file:
     path: "/etc/systemd/system/{{ item.servicename }}.service"
     state: absent
   loop:
-  - { servicename: "zvm-ipconf" }
-  - { servicename: "expandfs" }
+    - { servicename: "zvm-ipconf" }
+    - { servicename: "expandfs" }
 
 - name: Enable the systemd services but do not start them now
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ item.servicename }}"
     daemon_reload: true
     state: stopped
     enabled: yes
   loop:
-  - { servicename: "zvm-ipconf" }
-  - { servicename: "expandfs" }
+    - { servicename: "zvm-ipconf" }
+    - { servicename: "expandfs" }
 
 - name: Copy files for the playbook
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   loop:
-  - { src: "create-certificate.yml.j2", dest: "/opt/ansible/tasks/create-certificate.yml" }
-  - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml" }
-  - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml" }
-  - { src: "update-haproxy-rhocp.yml.j2", dest: "/opt/ansible/update-haproxy-rhocp.yml" }
-  - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2" }
-  - { src: "named/zvmesi_domain_name.zone.j2", dest: "/opt/ansible/templates/named/zvmesi_domain_name.zone.j2" }
-  - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2" }
-  - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2" }
-  - { src: "named/masterzone.conf.j2", dest: "/opt/ansible/templates/named/masterzone.conf.j2" }
-  - { src: "named/slavezone.conf.j2", dest: "/opt/ansible/templates/named/slavezone.conf.j2" }
-  - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2" }
-  - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2" }
-  - { src: "haproxy/cluster.cfg.j2", dest: "/opt/ansible/templates/haproxy/cluster.cfg.j2" }
-  - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2" }
-  - { src: "haproxy/rhocp-front.cfg.j2", dest: "/opt/ansible/templates/haproxy/rhocp-front.cfg.j2" }
-  - { src: "settings.env.j2", dest: "/etc/zvmesi/settings.env" }
-  - { src: "grafana.ini.j2", dest: "/opt/ansible/templates/grafana.ini.j2" }
-  - { src: "create-grafana-ini.yml.j2", dest: "/opt/ansible/create-grafana-ini.yml" }
+    - { src: "create-certificate.yml.j2", dest: "/opt/ansible/tasks/create-certificate.yml" }
+    - { src: "regen-certificates.yml.j2", dest: "/opt/ansible/regen-certificates.yml" }
+    - { src: "update-dns-domain.yml.j2", dest: "/opt/ansible/update-dns-domain.yml" }
+    - { src: "update-haproxy-rhocp.yml.j2", dest: "/opt/ansible/update-haproxy-rhocp.yml" }
+    - { src: "named/cluster_domain_name.zone.j2", dest: "/opt/ansible/templates/named/cluster_domain_name.zone.j2" }
+    - { src: "named/zvmesi_domain_name.zone.j2", dest: "/opt/ansible/templates/named/zvmesi_domain_name.zone.j2" }
+    - { src: "named/ibmpoc_internal.zone.j2", dest: "/opt/ansible/templates/named/ibmpoc_internal.zone.j2" }
+    - { src: "named/named.conf.j2", dest: "/opt/ansible/templates/named/named.conf.j2" }
+    - { src: "named/masterzone.conf.j2", dest: "/opt/ansible/templates/named/masterzone.conf.j2" }
+    - { src: "named/slavezone.conf.j2", dest: "/opt/ansible/templates/named/slavezone.conf.j2" }
+    - { src: "named/subnet.in-addr.arpa.zone.j2", dest: "/opt/ansible/templates/named/subnet.in-addr.arpa.zone.j2" }
+    - { src: "named/zvmesi.zone.j2", dest: "/opt/ansible/templates/named/zvmesi.zone.j2" }
+    - { src: "haproxy/cluster.cfg.j2", dest: "/opt/ansible/templates/haproxy/cluster.cfg.j2" }
+    - { src: "haproxy/haproxy.cfg.j2", dest: "/opt/ansible/templates/haproxy/haproxy.cfg.j2" }
+    - { src: "haproxy/rhocp-front.cfg.j2", dest: "/opt/ansible/templates/haproxy/rhocp-front.cfg.j2" }
+    - { src: "settings.env.j2", dest: "/etc/zvmesi/settings.env" }
+    - { src: "grafana.ini.j2", dest: "/opt/ansible/templates/grafana.ini.j2" }
+    - { src: "create-grafana-ini.yml.j2", dest: "/opt/ansible/create-grafana-ini.yml" }

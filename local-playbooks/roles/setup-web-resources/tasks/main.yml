@@ -1,6 +1,6 @@
 ---
 - name: Install php and requisites
-  yum:
+  ansible.builtin.dnf:
     name:
       - php
       - php-json
@@ -10,7 +10,7 @@
     state: present
 
 - name: Create configuration for our external non-SSL VirtualHost
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/httpd/conf.d/nonssl.conf
     create: yes
     mode: "0644"
@@ -34,7 +34,7 @@
           AddDescription "<span class='ds-label'>CoreOS Installation initramfs</span>" rhcos-live-initramfs.*
         </Directory>
         <Directory "/var/www/html/bootfiles">
-          Options +Indexes +FollowSymLinks 
+          Options +Indexes +FollowSymLinks
           Require all granted
           SetEnvIf Request_URI "^/(?:(.+)/)?$" DIRECTORY_NAME=/$1
           <FilesMatch "index.php">
@@ -62,7 +62,7 @@
       </VirtualHost>
 
 - name: Add the Apache configuration for the tools
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/httpd/conf.d/ssl.conf
     insertbefore: "</VirtualHost>"
     block: |
@@ -127,151 +127,136 @@
 #      remote_src: yes
 #    environment: "{{ local_proxy_env | default(omit) }}"
 
-  - name: Download and unzip self-service-password
-    unarchive:
-      src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
-      dest: "{{ webroot }}/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
-
-  - name: Download and unzip service-desk
-    unarchive:
-      src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
-      dest: "{{ webroot }}/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
-
-  - name: Make w3ds directory
-    file:
-      path: "{{ webroot }}/w3ds"
-      state: directory
-      mode: 0755
-
-  - name: Download and unzip w3DS
-    unarchive:
-      src: "/opt/resources/w3ds-6.2.4.zip"
-      dest: "{{ webroot }}/w3ds"
-      creates: "{{ webroot }}/w3ds/w3ds.js"
-
-  - name: Install the web site RPM
-    yum:
-      name: elan-web
-      state: latest
-      update_cache: yes
-    retries: 3
-    delay: 6
-    register: result
-    until: result is not failed
-
-  - name: Set permission on the HTML files to enable Includes
-    file:
-      path: "{{ webroot }}/{{ item }}"
-      owner: root
-      group: apache
-      mode: 0750
-    loop:
-      - ocp-cockpit.html
-      - ocp-console.html
-      - ocp-haproxy.html
-      - ocp-perfkit.html
-      - dashboard.html
-      - metrics.html
-      - gethelp.html
-      - index.html
-      - s_header.html
-      - s_index.html
-      - starticic.html
-      - startocp.html
-
-  - name: Symlink to the CA certificates
-    block:
-    - name: Symlink to the bundle
-      file:
-        src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
-        dest: "{{ webroot }}/ESICABundle.pem"
-        state: link
-    - name: Symlink to the Root CA cert
-      file:
-        src: "/etc/pki/tls/certs/oqsRootCA.cert"
-        dest: "{{ webroot }}/ESIRootCA.pem"
-        state: link
-    - name: Symlink to the Intermediate CA cert
-      file:
-        src: "/etc/pki/tls/certs/oqsCA.cert"
-        dest: "{{ webroot }}/ESICA.pem"
-        state: link
-
-  - name: Patch the basic stats script, if needed
-    lineinfile:
-      line: my $vmcpCmd="/usr/local/bin/vmcp";              # the vmcp command
-      dest: "{{ webroot }}/scripts/metrics.pl"
-      regexp: "^my \\$vmcpCmd.*"
-    when: ansible_architecture != "s390x"
-
-  - name: Install the basic stats script to local executable path
-    shell:
-      cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
-      removes: "{{ webroot }}/scripts"
-
-  - name: Set permission on metrics.pl
-    file:
-      path: /usr/local/sbin/metrics.pl
-      owner: root
-      mode: 0750
-
-  - name: Enable running metrics script via cron
-    cron:
-      name: Run metrics.pl
-      user: root
-      job: "/usr/local/sbin/metrics.pl"
-      cron_file: metrics
-
-  - name: Set PATH variable for metrics crontab
-    cronvar:
-      cron_file: metrics
-      name: PATH
-      value: /usr/sbin:/usr/bin
-
-  - name: Set MAILTO variable for metrics crontab
-    cronvar:
-      cron_file: metrics
-      name: MAILTO
-      value: root
-
-  - name: Create/set permission on directories - secrets, Smarty template cache, and install
-    file:
-      path: "{{ item }}"
-      owner: apache
-      mode: 0750
-      setype: httpd_sys_rw_content_t
-      state: directory
-    loop:
-      - "{{ webroot }}/.secret"
-      - "{{ webroot }}/service-desk-racf-master/templates_c"
-      - "{{ webroot }}/install"
-      - "{{ webroot }}/.cluster"
-      - "{{ webroot }}/.clustertmp"
-
-  - name: Create/set permission on content directory
-    file:
-      path: /opt/content
-      owner: apache
-      group: support
-      mode: 0770
-      setype: httpd_sys_rw_content_t
-      state: directory
-
-  - name: Create and set perms on incrond trigger files
-    file:
-      path: "{{ webroot }}/.secret/{{ item }}"
-      owner: apache
-      group: root
-      mode: 0660
-      setype: httpd_sys_rw_content_t
-      state: touch
-    loop:
-      - ".ocp4_pull_secret"
-      - ".icicver"
+    - name: Download and unzip self-service-password
+      ansible.builtin.unarchive:
+        src: "https://github.com/viccross/self-service-password-racf/archive/master.zip"
+        dest: "{{ webroot }}/"
+        remote_src: yes
+      environment: "{{ local_proxy_env | default(omit) }}"
+    - name: Download and unzip service-desk
+      ansible.builtin.unarchive:
+        src: "https://github.com/viccross/service-desk-racf/archive/master.zip"
+        dest: "{{ webroot }}/"
+        remote_src: yes
+      environment: "{{ local_proxy_env | default(omit) }}"
+    - name: Make w3ds directory
+      ansible.builtin.file:
+        path: "{{ webroot }}/w3ds"
+        state: directory
+        mode: 0755
+    - name: Download and unzip w3DS
+      ansible.builtin.unarchive:
+        src: "/opt/resources/w3ds-6.2.4.zip"
+        dest: "{{ webroot }}/w3ds"
+        creates: "{{ webroot }}/w3ds/w3ds.js"
+    - name: Install the web site RPM # noqa package-latest
+      ansible.builtin.dnf:
+        name: elan-web
+        state: latest
+        update_cache: yes
+      retries: 3
+      delay: 6
+      register: result
+      until: result is not failed
+    - name: Set permission on the HTML files to enable Includes
+      ansible.builtin.file:
+        path: "{{ webroot }}/{{ item }}"
+        owner: root
+        group: apache
+        mode: 0750
+      loop:
+        - ocp-cockpit.html
+        - ocp-console.html
+        - ocp-haproxy.html
+        - ocp-perfkit.html
+        - dashboard.html
+        - metrics.html
+        - gethelp.html
+        - index.html
+        - s_header.html
+        - s_index.html
+        - starticic.html
+        - startocp.html
+    - name: Symlink to the CA certificates
+      block:
+        - name: Symlink to the bundle
+          ansible.builtin.file:
+            src: "/etc/pki/tls/certs/oqsCA.certs.bundle"
+            dest: "{{ webroot }}/ESICABundle.pem"
+            state: link
+        - name: Symlink to the Root CA cert
+          ansible.builtin.file:
+            src: "/etc/pki/tls/certs/oqsRootCA.cert"
+            dest: "{{ webroot }}/ESIRootCA.pem"
+            state: link
+        - name: Symlink to the Intermediate CA cert
+          ansible.builtin.file:
+            src: "/etc/pki/tls/certs/oqsCA.cert"
+            dest: "{{ webroot }}/ESICA.pem"
+            state: link
+    - name: Patch the basic stats script, if needed
+      ansible.builtin.lineinfile:
+        line: my $vmcpCmd="/usr/local/bin/vmcp";              # the vmcp command
+        dest: "{{ webroot }}/scripts/metrics.pl"
+        regexp: "^my \\$vmcpCmd.*"
+      when: ansible_architecture != "s390x"
+    - name: Install the basic stats script to local executable path
+      ansible.builtin.shell:
+        cmd: "mv {{ webroot }}/scripts/metrics.pl /usr/local/sbin/ && rmdir {{ webroot }}/scripts"
+        removes: "{{ webroot }}/scripts"
+    - name: Set permission on metrics.pl
+      ansible.builtin.file:
+        path: /usr/local/sbin/metrics.pl
+        owner: root
+        mode: 0750
+    - name: Enable running metrics script via cron
+      ansible.builtin.cron:
+        name: Run metrics.pl
+        user: root
+        job: "/usr/local/sbin/metrics.pl"
+        cron_file: metrics
+    - name: Set PATH variable for metrics crontab
+      cronvar:
+        cron_file: metrics
+        name: PATH
+        value: /usr/sbin:/usr/bin
+    - name: Set MAILTO variable for metrics crontab
+      cronvar:
+        cron_file: metrics
+        name: MAILTO
+        value: root
+    - name: Create/set permission on directories - secrets, Smarty template cache, and install
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: apache
+        mode: 0750
+        setype: httpd_sys_rw_content_t
+        state: directory
+      loop:
+        - "{{ webroot }}/.secret"
+        - "{{ webroot }}/service-desk-racf-master/templates_c"
+        - "{{ webroot }}/install"
+        - "{{ webroot }}/.cluster"
+        - "{{ webroot }}/.clustertmp"
+    - name: Create/set permission on content directory
+      ansible.builtin.file:
+        path: /opt/content
+        owner: apache
+        group: support
+        mode: 0770
+        setype: httpd_sys_rw_content_t
+        state: directory
+    - name: Create and set perms on incrond trigger files
+      ansible.builtin.file:
+        path: "{{ webroot }}/.secret/{{ item }}"
+        owner: apache
+        group: root
+        mode: 0660
+        setype: httpd_sys_rw_content_t
+        state: touch
+      loop:
+        - ".ocp4_pull_secret"
+        - ".icicver"
 
 #  - name: fix path to Smarty in config file
 #    lineinfile:
@@ -279,20 +264,19 @@
 #      regexp: "SMARTY"
 #      line: define("SMARTY", "/usr/share/php/Smarty/Smarty.class.php");
 
-  - name: Create config.inc.local.php for self-service-password
-    template:
-      src: self-service-password/config.inc.local.php.j2
-      dest: "{{ webroot }}/self-service-password-racf-master/conf/config.inc.local.php"
-      mode: 0644
-
-  - name: Create config.inc.local.php for service-desk-racf
-    template:
-      src: service-desk-racf/config.inc.local.php.j2
-      dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
-      mode: 0644
+    - name: Create config.inc.local.php for self-service-password
+      ansible.builtin.template:
+        src: self-service-password/config.inc.local.php.j2
+        dest: "{{ webroot }}/self-service-password-racf-master/conf/config.inc.local.php"
+        mode: 0644
+    - name: Create config.inc.local.php for service-desk-racf
+      ansible.builtin.template:
+        src: service-desk-racf/config.inc.local.php.j2
+        dest: "{{ webroot }}/service-desk-racf-master/conf/config.inc.local.php"
+        mode: 0644
 
 - name: Prime the ocp-version file with 'default' version
-  copy:
+  ansible.builtin.copy:
     content: "4.8"
     dest: "{{ webroot }}/ocp-version"
     owner: apache
@@ -302,17 +286,16 @@
 
 - name: Patch php.ini for uploads
   block:
-  - name: Patch post_max_size
-    lineinfile:
-      dest: /etc/php.ini
-      regex: ^post_max_size
-      line: post_max_size = 0
-  - name: Patch upload_max_filesize
-    lineinfile:
-      dest: /etc/php.ini
-      regex: ^upload_max_filesize
-      line: upload_max_filesize = 0
-
+    - name: Patch post_max_size
+      ansible.builtin.lineinfile:
+        dest: /etc/php.ini
+        regex: ^post_max_size
+        line: post_max_size = 0
+    - name: Patch upload_max_filesize
+      ansible.builtin.lineinfile:
+        dest: /etc/php.ini
+        regex: ^upload_max_filesize
+        line: upload_max_filesize = 0
 
 - name: Permit SELinux access to network from Apache (for reverse proxy)
   seboolean:
@@ -327,13 +310,13 @@
     persistent: yes
 
 - name: Restart httpd
-  service:
+  ansible.builtin.service:
     name: httpd.service
     state: restarted
     enabled: yes
 
 - name: Restart php-fpm
-  service:
+  ansible.builtin.service:
     name: php-fpm.service
     state: restarted
     enabled: yes

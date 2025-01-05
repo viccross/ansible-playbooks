@@ -1,6 +1,6 @@
 ---
 - name: Copy the vmcp script
-  copy:
+  ansible.builtin.copy:
     src: vmcp
     dest: /usr/local/bin/vmcp
     owner: root
@@ -9,7 +9,7 @@
   when: ansible_architecture != "s390x"
 
 - name: Add or modify the internal YUM repo
-  yum_repository:
+  ansible.builtin.yum_repository:
     name: zvmesi
     description: z/VM ESI Support Code
     baseurl: "{{ local_repo_uri }}"
@@ -18,55 +18,58 @@
 
 - name: Install EPEL repository
   block:
-  - name: Install EPEL RPM
-    yum:
-      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-      state: present
-    environment: "{{ local_proxy_env | default(omit) }}"
-  - name: Patch YUM/DNF for the proxy, if set
-    ini_file:
-      path: /etc/dnf/dnf.conf
-      section: main
-      option: proxy
-      value: "{{ local_proxy_env.https_proxy }}"
-      no_extra_spaces: yes
-      mode: 0644
-    when: local_proxy_env is defined
+    - name: Install EPEL RPM
+      ansible.builtin.dnf:
+        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        state: present
+      environment: "{{ local_proxy_env | default(omit) }}"
+    - name: Patch YUM/DNF for the proxy, if set
+      ini_file:
+        path: /etc/dnf/dnf.conf
+        section: main
+        option: proxy
+        value: "{{ local_proxy_env.https_proxy }}"
+        no_extra_spaces: yes
+        mode: 0644
+      when: local_proxy_env is defined
 
 - name: Install nfs-utils
-  yum:
+  ansible.builtin.dnf:
     name: nfs-utils
     state: present
 
 - name: Set up local NFS in Vic's testlab
   when: ansible_architecture != "s390x"
   block:
-  - name: Create the directory for mounting the repodir
-    file:
-      path: /srv/repodir
-      state: directory
-  - name: Mount the dnf-local NFS directory
-    mount:
-      src: 192.168.124.1:/srv/ml2/dnf-local
-      path: /srv/repodir
-      opts: rw,sync,hard
-      state: mounted
-      fstype: nfs
-    
-#- name: Install and configure dnf-local-plugin
-#  block:
-#  - name: Add the plugin
-#    yum:
-#      name: python3-dnf-plugin-local
-#      state: present
-#  - name: Configure the plugin
-#    lineinfile:
-#      line: repodir = /srv/repodir
-#      dest: /etc/dnf/plugins/local.conf
-#      regexp: "repodir"
+    - name: Create the directory for mounting the repodir
+      ansible.builtin.file:
+        path: /srv/repodir
+        state: directory
+        owner: root
+        group: root
+        mode: 0775
+    - name: Mount the dnf-local NFS directory
+      mount:
+        src: 192.168.124.1:/srv/ml2/dnf-local
+        path: /srv/repodir
+        opts: rw,sync,hard
+        state: mounted
+        fstype: nfs
 
-- name: Install base prerequisites
-  yum:
+# - name: Install and configure dnf-local-plugin
+#   block:
+#   - name: Add the plugin
+#     yum:
+#       name: python3-dnf-plugin-local
+#       state: present
+#   - name: Configure the plugin
+#     lineinfile:
+#       line: repodir = /srv/repodir
+#       dest: /etc/dnf/plugins/local.conf
+#       regexp: "repodir"
+
+- name: Install base prerequisites # noqa package-latest
+  ansible.builtin.dnf:
     name:
       - ansible
       - unzip
@@ -89,7 +92,7 @@
     state: latest
 
 - name: Activate the autofs service
-  systemd:
+  ansible.builtin.systemd:
     name: autofs
     state: started
     enabled: yes

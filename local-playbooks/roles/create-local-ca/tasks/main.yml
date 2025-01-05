@@ -26,7 +26,7 @@
     provider: ownca
 
 - name: Add CA certificate to the local trust store
-  file:
+  ansible.builtin.file:
     src: "{{ ca_cert_path }}/oqsCA-{{ cluster_base_domain }}.cert"
     dest: "{{ ca_trust_path }}/oqsCA-{{ cluster_base_domain }}.cert"
     state: link

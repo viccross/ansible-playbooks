@@ -1,6 +1,6 @@
 ---
-- name: Update the elan-tools RPM
-  yum:
+- name: Update the elan-tools RPM # noqa package-latest
+  ansible.builtin.dnf:
     name: elan-tools
     state: latest
     update_cache: yes

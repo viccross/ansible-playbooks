@@ -15,7 +15,7 @@
       - digitalSignature
       - keyAgreement
       - keyEncipherment
-    extendedKeyUsage: ["clientAuth","serverAuth"]
+    extendedKeyUsage: ["clientAuth", "serverAuth"]
     subject_alt_name: "DNS:zVM.ibmpoc.internal,IP:{{ zvm_internal_ip_address }}"
 
 - name: Generate Certificate

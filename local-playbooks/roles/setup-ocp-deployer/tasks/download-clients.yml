@@ -5,13 +5,13 @@
 # incron job can pick it up
 #
 - name: Create destination directory if needed
-  file:
+  ansible.builtin.file:
     path: "/usr/local/bin/{{ item }}"
     state: directory
     mode: 0755
 
 - name: Download release.txt
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ openshift_clients_url }}/{{ item }}/release.txt"
     dest: "/usr/local/bin/{{ item }}/"
     mode: 0644
@@ -19,25 +19,25 @@
 
 - name: Download and set permissions for openshift-install
   block:
-  - name: Download and unzip openshift-install
-    unarchive:
-      src: "{{ openshift_clients_url }}/{{ item }}/openshift-install-linux.tar.gz"
-      dest: "/usr/local/bin/{{ item }}/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
-  - name: Set permissions for ocp installer
-    file:
-      path: "/usr/local/bin/{{ item }}/openshift-install"
-      mode: 0755
+    - name: Download and unzip openshift-install
+      ansible.builtin.unarchive:
+        src: "{{ openshift_clients_url }}/{{ item }}/openshift-install-linux.tar.gz"
+        dest: "/usr/local/bin/{{ item }}/"
+        remote_src: yes
+      environment: "{{ local_proxy_env | default(omit) }}"
+    - name: Set permissions for ocp installer
+      ansible.builtin.file:
+        path: "/usr/local/bin/{{ item }}/openshift-install"
+        mode: 0755
 
 - name: Download and set permissions for openshift-client
   block:
-  - name: Download and unzip openshift-client
-    unarchive:
-      src: "{{ openshift_clients_url }}/{{ item }}/openshift-client-linux.tar.gz"
-      dest: "/usr/local/bin/{{ item }}/"
-      remote_src: yes
-    environment: "{{ local_proxy_env | default(omit) }}"
+    - name: Download and unzip openshift-client
+      ansible.builtin.unarchive:
+        src: "{{ openshift_clients_url }}/{{ item }}/openshift-client-linux.tar.gz"
+        dest: "/usr/local/bin/{{ item }}/"
+        remote_src: yes
+      environment: "{{ local_proxy_env | default(omit) }}"
 #  - name: set permissions for ocp client
 #    file:
 #      path: "/usr/local/bin/{{ item }}/oc"
@@ -46,8 +46,10 @@
 # using command because the community 'alternatives' module does not
 # support slave definitions
 - name: Define alternatives for the version downloaded # noqa no-changed-when
-  command: "alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
+  ansible.builtin.command:
+    cmd: "alternatives --install /usr/local/bin/openshift-install openshift-install /usr/local/bin/{{ item }}/openshift-install {{ item.split('.')[1] }} \
             --slave /usr/local/bin/oc oc /usr/local/bin/{{ item }}/oc --slave /usr/local/bin/kubectl kubectl /usr/local/bin/{{ item }}/kubectl"
 
 - name: Set alternative to auto mode # noqa no-changed-when
-  command: "alternatives --auto openshift-install "
+  ansible.builtin.command:
+    cmd: "alternatives --auto openshift-install "

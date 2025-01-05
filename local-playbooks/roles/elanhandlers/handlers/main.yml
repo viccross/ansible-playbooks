@@ -1,68 +1,68 @@
 ---
 # handlers file for our playbook(s)
 - name: Restart squid.service
-  service:
+  ansible.builtin.service:
     name: squid.service
     state: restarted
   listen: "Restart squid"
 
 - name: Restart named-chroot.service
-  service:
+  ansible.builtin.service:
     name: named-chroot.service
     state: restarted
   listen: "Restart dns"
 
 - name: Restart firewalld.service
-  service:
+  ansible.builtin.service:
     name: firewalld.service
     state: restarted
   listen: "Restart firewalld"
 
 - name: Restart nfs-server
-  service:
+  ansible.builtin.service:
     name: nfs-server.service
     state: restarted
     enabled: yes
   listen: "Restart nfs"
 
 - name: Restart httpd.service
-  service:
+  ansible.builtin.service:
     name: httpd.service
     state: restarted
     enabled: yes
   listen: "Restart httpd"
 
 - name: Restart haproxy.service
-  service:
+  ansible.builtin.service:
     name: haproxy.service
     state: restarted
   listen: "Restart haproxy"
 
 - name: Restart chronyd.service
-  service:
+  ansible.builtin.service:
     name: chronyd.service
     state: restarted
   listen: "Restart chronyd"
 
 - name: Enable incrond.service
-  systemd:
+  ansible.builtin.systemd:
     name: incrond
     state: stopped
     enabled: yes
   listen: "Enable incrond"
 
-- name: Update ca trust
-  command:
+- name: Update ca trust # noqa no-changed-when
+  ansible.builtin.command:
     cmd: update-ca-trust
   listen: "Update ca trust"
 
 - name: Restart rsyslog.service
-  systemd:
+  ansible.builtin.systemd:
     name: rsyslog
     state: restarted
   listen: "Restart syslog"
 
 - name: Reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
   listen: "Reload systemd"

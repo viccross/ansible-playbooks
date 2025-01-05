@@ -1,6 +1,6 @@
 ---
 - name: Copy the CA key to the Bastion host
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
@@ -11,7 +11,7 @@
     - { src: "{{ root_ca_cert_path }}/oqsRootCA.cert", dest: "{{ ca_cert_path }}/" }
 
 - name: Add the root certs to the trust store
-  file:
+  ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     state: link

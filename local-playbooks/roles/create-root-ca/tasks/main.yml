@@ -23,11 +23,10 @@
     csr_path: "{{ ca_csr_path }}/oqsRootCA.csr"
     provider: selfsigned
 
-#- name: add CA certificate to the local trust store
-#  file:
-#    src: /etc/pki/tls/certs/oqsRootCA.cert
-#    dest: /etc/pki/ca-trust/source/anchors/oqsRootCA.cert
-#    state: link
-#  notify:
-#    - update ca trust
-
+# - name: add CA certificate to the local trust store
+#   file:
+#     src: /etc/pki/tls/certs/oqsRootCA.cert
+#     dest: /etc/pki/ca-trust/source/anchors/oqsRootCA.cert
+#     state: link
+#   notify:
+#     - update ca trust

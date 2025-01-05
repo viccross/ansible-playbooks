@@ -1,11 +1,11 @@
 ---
 - name: Install Mosquitto and Loki
-  dnf:
+  ansible.builtin.dnf:
     name: "{{ item }}"
     state: present
   loop:
-  - mosquitto
-  - elan-loki
+    - mosquitto
+    - elan-loki
 
 - name: Allow traffic at port 1883 for Mosquitto
   firewalld:
@@ -15,11 +15,11 @@
     zone: "{{ item }}"
     state: enabled
   with_items:
-  - internal
-  - public
+    - internal
+    - public
 
 - name: Configure Mosquitto
-  copy:
+  ansible.builtin.copy:
     dest: /etc/mosquitto/mosquitto.conf
     content: |
       # Configuration of Mosquitto
@@ -34,7 +34,7 @@
     backup: yes
 
 - name: Create directories for provisioning Grafana
-  file:
+  ansible.builtin.file:
     path: /etc/grafana/provisioning/{{ item }}
     state: directory
     owner: root
@@ -45,7 +45,7 @@
     - datasources
 
 - name: Create provisioning file for Loki datasource
-  copy:
+  ansible.builtin.copy:
     dest: /etc/grafana/provisioning/datasources/elanloki.yaml
     content: |
       apiVersion: 1
@@ -60,7 +60,7 @@
     group: root
 
 - name: Create provisioning file for Loki dashboard
-  copy:
+  ansible.builtin.copy:
     dest: /etc/grafana/provisioning/dashboards/zVMlogs.yaml
     content: |
       apiVersion: 1
@@ -77,41 +77,41 @@
     group: root
 
 - name: Create files for logging dashboard provisioning
-  copy:
+  ansible.builtin.copy:
     src: dashboard-{{ item }}.json
     dest: /etc/grafana/dashboards/logging/
     mode: 0644
     owner: root
     group: root
   loop:
-  - logs
-  - icic
+    - logs
+    - icic
 
 - name: Create the simple Promtail instance configs
-  template:
+  ansible.builtin.template:
     src: promtail-cfg.yaml.j2
     dest: /etc/loki/promtail-{{ item.job }}.yaml
     mode: 0644
     owner: root
     group: root
   loop:
-  - { job: "httpd",  path: "/var/log/httpd/*_log" }
-  - { job: "phpfpm", path: "/var/log/php-fpm/*.log" }
-  - { job: "squid",  path: "/var/log/squid/*.log" }
+    - { job: "httpd", path: "/var/log/httpd/*_log" }
+    - { job: "phpfpm", path: "/var/log/php-fpm/*.log" }
+    - { job: "squid", path: "/var/log/squid/*.log" }
 
 - name: Create the sd Promtail instance configs
-  template:
+  ansible.builtin.template:
     src: promtail-cfg-sd.yaml.j2
     dest: /etc/loki/promtail-{{ item.job }}.yaml
     mode: 0644
     owner: root
     group: root
   loop:
-  - { job: "icicbuild" }
-  - { job: "varlog" }
+    - { job: "icicbuild" }
+    - { job: "varlog" }
 
 - name: Create the YAML files for Promtail sd instances
-  template:
+  ansible.builtin.template:
     src: promtail-cfg-sd-multi.yaml.j2
     dest: /etc/loki/promtail-{{ item.file }}-sd.yaml
     mode: 0644
@@ -123,30 +123,30 @@
         - { name: "icicbuild", path: "/var/www/html/iciclog*.txt" }
     - file: "varlog"
       jobs:
-        - { name: "dnflogs",   path: "/var/log/dnf*log" }
+        - { name: "dnflogs", path: "/var/log/dnf*log" }
         - { name: "hawkeylog", path: "/var/log/hawkey.log" }
-        - { name: "kdumplog",  path: "/var/log/kdump.log" }
-        - { name: "lastlog",   path: "/var/log/lastlog" }
+        - { name: "kdumplog", path: "/var/log/kdump.log" }
+        - { name: "lastlog", path: "/var/log/lastlog" }
 
 - name: Create Promtail config for journald and syslog
-  copy:
+  ansible.builtin.copy:
     src: promtail-cfg-{{ item }}.yaml
     dest: /etc/loki/promtail-{{ item }}.yaml
     mode: 0644
     owner: root
     group: root
   loop:
-  - journal
-  - syslog
+    - journal
+    - syslog
 
 - name: Remove grafana-server from Loki service dependencies (if present)
-  replace:
+  ansible.builtin.replace:
     path: /usr/local/lib/systemd/system/loki.service
     regexp: 'grafana-server.service'
     replace: ' '
 
 - name: Create systemd unit template
-  copy:
+  ansible.builtin.copy:
     src: promtail.service
     dest: /usr/local/lib/systemd/system/promtail@.service
     mode: 0644
@@ -161,7 +161,7 @@
     state: present
 
 - name: Create and enable systemd units for Promtail
-  systemd:
+  ansible.builtin.systemd:
     name: promtail@{{ item }}
     state: started
     enabled: true
@@ -197,9 +197,9 @@
     - public
 
 - name: Configure local Rsyslog for forwarding
-  copy:
+  ansible.builtin.copy:
     content: |
-      # Rsyslog config file 
+      # Rsyslog config file
       module(load="imudp")
 
       ruleset(name="promtail"){

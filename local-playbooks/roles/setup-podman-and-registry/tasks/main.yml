@@ -2,7 +2,7 @@
 #
 
 - name: Install podman with Cockpit support, plus jq for JSON things
-  yum:
+  ansible.builtin.dnf:
     name:
       - podman
       - cockpit-podman
@@ -12,58 +12,58 @@
     state: present
 
 - name: Set up registry directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: root
     group: root
     mode: "0755"
   loop:
-  - "/opt/registry/auth"
-  - "/opt/registry/certs"
-  - "/opt/registry/data"
+    - "/opt/registry/auth"
+    - "/opt/registry/certs"
+    - "/opt/registry/data"
 
 - name: Create a certificate for the registry
   block:
-  - name: Generate a private key for Registry
-    openssl_privatekey:
-      path: "{{ ca_key_path }}/registry.pem"
-      group: support
-      mode: 0640
-  - name: Generate CSR for Registry
-    openssl_csr:
-      path: "{{ ca_csr_path }}/registry.csr"
-      privatekey_path: "{{ ca_key_path }}/registry.pem"
-      common_name: "{{ build_hostname }}"
-      organization_name: "IBM"
-      organizational_unit_name: "IBM z/VM for Red Hat OpenShift PoC"
-      country_name: "US"
-      keyUsage: ["digitalSignature","keyAgreement"]
-      extendedKeyUsage: ["clientAuth","serverAuth"]
-  - name: Generate Certificate
-    openssl_certificate:
-      path: "{{ ca_cert_path }}/registry.cert"
-      csr_path: "{{ ca_csr_path }}/registry.csr"
-      ownca_path: "{{ ca_cert_path }}/oqsCA.cert"
-      ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
-      ownca_not_after: +397d
-      provider: ownca
-      force: yes
-  - name: Create the bundle for Registry # noqa no-changed-when
-    shell:
-      cmd: cat registry.cert oqsCA.cert oqsRootCA.cert > /opt/registry/certs/registry.cert
-      chdir: "{{ ca_cert_path }}"
-  - name: Copy the key to the Registry directory
-    copy:
-      src: /etc/pki/tls/private/registry.pem
-      remote_src: yes
-      dest: /opt/registry/certs/registry.key
-      owner: root
-      group: root
-      mode: 0440
+    - name: Generate a private key for Registry
+      openssl_privatekey:
+        path: "{{ ca_key_path }}/registry.pem"
+        group: support
+        mode: 0640
+    - name: Generate CSR for Registry
+      openssl_csr:
+        path: "{{ ca_csr_path }}/registry.csr"
+        privatekey_path: "{{ ca_key_path }}/registry.pem"
+        common_name: "{{ build_hostname }}"
+        organization_name: "IBM"
+        organizational_unit_name: "IBM z/VM for Red Hat OpenShift PoC"
+        country_name: "US"
+        keyUsage: ["digitalSignature", "keyAgreement"]
+        extendedKeyUsage: ["clientAuth", "serverAuth"]
+    - name: Generate Certificate
+      openssl_certificate:
+        path: "{{ ca_cert_path }}/registry.cert"
+        csr_path: "{{ ca_csr_path }}/registry.csr"
+        ownca_path: "{{ ca_cert_path }}/oqsCA.cert"
+        ownca_privatekey_path: "{{ ca_key_path }}/oqsCA.pem"
+        ownca_not_after: +397d
+        provider: ownca
+        force: yes
+    - name: Create the bundle for Registry # noqa no-changed-when
+      ansible.builtin.shell:
+        cmd: cat registry.cert oqsCA.cert oqsRootCA.cert > /opt/registry/certs/registry.cert
+        chdir: "{{ ca_cert_path }}"
+    - name: Copy the key to the Registry directory
+      ansible.builtin.copy:
+        src: /etc/pki/tls/private/registry.pem
+        remote_src: yes
+        dest: /opt/registry/certs/registry.key
+        owner: root
+        group: root
+        mode: 0440
 
 - name: Create environment file
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /opt/registry/ESIRegistry.env
     mode: 0644
     insertbefore: BOF
@@ -75,9 +75,9 @@
       REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.cert
       REGISTRY_HTTP_TLS_KEY=/certs/registry.key
 
-#- name: create the registry htpasswd file # noqa no-free-form
-#  command:
-#    cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
+# - name: create the registry htpasswd file # noqa no-free-form
+#   command:
+#     cmd: htpasswd -Bb -c /opt/registry/auth/htpasswd ESIreguser secretESIpassword
 - name: Create the registry htpasswd file
   htpasswd:
     path: /opt/registry/auth/htpasswd
@@ -95,7 +95,7 @@
     name: docker.io/library/registry:2.8
 
 - name: Create systemd service for interface reconfiguration # noqa jinja[spacing]
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /usr/local/lib/systemd/system/podman-registry.service
     mode: 0644
     insertbefore: BOF
@@ -132,5 +132,5 @@
     immediate: true
     permanent: true
   with_items:
-  - internal
-  - public
+    - internal
+    - public

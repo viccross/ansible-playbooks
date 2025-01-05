@@ -1,6 +1,6 @@
 ---
 - name: Install some dependencies
-  yum:
+  ansible.builtin.dnf:
     name:
       - python36
       - python3-magic
@@ -27,21 +27,21 @@
     - public
 
 - name: Patch chrony.conf to allow connections
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/chrony.conf
     regexp: '^#?allow '
     line: 'allow {{ subnet_cidr }}'
   notify: Restart chronyd
 
 - name: Fetch the filetranspile tool
-  get_url:
+  ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/ashcrow/filetranspiler/master/filetranspile
     dest: /usr/local/bin/filetranspile
     mode: 0755
   environment: "{{ local_proxy_env | default(omit) }}"
 
 - name: Ensure the Ansible playbook (and other) directories exist on the host
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0755
@@ -55,196 +55,201 @@
     - /opt/registry/certs
     - /opt/rhocp/install
 
-#- name: Download and set permissions for openshift-install and oc
-#  include_tasks: download-clients.yml
-#  loop:
-#    - "stable-4.8"
-#  when: ansible_architecture == "s390x"
+# - name: Download and set permissions for openshift-install and oc
+#   include_tasks: download-clients.yml
+#   loop:
+#     - "stable-4.8"
+#   when: ansible_architecture == "s390x"
 
-#- name: Create openshift workdir
-#  file:
-#    path: "{{ workdir }}"
-#    state: "directory"
-#    mode: 0755
+# - name: Create openshift workdir
+#   file:
+#     path: "{{ workdir }}"
+#     state: "directory"
+#     mode: 0755
 
 - name: Set up SSH for ICIC - create keypair
-  command: ssh-keygen -t rsa -b 4096 -N '' -C 'ELAN-Admin-RSA' -f /root/.ssh/id_rsa_icic
+  ansible.builtin.command:
+    cmd: ssh-keygen -t rsa -b 4096 -N '' -C 'ELAN-Admin-RSA' -f /root/.ssh/id_rsa_icic
   args:
     creates: ~/.ssh/id_rsa_icic
 - name: Set up SSH for Ansible - create keypair
-  command: ssh-keygen -t ed25519 -N '' -C 'ELAN-Admin' -f /root/.ssh/id_ed25519
+  ansible.builtin.command:
+    cmd: ssh-keygen -t ed25519 -N '' -C 'ELAN-Admin' -f /root/.ssh/id_ed25519
   args:
     creates: ~/.ssh/id_ed25519
 - name: Set up SSH for Ansible - slurp ssh pubkey
   tags: config
-  slurp:
+  ansible.builtin.slurp:
     src: ~/.ssh/id_ed25519.pub
   register: bastion_pubkey
 - name: Set up SSH for Ansible - drop public key into authorized_keys
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ bastion_pubkey['content'] | b64decode }}"
     dest: ~/.ssh/authorized_keys
     state: present
     create: true
+    owner: root
+    group: root
+    mode: 0640
 
 - name: Make ~/.kube directory
-  file:
+  ansible.builtin.file:
     path: ~/.kube
     state: directory
     mode: 0750
 
 - name: Copy files for the playbook
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   loop:
-  - { src: install-config.yaml.j2, dest: /opt/ansible/roles/create-cluster/templates/install-config.yaml.j2 }
-  - { src: guest.direct.j2, dest: /opt/ansible/roles/create-cluster/templates/guest.direct.j2 }
-  - { src: ocpdflt.direct.j2, dest: /opt/ansible/roles/create-cluster/templates/ocpdflt.direct.j2 }
-  - { src: create-guest-task.yml.j2, dest: /opt/ansible/tasks/create-guest.yml }
-  - { src: delete-guest-task.yml.j2, dest: /opt/ansible/tasks/delete-guest.yml }
-  - { src: boot-guest-task.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/boot-guest.yml }
-  - { src: guest-IPLdev-task.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/guest-IPLdev.yml }
-  - { src: create-cluster-main.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/main.yml }
-  - { src: create-cluster.yml.j2, dest: /opt/ansible/create-cluster.yml }
-  - { src: defaults/main.yml, dest: /opt/ansible/roles/create-cluster/defaults/main.yml }
-  - { src: cluster-guests-create.yml.j2, dest: /opt/ansible/cluster-guests-create.yml }
-  - { src: cluster-guests-delete.yml.j2, dest: /opt/ansible/cluster-guests-delete.yml }
-  - { src: ocp-add-domain-dns.yml.j2, dest: /opt/ansible/ocp-add-domain-dns.yml }
-  - { src: chrony.conf.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony.conf.j2 }
-  - { src: chrony-manifest.yaml.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony-manifest.yaml.j2 }
-  - { src: ldapIdentityCr.yml.j2, dest: /opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml.j2 }
-  - { src: create-certificate.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/create-certificate.yml }
-  - { src: configure-cluster.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/configure-cluster.yml }
-  - { src: create-bootfiles.yml.j2, dest: /opt/ansible/create-bootfiles.yml }
-  - { src: generate-bootfile.yml.j2, dest: /opt/ansible/tasks/generate-bootfile.yml }
-  - { src: ocpguest.znetboot.j2, dest: /opt/ansible/templates/ocpguest.znetboot.j2 }
+    - { src: install-config.yaml.j2, dest: /opt/ansible/roles/create-cluster/templates/install-config.yaml.j2 }
+    - { src: guest.direct.j2, dest: /opt/ansible/roles/create-cluster/templates/guest.direct.j2 }
+    - { src: ocpdflt.direct.j2, dest: /opt/ansible/roles/create-cluster/templates/ocpdflt.direct.j2 }
+    - { src: create-guest-task.yml.j2, dest: /opt/ansible/tasks/create-guest.yml }
+    - { src: delete-guest-task.yml.j2, dest: /opt/ansible/tasks/delete-guest.yml }
+    - { src: boot-guest-task.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/boot-guest.yml }
+    - { src: guest-IPLdev-task.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/guest-IPLdev.yml }
+    - { src: create-cluster-main.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/main.yml }
+    - { src: create-cluster.yml.j2, dest: /opt/ansible/create-cluster.yml }
+    - { src: defaults/main.yml, dest: /opt/ansible/roles/create-cluster/defaults/main.yml }
+    - { src: cluster-guests-create.yml.j2, dest: /opt/ansible/cluster-guests-create.yml }
+    - { src: cluster-guests-delete.yml.j2, dest: /opt/ansible/cluster-guests-delete.yml }
+    - { src: ocp-add-domain-dns.yml.j2, dest: /opt/ansible/ocp-add-domain-dns.yml }
+    - { src: chrony.conf.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony.conf.j2 }
+    - { src: chrony-manifest.yaml.j2, dest: /opt/ansible/roles/create-cluster/templates/chrony-manifest.yaml.j2 }
+    - { src: ldapIdentityCr.yml.j2, dest: /opt/ansible/roles/create-cluster/templates/ldapIdentityCr.yml.j2 }
+    - { src: create-certificate.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/create-certificate.yml }
+    - { src: configure-cluster.yml.j2, dest: /opt/ansible/roles/create-cluster/tasks/configure-cluster.yml }
+    - { src: create-bootfiles.yml.j2, dest: /opt/ansible/create-bootfiles.yml }
+    - { src: generate-bootfile.yml.j2, dest: /opt/ansible/tasks/generate-bootfile.yml }
+    - { src: ocpguest.znetboot.j2, dest: /opt/ansible/templates/ocpguest.znetboot.j2 }
 
-#- name: Copy the DASD script
-#  template:
-#    src: ocp-dasd.sh.j2
-#    dest: /usr/local/bin/ocp-dasd.sh
-#    mode: 0750
-#- name: Copy the DASD script systemd service file
-#  template:
-#    src: ocp-dasd.service.j2
-#    dest: /usr/local/lib/systemd/system/ocp-dasd.service
-#    mode: 0644
-#- name: Do not enable the ocp-dasd service yet
-#  systemd:
-#    name: ocp-dasd
-#    state: stopped
-#    enabled: no
+# - name: Copy the DASD script
+#   template:
+#     src: ocp-dasd.sh.j2
+#     dest: /usr/local/bin/ocp-dasd.sh
+#     mode: 0750
+# - name: Copy the DASD script systemd service file
+#   template:
+#     src: ocp-dasd.service.j2
+#     dest: /usr/local/lib/systemd/system/ocp-dasd.service
+#     mode: 0644
+# - name: Do not enable the ocp-dasd service yet
+#   systemd:
+#     name: ocp-dasd
+#     state: stopped
+#     enabled: no
 
-#- name: Copy the CSRs script
-#  template:
-#    src: ocp-approve-csrs.sh.j2
-#    dest: /usr/local/bin/ocp-approve-csrs.sh
-#    mode: 0750
-#- name: Copy the CSRs script systemd service file
-#  template:
-#    src: ocp-approve-csrs.service.j2
-#    dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
-#    mode: 0644
-#- name: Do not enable the ocp-approve-csrs service
-#  systemd:
-#    name: ocp-approve-csrs
-#    state: stopped
-#    enabled: no
+# - name: Copy the CSRs script
+#   template:
+#     src: ocp-approve-csrs.sh.j2
+#     dest: /usr/local/bin/ocp-approve-csrs.sh
+#     mode: 0750
+# - name: Copy the CSRs script systemd service file
+#   template:
+#     src: ocp-approve-csrs.service.j2
+#     dest: /usr/local/lib/systemd/system/ocp-approve-csrs.service
+#     mode: 0644
+# - name: Do not enable the ocp-approve-csrs service
+#   systemd:
+#     name: ocp-approve-csrs
+#     state: stopped
+#     enabled: no
 
-#- name: Copy the retry script
-#  template:
-#    src: ocp-retry.sh.j2
-#    dest: /usr/local/bin/ocp-retry.sh
-#    mode: 0750
-#- name: Copy the ocp-retry script systemd service file
-#  template:
-#    src: ocp-retry.service.j2
-#    dest: /usr/local/lib/systemd/system/ocp-retry.service
-#    mode: 0644
-#- name: Do not enable the ocp-retry service
-#  systemd:
-#    name: ocp-retry
-#    state: stopped
-#    enabled: no
+# - name: Copy the retry script
+#   template:
+#     src: ocp-retry.sh.j2
+#     dest: /usr/local/bin/ocp-retry.sh
+#     mode: 0750
+# - name: Copy the ocp-retry script systemd service file
+#   template:
+#     src: ocp-retry.service.j2
+#     dest: /usr/local/lib/systemd/system/ocp-retry.service
+#     mode: 0644
+# - name: Do not enable the ocp-retry service
+#   systemd:
+#     name: ocp-retry
+#     state: stopped
+#     enabled: no
 
-#- name: Copy the action script for ocp-cluster-guests
-#  template:
-#    src: ocp-cluster-guests.sh.j2
-#    dest: /usr/local/bin/ocp-cluster-guests.sh
-#    mode: 0750
-#- name: Copy the ocp-guests-start systemd service file
-#  template:
-#    src: ocp-guests-start.service.j2
-#    dest: /usr/local/lib/systemd/system/ocp-guests-start.service
-#    mode: 0644
-#- name: Copy the ocp-guests-stop systemd service file
-#  template:
-#    src: ocp-guests-stop.service.j2
-#    dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
-#    mode: 0644
-#- name: Do not enable the ocp-guests-start service
-#  systemd:
-#    name: ocp-guests-start
-#    state: stopped
-#    enabled: no
-#- name: Do not enable the ocp-guests-stop service
-#  systemd:
-#    name: ocp-guests-stop
-#    state: stopped
-#    enabled: no
+# - name: Copy the action script for ocp-cluster-guests
+#   template:
+#     src: ocp-cluster-guests.sh.j2
+#     dest: /usr/local/bin/ocp-cluster-guests.sh
+#     mode: 0750
+# - name: Copy the ocp-guests-start systemd service file
+#   template:
+#     src: ocp-guests-start.service.j2
+#     dest: /usr/local/lib/systemd/system/ocp-guests-start.service
+#     mode: 0644
+# - name: Copy the ocp-guests-stop systemd service file
+#   template:
+#     src: ocp-guests-stop.service.j2
+#     dest: /usr/local/lib/systemd/system/ocp-guests-stop.service
+#     mode: 0644
+# - name: Do not enable the ocp-guests-start service
+#   systemd:
+#     name: ocp-guests-start
+#     state: stopped
+#     enabled: no
+# - name: Do not enable the ocp-guests-stop service
+#   systemd:
+#     name: ocp-guests-stop
+#     state: stopped
+#     enabled: no
 
 - name: Copy the kicker script for RHOCP build
-  template:
+  ansible.builtin.template:
     src: ocp-ansible.sh.j2
     dest: /usr/local/bin/ocp-ansible.sh
     mode: 0750
 - name: Copy the incrontab file
-  template:
+  ansible.builtin.template:
     src: incrontab-ocp-build.j2
     dest: /etc/incron.d/ocp-build
     mode: 0644
   notify: Enable incrond
 
 - name: Copy the kicker script for RHOCP cluster actions
-  template:
+  ansible.builtin.template:
     src: ocp-cluster-action.sh.j2
     dest: /usr/local/bin/ocp-cluster-action.sh
     mode: 0750
 - name: Copy the incrontab file
-  template:
+  ansible.builtin.template:
     src: incrontab-ocp-cluster.j2
     dest: /etc/incron.d/ocp-cluster
     mode: 0644
   notify: Enable incrond
 
 - name: Copy the kicker script for RHOCP version
-  template:
+  ansible.builtin.template:
     src: ocp-version.sh.j2
     dest: /usr/local/bin/ocp-version.sh
     mode: 0750
 - name: Copy the incrontab file
-  template:
+  ansible.builtin.template:
     src: incrontab-ocp-version.j2
     dest: /etc/incron.d/ocp-version
     mode: 0644
   notify: Enable incrond
 
 - name: Create the group_vars
-  template:
+  ansible.builtin.template:
     src: group-vars.yml.j2
     dest: /opt/ansible/inventory/group_vars/all/default.yml
     mode: 0644
 
 - name: Create the inventory host file
-  template:
+  ansible.builtin.template:
     src: inventory.j2
     dest: /opt/ansible/inventory/inventory
     mode: 0644
 
 - name: Display a message
-  debug:
+  ansible.builtin.debug:
     msg:
       - '        The new OCP Bastion is now completed!              '
       - 'If the Bastion is in place in its z/VM system, log on and  '

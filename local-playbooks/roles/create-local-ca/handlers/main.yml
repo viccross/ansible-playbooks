@@ -1,5 +1,5 @@
 ---
 # handlers file for create-local-ca
-- name: Update ca trust
-  command:
+- name: Update ca trust # noqa no-changed-when
+  ansible.builtin.command:
     cmd: update-ca-trust

@@ -102,4 +102,3 @@
     key: cluster_nodes.workers.worker-1.ip
     value:
       "{{ ip_worker_1 }}"
-
