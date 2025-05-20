@@ -28,6 +28,7 @@
         create: yes
         line: "{{ item.value.ip }}"
       loop: "{{ query('ansible.builtin.dict',cluster['nodes']['bootstrap']) }}"
+      when: cluster['nodes']['bootstrap'] is defined
     - name: Extract the control IPs to the IP file
       lineinfile:
         path: /etc/haproxy/conf.d/{{ cluster_name }}.ips

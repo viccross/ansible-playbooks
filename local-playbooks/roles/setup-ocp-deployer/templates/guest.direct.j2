@@ -5,4 +5,4 @@ USER {{ cluster['nodes'][coreos_role][item].name }} ZVM4DEMO {{ guestmemory[core
  CPU 00
  IPL CMS
  SHARE RELATIVE {{ guestvcpus[coreos_role] }}00
- NICDEF 0600 TYPE HIPERS LAN SYSTEM [[ ocp_cluster_lan_name ]] DEVICES 3
+ NICDEF 0600 TYPE {{ cluster['LANType'] | default('QDIO') }} LAN SYSTEM [[ ocp_cluster_lan_name ]] DEVICES 3
