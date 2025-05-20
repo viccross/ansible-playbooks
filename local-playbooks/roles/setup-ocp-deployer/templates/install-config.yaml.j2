@@ -1,27 +1,29 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
+{% if cluster['OCPVer'].split('.')[1] >= "14" %}{% set sdn_type = "OVNKubernetes" %}{% else %}{% set sdn_type = "OpenShiftSDN" %}{% endif %}
 apiVersion: v1
-baseDomain: "{% raw %}{{ cluster_base_domain }}{% endraw %}"
-proxy:
+baseDomain: "{{ cluster_base_domain }}"
+{% if cluster['nettype'] = "GLAN" %}proxy:
   httpProxy: http://{{ bastion_private_ip_address }}:3128
   httpsProxy: http://{{ bastion_private_ip_address }}:3128
-  noProxy: .{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %},169.254.169.254,{{ subnet_cidr }}
+  noProxy: .{{ cluster_name }}.{{ cluster_base_domain }},169.254.169.254,{{ subnet_cidr }}{% endif %}
 compute:
 - hyperthreading: Enabled
   name: worker
-  replicas: {% raw %}{{ (cluster['nodes']['compute'].keys() | length) if cluster['nodes']['compute'] is defined else 0 }}{% endraw %}{{''}}
+  replicas: {{ (cluster['nodes']['compute'].keys() | length) if cluster['nodes']['compute'] is defined else 0 }}{{''}}
 controlPlane:
   hyperthreading: Enabled
   name: master
-  replicas: {% raw %}{{ cluster['nodes']['control'].keys() | length }}{% endraw %}{{''}}
+  replicas: {{ cluster['nodes']['control'].keys() | length }}{{''}}
 metadata:
-  name: "{% raw %}{{ cluster_name }}{% endraw %}"
+  name: "{{ cluster_name }}"
 networking:
   clusterNetworks:
   - cidr: 10.128.0.0/14
     hostPrefix: 23
-  networkType: OpenShiftSDN
+  networkType: "{{ sdn_type }}"
   serviceNetwork:
   - 172.30.0.0/16
 platform:
   none: {}
-pullSecret: '{% raw %}{{ ocp4_pull_secret | to_json }}{% endraw %}'
-sshKey: '{% raw %}{{ bastion_pubkey.content | b64decode | trim }}{% endraw %}'
+pullSecret: '{{ ocp4_pull_secret | to_json }}'
+sshKey: '{{ bastion_pubkey.content | b64decode | trim }}'
