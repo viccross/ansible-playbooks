@@ -129,6 +129,8 @@
     dest: "~csid_{{ cluster_name }}/.kube/config"
     remote_src: yes
     force: yes
+    owner: csid_{{ cluster_name }}
+    group: rhocp_clusters
     mode: 0640
 
 - name: create /etc/hosts entry
