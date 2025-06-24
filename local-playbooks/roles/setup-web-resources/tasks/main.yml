@@ -177,6 +177,8 @@
         - s_index.html
         - starticic.html
         - startocp.html
+        - indexhdr.html
+        - indexftr.html
     - name: Symlink to the CA certificates
       block:
         - name: Symlink to the bundle
