@@ -1,18 +1,19 @@
+#jinja2:block_start_string:'[%', block_end_string:'%]', variable_start_string:'[[', variable_end_string:']]'
 ---
 - name: generate the certificate
   include_tasks: create-certificate.yml
   with_items:
-  - { filename: "ocpApps", common_name: "*.apps.{% raw %}{{ cluster_name }}.{{ cluster_base_domain }}{% endraw %}" }
+  - { filename: "ocpApps", common_name: "*.apps.{{ cluster_name }}.{{ cluster_base_domain }}" }
 
 - name: create combined PEM file for OCP apps
   shell:
     cmd: cat ocpApps.cert oqsCA.cert oqsRootCA.cert > ocpApps-bundle.cert
-    chdir: {{ ca_cert_path }}
+    chdir: [[ ca_cert_path ]]
 
 - name: Create OCP ConfigMap for CA certs
   command:
     cmd: |
-      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create configmap custom-ca --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --from-file=ca-bundle.crt={{ ca_cert_path }}/oqsRootCA.cert --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create configmap custom-ca --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --from-file=ca-bundle.crt=[[ ca_cert_path ]]/oqsRootCA.cert --from-file=ca.crt=[[ ca_cert_path ]]/oqsCA.certs.bundle -n openshift-config
 
 - name: Add OCP ConfigMap for CA cert
   command:
@@ -22,7 +23,7 @@
 - name: Create OCP secret for the certificate and chain
   command:
     cmd: |
-      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create secret tls oqscert --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --cert={{ ca_cert_path }}/ocpApps-bundle.cert --key={{ ca_key_path }}/ocpApps.pem -n openshift-ingress
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create secret tls oqscert --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --cert=[[ ca_cert_path ]]/ocpApps-bundle.cert --key=[[ ca_key_path ]]/ocpApps.pem -n openshift-ingress
 
 - name: Update the Ingress Controller
   command:
@@ -40,7 +41,7 @@
 
 - name: Set admin users as cluster-admin
   command:
-    cmd: /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc adm policy add-cluster-role-to-user cluster-admin {% raw %}{{ item }}{% endraw %} --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config'
+    cmd: /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc adm policy add-cluster-role-to-user cluster-admin {{ item }} --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config'
   loop:
     - "admin01"
     - "admin02"
