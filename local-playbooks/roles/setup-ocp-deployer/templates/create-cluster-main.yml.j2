@@ -237,7 +237,7 @@
 
 - name: start the approve-csrs task
   systemd:
-    name: ocp-approve-csrs
+    name: ocp-approve-csrs@{{ cluster_name }}
     state: started
 
 - name: wait for install complete # noqa 301
@@ -275,7 +275,7 @@
 
 - name: enable the start-the-guests service
   systemd:
-    name: ocp-guests-start
+    name: ocp-guests-start@{{ cluster_name }}
     state: stopped
     enabled: yes
 
@@ -285,5 +285,5 @@
 
 - name: stop the approve-csrs task
   systemd:
-    name: ocp-approve-csrs
+    name: ocp-approve-csrs@{{ cluster_name }}
     state: stopped

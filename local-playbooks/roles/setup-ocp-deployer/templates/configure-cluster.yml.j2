@@ -11,21 +11,23 @@
 
 - name: Create OCP ConfigMap for CA certs
   command:
-    cmd: oc create configmap custom-ca --from-file=ca-bundle.crt={{ ca_cert_path }}/oqsRootCA.cert --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
+    cmd: |
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create configmap custom-ca --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --from-file=ca-bundle.crt={{ ca_cert_path }}/oqsRootCA.cert --from-file=ca.crt={{ ca_cert_path }}/oqsCA.certs.bundle -n openshift-config
 
 - name: Add OCP ConfigMap for CA cert
   command:
     cmd: |
-      oc patch proxy/cluster --type=merge -p '{"spec":{"trustedCA":{"name":"custom-ca"}}}'
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc patch proxy/cluster --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --type=merge -p '{"spec":{"trustedCA":{"name":"custom-ca"}}}'
 
 - name: Create OCP secret for the certificate and chain
   command:
-    cmd: oc create secret tls oqscert --cert={{ ca_cert_path }}/ocpApps-bundle.cert --key={{ ca_key_path }}/ocpApps.pem -n openshift-ingress
+    cmd: |
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc create secret tls oqscert --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --cert={{ ca_cert_path }}/ocpApps-bundle.cert --key={{ ca_key_path }}/ocpApps.pem -n openshift-ingress
 
 - name: Update the Ingress Controller
   command:
     cmd: |
-      oc patch ingresscontroller.operator default --type=merge -p '{"spec":{"defaultCertificate": {"name": "oqscert"}}}' -n openshift-ingress-operator
+      /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc patch ingresscontroller.operator default --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' --type=merge -p '{"spec":{"defaultCertificate": {"name": "oqscert"}}}' -n openshift-ingress-operator
 
 - name: Create the Custom Resource for the LDAP identity provider
   template:
@@ -34,11 +36,11 @@
 
 - name: Add the identity provider
   command:
-    cmd: oc apply -f {{ workdir }}/ldapIdentityCr.yml
+    cmd: /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc apply --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config' -f {{ workdir }}/ldapIdentityCr.yml
 
 - name: Set admin users as cluster-admin
   command:
-    cmd: oc adm policy add-cluster-role-to-user cluster-admin {% raw %}{{ item }}{% endraw %}{{ '' }}
+    cmd: /opt/rhocp/install/{{ cluster['OCPVer'] }}/client/oc adm policy add-cluster-role-to-user cluster-admin {% raw %}{{ item }}{% endraw %} --kubeconfig='/home/csid_{{ cluster_name }}/.kube/config'
   loop:
     - "admin01"
     - "admin02"
