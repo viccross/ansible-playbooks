@@ -9,6 +9,7 @@
   loop:
     - "zVM"
     - "zVMLDAP"
+  delegate_to: lxwork01
 
 - name: Start the FTP server on z/VM # noqa no-changed-when command-instead-of-shell
   ansible.builtin.shell:
