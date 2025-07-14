@@ -3,9 +3,6 @@
   ansible.posix.synchronize:
     src: /etc/pki/tls/certs/{{ item }}.p12
     dest: /etc/pki/tls/certs/{{ item }}.p12
-    mode: 0644
-    owner: root
-    group: root
   loop:
     - "zVM"
     - "zVMLDAP"
