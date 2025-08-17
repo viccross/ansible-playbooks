@@ -34,7 +34,7 @@
       openssl_csr:
         path: "{{ ca_csr_path }}/registry.csr"
         privatekey_path: "{{ ca_key_path }}/registry.pem"
-        common_name: "{{ build_hostname }}"
+        common_name: "registry.wsclab.endicott.ibm.com"
         organization_name: "IBM"
         organizational_unit_name: "IBM z/VM for Red Hat OpenShift PoC"
         country_name: "US"
